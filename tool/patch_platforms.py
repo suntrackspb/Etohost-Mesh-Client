@@ -157,9 +157,13 @@ def patch_apple():
     print("apple: ok")
 
 
+COMPILE_SDK = 36
+
+
 def patch_plugins():
-    """Gradle 9 убрал jcenter(), а usb_serial и flutter_libserialport его ещё
-    вызывают. Правим их копии в pub-кэше (нужен уже выполненный pub get)."""
+    """usb_serial и flutter_libserialport устарели: вызывают jcenter() (убран в
+    Gradle 9) и собираются под старый compileSdk (androidx требует >= 34).
+    Правим их копии в pub-кэше (нужен уже выполненный pub get)."""
     cfg = ROOT / ".dart_tool/package_config.json"
     if not cfg.exists():
         print("plugins: нет package_config.json — сначала flutter pub get")
@@ -172,8 +176,10 @@ def patch_plugins():
             base = (cfg.parent / base).resolve()
         for f in (base / "android").glob("build.gradle*"):
             s = f.read_text()
-            if "jcenter()" in s:
-                f.write_text(s.replace("jcenter()", "mavenCentral()"))
+            new = s.replace("jcenter()", "mavenCentral()")
+            new = re.sub(r"compileSdk(Version)? \d+", f"compileSdk {COMPILE_SDK}", new)
+            if new != s:
+                f.write_text(new)
     print("plugins: ok")
 
 
