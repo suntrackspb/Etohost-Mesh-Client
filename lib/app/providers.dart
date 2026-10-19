@@ -11,6 +11,7 @@ import '../core/radio/journal.dart';
 import '../core/radio/radio_session.dart';
 import '../core/transport/serial_transport.dart';
 import '../data/database.dart';
+import '../data/message_sender.dart';
 import '../data/mirror_ingest.dart';
 import '../data/packet_router.dart';
 import '../mirror/mirror_api.dart';
@@ -74,17 +75,26 @@ final mirrorActiveProvider = Provider<bool>(
   (ref) => ref.watch(mirrorConfigProvider).value?.active ?? false,
 );
 
+/// REST-клиент зеркала; null, пока зеркало не включено.
+final mirrorApiProvider = Provider<MirrorApi?>((ref) {
+  final cfg = ref.watch(mirrorConfigProvider).value ?? MirrorConfig.off;
+  final base = cfg.baseUrl;
+  if (!cfg.active || base == null) return null;
+  final api = MirrorApi(base);
+  ref.onDispose(api.close);
+  return api;
+});
+
 /// WS-подписка на зеркало; null, пока зеркало не включено.
 final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
   final cfg = ref.watch(mirrorConfigProvider).value ?? MirrorConfig.off;
-  final ws = cfg.webSocketUrl, base = cfg.baseUrl;
-  if (!cfg.active || ws == null || base == null) return null;
+  final ws = cfg.webSocketUrl, api = ref.watch(mirrorApiProvider);
+  if (!cfg.active || ws == null || api == null) return null;
 
   final ingest = MirrorIngest(ref.read(databaseProvider));
   final journal = ref.read(journalProvider);
   void log(String s) => journal.add(JournalKind.app, s);
 
-  final api = MirrorApi(base);
   api.nodes().then(ingest.nodes).catchError((Object e) {
     log('Зеркало: ноды не загружены: $e');
   });
@@ -103,10 +113,7 @@ final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
         break;
     }
   }, log: log)..start();
-  ref.onDispose(() {
-    rt.dispose();
-    api.close();
-  });
+  ref.onDispose(rt.dispose);
   return rt;
 });
 
@@ -187,13 +194,141 @@ final chatChannelsProvider = Provider<AsyncValue<List<ChatChannel>>>((ref) {
   });
 });
 
-final channelMessagesProvider = StreamProvider.family<List<Message>, String>(
-  (ref, key) => ref
+/// Шаг подгрузки ленты.
+const feedPageSize = 100;
+
+/// Переписка в чате: канал (по ключу имени) или личный диалог с нодой.
+/// [id] — строка для маршрута и ключей провайдеров.
+sealed class ChatTarget {
+  const ChatTarget();
+  String get id;
+
+  static ChatTarget parse(String id) {
+    if (id.startsWith('dm:')) {
+      final n = int.tryParse(id.substring(3));
+      if (n != null) return DirectTarget(n);
+    }
+    return ChannelTarget(id);
+  }
+}
+
+class ChannelTarget extends ChatTarget {
+  const ChannelTarget(this.key);
+  final String key;
+  @override
+  String get id => key;
+}
+
+class DirectTarget extends ChatTarget {
+  const DirectTarget(this.num);
+  final int num;
+  @override
+  String get id => 'dm:$num';
+}
+
+/// Сколько последних сообщений держит лента (растёт при прокрутке вверх).
+final feedLimitProvider = StateProvider.family<int, String>(
+  (ref, id) => feedPageSize,
+);
+
+final feedMessagesProvider = StreamProvider.family<List<Message>, String>((
+  ref,
+  id,
+) {
+  final db = ref.watch(databaseProvider);
+  final limit = ref.watch(feedLimitProvider(id));
+  return switch (ChatTarget.parse(id)) {
+    ChannelTarget(:final key) => db.watchChannelMessages(
+      key,
+      includeMirror: ref.watch(mirrorActiveProvider),
+      limit: limit,
+    ),
+    DirectTarget(:final num) => db.watchDirectMessages(num, limit: limit),
+  };
+});
+
+String readSettingKey(String id) => switch (ChatTarget.parse(id)) {
+  ChannelTarget(:final key) => AppSettingKeys.channelRead(key),
+  DirectTarget(:final num) => AppSettingKeys.directRead(num),
+};
+
+/// Время последнего прочитанного; null — переписку ещё не открывали.
+final feedReadProvider = StreamProvider.family<DateTime?, String>(
+  (ref, id) => ref
       .watch(databaseProvider)
-      .watchChannelMessages(
-        key,
-        includeMirror: ref.watch(mirrorActiveProvider),
-      ),
+      .watchSetting(readSettingKey(id))
+      .map((v) => v == null ? null : DateTime.tryParse(v)),
+);
+
+final unreadCountProvider = StreamProvider.family<int, String>((ref, id) {
+  final read = ref.watch(feedReadProvider(id));
+  if (!read.hasValue) return const Stream.empty();
+  final db = ref.watch(databaseProvider);
+  return switch (ChatTarget.parse(id)) {
+    ChannelTarget(:final key) => db.watchUnreadCount(
+      key,
+      read.value,
+      includeMirror: ref.watch(mirrorActiveProvider),
+    ),
+    DirectTarget(:final num) => db.watchDirectUnread(num, read.value),
+  };
+});
+
+/// Личный диалог: собеседник и последнее сообщение.
+class Conversation {
+  const Conversation(this.peer, this.last);
+  final int peer;
+  final Message last;
+}
+
+/// Диалоги, свежие первыми.
+final conversationsProvider = StreamProvider<List<Conversation>>(
+  (ref) => ref.watch(databaseProvider).watchAllDirect().map((all) {
+    final seen = <int, Conversation>{};
+    for (final m in all) {
+      final peer = m.isOutgoing ? m.toNum : m.fromNum;
+      seen.putIfAbsent(peer, () => Conversation(peer, m));
+    }
+    return seen.values.toList();
+  }),
+);
+
+/// Сумма непрочитанного по каналам и диалогам — для бейджа вкладки «Чат».
+final totalUnreadProvider = Provider<int>((ref) {
+  final ids = [
+    for (final c in ref.watch(chatChannelsProvider).value ?? const []) c.key,
+    for (final d in ref.watch(conversationsProvider).value ?? const [])
+      DirectTarget(d.peer).id,
+  ];
+  var total = 0;
+  for (final id in ids) {
+    total += ref.watch(unreadCountProvider(id)).value ?? 0;
+  }
+  return total;
+});
+
+/// Отправка сообщений через текущее соединение.
+final messageSenderProvider = Provider<MessageSender>((ref) {
+  final radio = ref.read(radioProvider);
+  return MessageSender(
+    ref.read(databaseProvider),
+    radio.sendPacket,
+    () => radio.state == RadioState.ready ? radio.myNodeNum : null,
+    radio.queue.nextId,
+  );
+});
+
+/// Можно ли сейчас отправлять (нода подключена и конфиг загружен).
+final canSendProvider = Provider<bool>(
+  (ref) => ref.watch(radioProvider.select((r) => r.state)) == RadioState.ready,
+);
+
+/// Уровень GlyphZip для исходящих (0 — выкл), запоминается между запусками.
+final glyphZipLevelProvider = StreamProvider<int>(
+  (ref) => ref
+      .watch(databaseProvider)
+      .watchSetting(AppSettingKeys.glyphZipLevel)
+      .map((v) => int.tryParse(v ?? '') ?? 0),
 );
 
 final recentConnectionsProvider = StreamProvider<List<RecentConnection>>(

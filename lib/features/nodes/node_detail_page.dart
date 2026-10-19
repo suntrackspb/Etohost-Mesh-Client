@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
+import '../../data/message_sender.dart';
+import '../chat/chat_page.dart';
 import '../../ui/kit/kit.dart';
 import 'nodes_page.dart';
 
@@ -14,7 +17,7 @@ final _nodeProvider = StreamProvider.family<Node?, int>((ref, id) {
   )..where((n) => n.num.equals(id))).watchSingleOrNull();
 });
 
-/// Карточка ноды (этап 1 — только данные из БД; действия появятся на этапе 5).
+/// Карточка ноды: данные из БД и «Написать» (остальные действия — этап 5).
 class NodeDetailPage extends ConsumerWidget {
   const NodeDetailPage({super.key, required this.num, this.standalone = false});
 
@@ -26,6 +29,8 @@ class NodeDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final node = ref.watch(_nodeProvider(num));
+    final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
+    final block = directBlock(node.value);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: standalone,
@@ -34,6 +39,20 @@ class NodeDetailPage extends ConsumerWidget {
               ? node.value!.longName
               : nodeIdString(num),
         ),
+        actions: [
+          if (node.value != null && num != me)
+            IconButton(
+              tooltip: switch (block) {
+                null => 'Написать',
+                DirectBlock.noKey => 'Нет публичного ключа — написать нельзя',
+                DirectBlock.unmessagable => 'Нода не принимает сообщения',
+              },
+              icon: const Icon(Icons.chat_outlined),
+              onPressed: block == null
+                  ? () => context.go(ChatPage.location(DirectTarget(num).id))
+                  : null,
+            ),
+        ],
       ),
       body: node.when(
         loading: () => const Center(child: CircularProgressIndicator()),

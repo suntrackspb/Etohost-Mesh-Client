@@ -71,6 +71,7 @@ class PacketRouter {
             publicKey: Value(
               u.publicKey.isEmpty ? null : Uint8List.fromList(u.publicKey),
             ),
+            isUnmessagable: Value(u.isUnmessagable),
             lastHeard: Value(n.lastHeard == 0 ? null : _time(n.lastHeard)),
             snr: Value(n.snr == 0 ? null : n.snr),
             hopsAway: Value(n.hasHopsAway() ? n.hopsAway : null),
@@ -85,6 +86,39 @@ class PacketRouter {
             ),
             voltage: Value(m != null && m.hasVoltage() ? m.voltage : null),
             onRadio: const Value(true),
+          ),
+        );
+  }
+
+  /// NodeInfo из эфира: обновляем только данные пользователя — позиция,
+  /// метрики и флаги ноды остаются.
+  Future<void> _upsertUser(int num, User u, int heard) async {
+    final user = NodesCompanion(
+      userId: Value(u.id),
+      longName: Value(u.longName),
+      shortName: Value(u.shortName),
+      hwModel: Value(u.hwModel.value),
+      role: Value(u.role.value),
+      isUnmessagable: Value(u.isUnmessagable),
+      lastHeard: Value(_time(heard)),
+      onRadio: const Value(true),
+    );
+    await db
+        .into(db.nodes)
+        .insert(
+          user.copyWith(
+            num: Value(num),
+            publicKey: Value(
+              u.publicKey.isEmpty ? null : Uint8List.fromList(u.publicKey),
+            ),
+          ),
+          onConflict: DoUpdate(
+            // Пустой ключ в пакете не стирает известный.
+            (_) => u.publicKey.isEmpty
+                ? user
+                : user.copyWith(
+                    publicKey: Value(Uint8List.fromList(u.publicKey)),
+                  ),
           ),
         );
   }
@@ -141,10 +175,7 @@ class PacketRouter {
       case PortNum.ADMIN_APP:
         await _onAdmin(AdminMessage.fromBuffer(d.payload));
       case PortNum.NODEINFO_APP:
-        final u = User.fromBuffer(d.payload);
-        await _upsertNodeInfo(
-          NodeInfo(num: p.from, user: u, lastHeard: _rxTime(p)),
-        );
+        await _upsertUser(p.from, User.fromBuffer(d.payload), _rxTime(p));
       default:
         break;
     }
@@ -295,7 +326,10 @@ class PacketRouter {
   }
 
   Future<void> _insertText(MeshPacket p, String text) async {
-    final key = channelKey(await _channelName(p.channel));
+    // Личные сообщения — по собеседнику, ключ канала им не нужен.
+    final key = p.to == broadcastNum
+        ? channelKey(await _channelName(p.channel))
+        : '';
     final radio = MessagesCompanion(
       channel: Value(p.channel),
       rxSnr: Value(p.rxSnr == 0 ? null : p.rxSnr),
@@ -323,6 +357,7 @@ class PacketRouter {
             hopStart: radio.hopStart,
             hopLimit: radio.hopLimit,
             viaMqtt: radio.viaMqtt,
+            pkiEncrypted: Value(p.pkiEncrypted),
             heardOnRadio: const Value(true),
           ),
           // Уже пришло из зеркала (или нода повторила) — дополняем данными эфира.

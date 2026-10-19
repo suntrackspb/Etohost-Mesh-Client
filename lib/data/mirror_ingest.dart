@@ -52,11 +52,17 @@ class MirrorIngest {
                 mirrorId: ex.mirrorId,
                 isBot: ex.isBot,
                 relayCount: _max(old.relayCount, ex.relayCount),
-                // Лента из зеркала без эфира — выравниваем по времени сервера.
+                // Лента из зеркала без эфира — выравниваем по времени сервера;
+                // своё исходящее и услышанное в эфире — время наше.
                 rxTime: live
                     ? old.rxTime
                     : CaseWhenExpression(
-                        cases: [CaseWhen(old.heardOnRadio, then: old.rxTime)],
+                        cases: [
+                          CaseWhen(
+                            old.heardOnRadio | old.isOutgoing,
+                            then: old.rxTime,
+                          ),
+                        ],
                         orElse: ex.rxTime,
                       ),
               ),

@@ -23,9 +23,8 @@ final appRouter = GoRouter(
               builder: (_, _) => const ChatPage(),
               routes: [
                 GoRoute(
-                  path: ':channel',
-                  builder: (_, s) =>
-                      ChatPage(channel: s.pathParameters['channel']),
+                  path: ':id',
+                  builder: (_, s) => ChatPage(selected: s.pathParameters['id']),
                 ),
               ],
             ),

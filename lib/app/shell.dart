@@ -20,6 +20,11 @@ class AdaptiveShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final wide = MediaQuery.sizeOf(context).width >= Tokens.wideBreakpoint;
     final radio = ref.watch(radioProvider);
+    final unread = ref.watch(totalUnreadProvider);
+    // Бейдж непрочитанного — на вкладке «Чат» (первая).
+    Widget icon(int i, IconData data) => i == 0 && unread > 0
+        ? Badge(label: Text(unread > 99 ? '99+' : '$unread'), child: Icon(data))
+        : Icon(data);
 
     if (!wide) {
       return Scaffold(
@@ -28,10 +33,10 @@ class AdaptiveShell extends ConsumerWidget {
           selectedIndex: shell.currentIndex,
           onDestinationSelected: _go,
           destinations: [
-            for (final t in appTabs)
+            for (final (i, t) in appTabs.indexed)
               NavigationDestination(
-                icon: Icon(t.icon),
-                selectedIcon: Icon(t.selectedIcon),
+                icon: icon(i, t.icon),
+                selectedIcon: icon(i, t.selectedIcon),
                 label: t.label,
               ),
           ],
@@ -58,10 +63,10 @@ class AdaptiveShell extends ConsumerWidget {
               ),
             ),
             destinations: [
-              for (final t in appTabs)
+              for (final (i, t) in appTabs.indexed)
                 NavigationRailDestination(
-                  icon: Icon(t.icon),
-                  selectedIcon: Icon(t.selectedIcon),
+                  icon: icon(i, t.icon),
+                  selectedIcon: icon(i, t.selectedIcon),
                   label: Text(t.label),
                 ),
             ],

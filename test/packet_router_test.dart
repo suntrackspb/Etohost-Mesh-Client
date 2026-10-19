@@ -173,4 +173,46 @@ void main() {
     final rows = await db.select(db.neighbors).get();
     expect(rows.map((r) => r.neighborNum), [3]);
   });
+
+  test('NodeInfo из эфира не стирает позицию и избранное', () async {
+    await router.handle(
+      FromRadio(
+        nodeInfo: NodeInfo(
+          num: 5,
+          isFavorite: true,
+          user: User(longName: 'A', publicKey: List.filled(32, 1)),
+          position: Position(latitudeI: 599000000, longitudeI: 303000000),
+        ),
+      ),
+    );
+    await router.handle(
+      pkt(5, PortNum.NODEINFO_APP, User(longName: 'B').writeToBuffer()),
+    );
+    final n = (await db.watchNodes().first).single;
+    expect(n.longName, 'B');
+    expect(n.isFavorite, isTrue);
+    expect(n.latitude, closeTo(59.9, 1e-6));
+    expect(n.publicKey, hasLength(32)); // пустой ключ в пакете не стирает
+  });
+
+  test('входящее личное: без ключа канала, с флагом PKI', () async {
+    await router.handle(
+      FromRadio(
+        packet: MeshPacket(
+          from: 5,
+          to: 1,
+          id: 9,
+          pkiEncrypted: true,
+          decoded: Data(
+            portnum: PortNum.TEXT_MESSAGE_APP,
+            payload: utf8.encode('лично'),
+          ),
+        ),
+      ),
+    );
+    final m = (await db.watchDirectMessages(5).first).single;
+    expect(m.pkiEncrypted, isTrue);
+    expect(m.channelKey, '');
+    expect(await db.watchDirectUnread(5, null).first, 1);
+  });
 }

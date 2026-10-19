@@ -13,10 +13,32 @@ abstract final class AppSettingKeys {
 
   /// Адрес зеркала как ввёл пользователь; по умолчанию пусто.
   static const mirrorAddress = 'mirror.address';
+  static const glyphZipLevel = 'chat.glyphZipLevel';
+
+  /// Время последнего прочитанного сообщения канала (ISO-8601).
+  static String channelRead(String key) => 'chat.read.$key';
+
+  /// То же для личной переписки с нодой.
+  static String directRead(int num) => 'dm.read.$num';
 }
 
-/// Статус доставки исходящего сообщения.
-enum AckState { none, pending, acked, failed }
+/// Состояние исходящего. Новые значения — только в конец (хранится индекс).
+enum AckState {
+  none,
+
+  /// В очереди или отправлено, ждём подтверждения.
+  pending,
+  acked,
+
+  /// Сеть вернула ошибку маршрутизации ([Messages.ackError]).
+  failed,
+
+  /// Подтверждения не дождались.
+  timeout,
+
+  /// Нода не приняла пакет или соединение разорвано.
+  notSent,
+}
 
 /// Ноды сети. Ключ — номер ноды (uint32).
 class Nodes extends Table {
@@ -27,6 +49,10 @@ class Nodes extends Table {
   IntColumn get hwModel => integer().withDefault(const Constant(0))();
   IntColumn get role => integer().withDefault(const Constant(0))();
   BlobColumn get publicKey => blob().nullable()();
+
+  /// Нода не принимает личные сообщения (`User.is_unmessagable`).
+  BoolColumn get isUnmessagable =>
+      boolean().withDefault(const Constant(false))();
   DateTimeColumn get lastHeard => dateTime().nullable()();
   RealColumn get snr => real().nullable()();
   IntColumn get hopsAway => integer().nullable()();
@@ -77,6 +103,9 @@ class Messages extends Table {
   IntColumn get hopStart => integer().nullable()();
   IntColumn get hopLimit => integer().nullable()();
   BoolColumn get viaMqtt => boolean().withDefault(const Constant(false))();
+
+  /// Личное, зашифрованное ключом получателя (PKI).
+  BoolColumn get pkiEncrypted => boolean().withDefault(const Constant(false))();
   IntColumn get ackState =>
       intEnum<AckState>().withDefault(const Constant(0))();
 
@@ -223,7 +252,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -268,7 +297,7 @@ class AppDatabase extends _$AppDatabase {
               (m) =>
                   m.channelKey.equals(channelKey) &
                   m.toNum.equals(0xffffffff) &
-                  (includeMirror ? const Constant(true) : m.heardOnRadio),
+                  _visible(m, includeMirror),
             )
             ..orderBy([(m) => OrderingTerm.desc(m.rxTime)])
             ..limit(limit))
@@ -281,9 +310,69 @@ class AppDatabase extends _$AppDatabase {
       ..where(
         messages.toNum.equals(0xffffffff) &
             messages.channelKey.equals('').not() &
-            (includeMirror ? const Constant(true) : messages.heardOnRadio),
+            _visible(messages, includeMirror),
       );
     return q.map((r) => r.read(messages.channelKey)!).watch();
+  }
+
+  /// Личная переписка с [peer], свежие первыми.
+  Stream<List<Message>> watchDirectMessages(int peer, {int limit = 500}) =>
+      (select(messages)
+            ..where(
+              (m) =>
+                  m.toNum.equals(0xffffffff).not() &
+                  (m.fromNum.equals(peer) | m.toNum.equals(peer)),
+            )
+            ..orderBy([(m) => OrderingTerm.desc(m.rxTime)])
+            ..limit(limit))
+          .watch();
+
+  /// Непрочитанные личные от [peer] новее [since] (null — все).
+  Stream<int> watchDirectUnread(int peer, DateTime? since) {
+    final count = messages.id.count();
+    final q = selectOnly(messages)
+      ..addColumns([count])
+      ..where(
+        messages.toNum.equals(0xffffffff).not() &
+            messages.fromNum.equals(peer) &
+            messages.isOutgoing.not() &
+            (since == null
+                ? const Constant(true)
+                : messages.rxTime.isBiggerThanValue(since)),
+      );
+    return q.map((r) => r.read(count) ?? 0).watchSingle();
+  }
+
+  /// Все личные сообщения, свежие первыми (для списка диалогов).
+  Stream<List<Message>> watchAllDirect() =>
+      (select(messages)
+            ..where((m) => m.toNum.equals(0xffffffff).not())
+            ..orderBy([(m) => OrderingTerm.desc(m.rxTime)]))
+          .watch();
+
+  /// Без зеркала видно услышанное в эфире и своё исходящее.
+  static Expression<bool> _visible($MessagesTable m, bool includeMirror) =>
+      includeMirror ? const Constant(true) : m.heardOnRadio | m.isOutgoing;
+
+  /// Непрочитанные входящие в канале: новее [since] (null — все).
+  Stream<int> watchUnreadCount(
+    String channelKey,
+    DateTime? since, {
+    bool includeMirror = false,
+  }) {
+    final count = messages.id.count();
+    final q = selectOnly(messages)
+      ..addColumns([count])
+      ..where(
+        messages.channelKey.equals(channelKey) &
+            messages.toNum.equals(0xffffffff) &
+            messages.isOutgoing.not() &
+            _visible(messages, includeMirror) &
+            (since == null
+                ? const Constant(true)
+                : messages.rxTime.isBiggerThanValue(since)),
+      );
+    return q.map((r) => r.read(count) ?? 0).watchSingle();
   }
 
   /// Самый старый id зеркала — точка для подгрузки истории.
