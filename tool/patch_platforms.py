@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Прописывает имя приложения и разрешения Bluetooth/сети/USB в папки, созданные `flutter create`.
 Запускается в CI после `flutter create`; повторный запуск безопасен."""
+import json
 import pathlib
 import re
 
@@ -156,8 +157,29 @@ def patch_apple():
     print("apple: ok")
 
 
+def patch_plugins():
+    """Gradle 9 убрал jcenter(), а usb_serial и flutter_libserialport его ещё
+    вызывают. Правим их копии в pub-кэше (нужен уже выполненный pub get)."""
+    cfg = ROOT / ".dart_tool/package_config.json"
+    if not cfg.exists():
+        print("plugins: нет package_config.json — сначала flutter pub get")
+        return
+    for pkg in json.loads(cfg.read_text())["packages"]:
+        if pkg["name"] not in ("usb_serial", "flutter_libserialport"):
+            continue
+        base = pathlib.Path(pkg["rootUri"].removeprefix("file://"))
+        if not base.is_absolute():
+            base = (cfg.parent / base).resolve()
+        for f in (base / "android").glob("build.gradle*"):
+            s = f.read_text()
+            if "jcenter()" in s:
+                f.write_text(s.replace("jcenter()", "mavenCentral()"))
+    print("plugins: ok")
+
+
 if __name__ == "__main__":
     patch_name()
     patch_app_id()
     patch_android()
     patch_apple()
+    patch_plugins()
