@@ -1,0 +1,1319 @@
+// This is a generated file - do not edit.
+//
+// Generated from meshtastic/admin.proto.
+
+// @dart = 3.3
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
+// ignore_for_file: unused_import
+
+import 'dart:convert' as $convert;
+import 'dart:core' as $core;
+import 'dart:typed_data' as $typed_data;
+
+@$core.Deprecated('Use oTAModeDescriptor instead')
+const OTAMode$json = {
+  '1': 'OTAMode',
+  '2': [
+    {'1': 'NO_REBOOT_OTA', '2': 0},
+    {'1': 'OTA_BLE', '2': 1},
+    {'1': 'OTA_WIFI', '2': 2},
+  ],
+};
+
+/// Descriptor for `OTAMode`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List oTAModeDescriptor = $convert.base64Decode(
+    'CgdPVEFNb2RlEhEKDU5PX1JFQk9PVF9PVEEQABILCgdPVEFfQkxFEAESDAoIT1RBX1dJRkkQAg'
+    '==');
+
+@$core.Deprecated('Use adminMessageDescriptor instead')
+const AdminMessage$json = {
+  '1': 'AdminMessage',
+  '2': [
+    {'1': 'session_passkey', '3': 101, '4': 1, '5': 12, '10': 'sessionPasskey'},
+    {
+      '1': 'get_channel_request',
+      '3': 1,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'getChannelRequest'
+    },
+    {
+      '1': 'get_channel_response',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.Channel',
+      '9': 0,
+      '10': 'getChannelResponse'
+    },
+    {
+      '1': 'get_owner_request',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'getOwnerRequest'
+    },
+    {
+      '1': 'get_owner_response',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.User',
+      '9': 0,
+      '10': 'getOwnerResponse'
+    },
+    {
+      '1': 'get_config_request',
+      '3': 5,
+      '4': 1,
+      '5': 14,
+      '6': '.meshtastic.AdminMessage.ConfigType',
+      '9': 0,
+      '10': 'getConfigRequest'
+    },
+    {
+      '1': 'get_config_response',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.Config',
+      '9': 0,
+      '10': 'getConfigResponse'
+    },
+    {
+      '1': 'get_module_config_request',
+      '3': 7,
+      '4': 1,
+      '5': 14,
+      '6': '.meshtastic.AdminMessage.ModuleConfigType',
+      '9': 0,
+      '10': 'getModuleConfigRequest'
+    },
+    {
+      '1': 'get_module_config_response',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.ModuleConfig',
+      '9': 0,
+      '10': 'getModuleConfigResponse'
+    },
+    {
+      '1': 'get_canned_message_module_messages_request',
+      '3': 10,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'getCannedMessageModuleMessagesRequest'
+    },
+    {
+      '1': 'get_canned_message_module_messages_response',
+      '3': 11,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'getCannedMessageModuleMessagesResponse'
+    },
+    {
+      '1': 'get_device_metadata_request',
+      '3': 12,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'getDeviceMetadataRequest'
+    },
+    {
+      '1': 'get_device_metadata_response',
+      '3': 13,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.DeviceMetadata',
+      '9': 0,
+      '10': 'getDeviceMetadataResponse'
+    },
+    {
+      '1': 'get_ringtone_request',
+      '3': 14,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'getRingtoneRequest'
+    },
+    {
+      '1': 'get_ringtone_response',
+      '3': 15,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'getRingtoneResponse'
+    },
+    {
+      '1': 'get_device_connection_status_request',
+      '3': 16,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'getDeviceConnectionStatusRequest'
+    },
+    {
+      '1': 'get_device_connection_status_response',
+      '3': 17,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.DeviceConnectionStatus',
+      '9': 0,
+      '10': 'getDeviceConnectionStatusResponse'
+    },
+    {
+      '1': 'set_ham_mode',
+      '3': 18,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.HamParameters',
+      '9': 0,
+      '10': 'setHamMode'
+    },
+    {
+      '1': 'get_node_remote_hardware_pins_request',
+      '3': 19,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'getNodeRemoteHardwarePinsRequest'
+    },
+    {
+      '1': 'get_node_remote_hardware_pins_response',
+      '3': 20,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.NodeRemoteHardwarePinsResponse',
+      '9': 0,
+      '10': 'getNodeRemoteHardwarePinsResponse'
+    },
+    {
+      '1': 'enter_dfu_mode_request',
+      '3': 21,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'enterDfuModeRequest'
+    },
+    {
+      '1': 'delete_file_request',
+      '3': 22,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'deleteFileRequest'
+    },
+    {'1': 'set_scale', '3': 23, '4': 1, '5': 13, '9': 0, '10': 'setScale'},
+    {
+      '1': 'backup_preferences',
+      '3': 24,
+      '4': 1,
+      '5': 14,
+      '6': '.meshtastic.AdminMessage.BackupLocation',
+      '9': 0,
+      '10': 'backupPreferences'
+    },
+    {
+      '1': 'restore_preferences',
+      '3': 25,
+      '4': 1,
+      '5': 14,
+      '6': '.meshtastic.AdminMessage.BackupLocation',
+      '9': 0,
+      '10': 'restorePreferences'
+    },
+    {
+      '1': 'remove_backup_preferences',
+      '3': 26,
+      '4': 1,
+      '5': 14,
+      '6': '.meshtastic.AdminMessage.BackupLocation',
+      '9': 0,
+      '10': 'removeBackupPreferences'
+    },
+    {
+      '1': 'send_input_event',
+      '3': 27,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.AdminMessage.InputEvent',
+      '9': 0,
+      '10': 'sendInputEvent'
+    },
+    {
+      '1': 'set_owner',
+      '3': 32,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.User',
+      '9': 0,
+      '10': 'setOwner'
+    },
+    {
+      '1': 'set_channel',
+      '3': 33,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.Channel',
+      '9': 0,
+      '10': 'setChannel'
+    },
+    {
+      '1': 'set_config',
+      '3': 34,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.Config',
+      '9': 0,
+      '10': 'setConfig'
+    },
+    {
+      '1': 'set_module_config',
+      '3': 35,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.ModuleConfig',
+      '9': 0,
+      '10': 'setModuleConfig'
+    },
+    {
+      '1': 'set_canned_message_module_messages',
+      '3': 36,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'setCannedMessageModuleMessages'
+    },
+    {
+      '1': 'set_ringtone_message',
+      '3': 37,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'setRingtoneMessage'
+    },
+    {
+      '1': 'remove_by_nodenum',
+      '3': 38,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'removeByNodenum'
+    },
+    {
+      '1': 'set_favorite_node',
+      '3': 39,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'setFavoriteNode'
+    },
+    {
+      '1': 'remove_favorite_node',
+      '3': 40,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'removeFavoriteNode'
+    },
+    {
+      '1': 'set_fixed_position',
+      '3': 41,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.Position',
+      '9': 0,
+      '10': 'setFixedPosition'
+    },
+    {
+      '1': 'remove_fixed_position',
+      '3': 42,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'removeFixedPosition'
+    },
+    {
+      '1': 'set_time_only',
+      '3': 43,
+      '4': 1,
+      '5': 7,
+      '9': 0,
+      '10': 'setTimeOnly'
+    },
+    {
+      '1': 'get_ui_config_request',
+      '3': 44,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'getUiConfigRequest'
+    },
+    {
+      '1': 'get_ui_config_response',
+      '3': 45,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.DeviceUIConfig',
+      '9': 0,
+      '10': 'getUiConfigResponse'
+    },
+    {
+      '1': 'store_ui_config',
+      '3': 46,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.DeviceUIConfig',
+      '9': 0,
+      '10': 'storeUiConfig'
+    },
+    {
+      '1': 'set_ignored_node',
+      '3': 47,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'setIgnoredNode'
+    },
+    {
+      '1': 'remove_ignored_node',
+      '3': 48,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'removeIgnoredNode'
+    },
+    {
+      '1': 'toggle_muted_node',
+      '3': 49,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'toggleMutedNode'
+    },
+    {
+      '1': 'begin_edit_settings',
+      '3': 64,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'beginEditSettings'
+    },
+    {
+      '1': 'commit_edit_settings',
+      '3': 65,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'commitEditSettings'
+    },
+    {
+      '1': 'add_contact',
+      '3': 66,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.SharedContact',
+      '9': 0,
+      '10': 'addContact'
+    },
+    {
+      '1': 'key_verification',
+      '3': 67,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.KeyVerificationAdmin',
+      '9': 0,
+      '10': 'keyVerification'
+    },
+    {
+      '1': 'factory_reset_device',
+      '3': 94,
+      '4': 1,
+      '5': 5,
+      '9': 0,
+      '10': 'factoryResetDevice'
+    },
+    {
+      '1': 'reboot_ota_seconds',
+      '3': 95,
+      '4': 1,
+      '5': 5,
+      '8': {'3': true},
+      '9': 0,
+      '10': 'rebootOtaSeconds',
+    },
+    {
+      '1': 'exit_simulator',
+      '3': 96,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'exitSimulator'
+    },
+    {
+      '1': 'reboot_seconds',
+      '3': 97,
+      '4': 1,
+      '5': 5,
+      '9': 0,
+      '10': 'rebootSeconds'
+    },
+    {
+      '1': 'shutdown_seconds',
+      '3': 98,
+      '4': 1,
+      '5': 5,
+      '9': 0,
+      '10': 'shutdownSeconds'
+    },
+    {
+      '1': 'factory_reset_config',
+      '3': 99,
+      '4': 1,
+      '5': 5,
+      '9': 0,
+      '10': 'factoryResetConfig'
+    },
+    {
+      '1': 'nodedb_reset',
+      '3': 100,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'nodedbReset'
+    },
+    {
+      '1': 'ota_request',
+      '3': 102,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.AdminMessage.OTAEvent',
+      '9': 0,
+      '10': 'otaRequest'
+    },
+    {
+      '1': 'sensor_config',
+      '3': 103,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.SensorConfig',
+      '9': 0,
+      '10': 'sensorConfig'
+    },
+    {
+      '1': 'lockdown_auth',
+      '3': 104,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.LockdownAuth',
+      '9': 0,
+      '10': 'lockdownAuth'
+    },
+  ],
+  '3': [AdminMessage_InputEvent$json, AdminMessage_OTAEvent$json],
+  '4': [
+    AdminMessage_ConfigType$json,
+    AdminMessage_ModuleConfigType$json,
+    AdminMessage_BackupLocation$json
+  ],
+  '8': [
+    {'1': 'payload_variant'},
+  ],
+};
+
+@$core.Deprecated('Use adminMessageDescriptor instead')
+const AdminMessage_InputEvent$json = {
+  '1': 'InputEvent',
+  '2': [
+    {'1': 'event_code', '3': 1, '4': 1, '5': 13, '10': 'eventCode'},
+    {'1': 'kb_char', '3': 2, '4': 1, '5': 13, '10': 'kbChar'},
+    {'1': 'touch_x', '3': 3, '4': 1, '5': 13, '10': 'touchX'},
+    {'1': 'touch_y', '3': 4, '4': 1, '5': 13, '10': 'touchY'},
+  ],
+};
+
+@$core.Deprecated('Use adminMessageDescriptor instead')
+const AdminMessage_OTAEvent$json = {
+  '1': 'OTAEvent',
+  '2': [
+    {
+      '1': 'reboot_ota_mode',
+      '3': 1,
+      '4': 1,
+      '5': 14,
+      '6': '.meshtastic.OTAMode',
+      '10': 'rebootOtaMode'
+    },
+    {'1': 'ota_hash', '3': 2, '4': 1, '5': 12, '10': 'otaHash'},
+  ],
+};
+
+@$core.Deprecated('Use adminMessageDescriptor instead')
+const AdminMessage_ConfigType$json = {
+  '1': 'ConfigType',
+  '2': [
+    {'1': 'DEVICE_CONFIG', '2': 0},
+    {'1': 'POSITION_CONFIG', '2': 1},
+    {'1': 'POWER_CONFIG', '2': 2},
+    {'1': 'NETWORK_CONFIG', '2': 3},
+    {'1': 'DISPLAY_CONFIG', '2': 4},
+    {'1': 'LORA_CONFIG', '2': 5},
+    {'1': 'BLUETOOTH_CONFIG', '2': 6},
+    {'1': 'SECURITY_CONFIG', '2': 7},
+    {'1': 'SESSIONKEY_CONFIG', '2': 8},
+    {'1': 'DEVICEUI_CONFIG', '2': 9},
+  ],
+};
+
+@$core.Deprecated('Use adminMessageDescriptor instead')
+const AdminMessage_ModuleConfigType$json = {
+  '1': 'ModuleConfigType',
+  '2': [
+    {'1': 'MQTT_CONFIG', '2': 0},
+    {'1': 'SERIAL_CONFIG', '2': 1},
+    {'1': 'EXTNOTIF_CONFIG', '2': 2},
+    {'1': 'STOREFORWARD_CONFIG', '2': 3},
+    {'1': 'RANGETEST_CONFIG', '2': 4},
+    {'1': 'TELEMETRY_CONFIG', '2': 5},
+    {'1': 'CANNEDMSG_CONFIG', '2': 6},
+    {'1': 'AUDIO_CONFIG', '2': 7},
+    {'1': 'REMOTEHARDWARE_CONFIG', '2': 8},
+    {'1': 'NEIGHBORINFO_CONFIG', '2': 9},
+    {'1': 'AMBIENTLIGHTING_CONFIG', '2': 10},
+    {'1': 'DETECTIONSENSOR_CONFIG', '2': 11},
+    {'1': 'PAXCOUNTER_CONFIG', '2': 12},
+    {'1': 'STATUSMESSAGE_CONFIG', '2': 13},
+    {'1': 'TRAFFICMANAGEMENT_CONFIG', '2': 14},
+    {'1': 'TAK_CONFIG', '2': 15},
+    {'1': 'MESHBEACON_CONFIG', '2': 16},
+  ],
+};
+
+@$core.Deprecated('Use adminMessageDescriptor instead')
+const AdminMessage_BackupLocation$json = {
+  '1': 'BackupLocation',
+  '2': [
+    {'1': 'FLASH', '2': 0},
+    {'1': 'SD', '2': 1},
+  ],
+};
+
+/// Descriptor for `AdminMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminMessageDescriptor = $convert.base64Decode(
+    'CgxBZG1pbk1lc3NhZ2USJwoPc2Vzc2lvbl9wYXNza2V5GGUgASgMUg5zZXNzaW9uUGFzc2tleR'
+    'IwChNnZXRfY2hhbm5lbF9yZXF1ZXN0GAEgASgNSABSEWdldENoYW5uZWxSZXF1ZXN0EkcKFGdl'
+    'dF9jaGFubmVsX3Jlc3BvbnNlGAIgASgLMhMubWVzaHRhc3RpYy5DaGFubmVsSABSEmdldENoYW'
+    '5uZWxSZXNwb25zZRIsChFnZXRfb3duZXJfcmVxdWVzdBgDIAEoCEgAUg9nZXRPd25lclJlcXVl'
+    'c3QSQAoSZ2V0X293bmVyX3Jlc3BvbnNlGAQgASgLMhAubWVzaHRhc3RpYy5Vc2VySABSEGdldE'
+    '93bmVyUmVzcG9uc2USUwoSZ2V0X2NvbmZpZ19yZXF1ZXN0GAUgASgOMiMubWVzaHRhc3RpYy5B'
+    'ZG1pbk1lc3NhZ2UuQ29uZmlnVHlwZUgAUhBnZXRDb25maWdSZXF1ZXN0EkQKE2dldF9jb25maW'
+    'dfcmVzcG9uc2UYBiABKAsyEi5tZXNodGFzdGljLkNvbmZpZ0gAUhFnZXRDb25maWdSZXNwb25z'
+    'ZRJmChlnZXRfbW9kdWxlX2NvbmZpZ19yZXF1ZXN0GAcgASgOMikubWVzaHRhc3RpYy5BZG1pbk'
+    '1lc3NhZ2UuTW9kdWxlQ29uZmlnVHlwZUgAUhZnZXRNb2R1bGVDb25maWdSZXF1ZXN0ElcKGmdl'
+    'dF9tb2R1bGVfY29uZmlnX3Jlc3BvbnNlGAggASgLMhgubWVzaHRhc3RpYy5Nb2R1bGVDb25maW'
+    'dIAFIXZ2V0TW9kdWxlQ29uZmlnUmVzcG9uc2USWwoqZ2V0X2Nhbm5lZF9tZXNzYWdlX21vZHVs'
+    'ZV9tZXNzYWdlc19yZXF1ZXN0GAogASgISABSJWdldENhbm5lZE1lc3NhZ2VNb2R1bGVNZXNzYW'
+    'dlc1JlcXVlc3QSXQorZ2V0X2Nhbm5lZF9tZXNzYWdlX21vZHVsZV9tZXNzYWdlc19yZXNwb25z'
+    'ZRgLIAEoCUgAUiZnZXRDYW5uZWRNZXNzYWdlTW9kdWxlTWVzc2FnZXNSZXNwb25zZRI/ChtnZX'
+    'RfZGV2aWNlX21ldGFkYXRhX3JlcXVlc3QYDCABKAhIAFIYZ2V0RGV2aWNlTWV0YWRhdGFSZXF1'
+    'ZXN0El0KHGdldF9kZXZpY2VfbWV0YWRhdGFfcmVzcG9uc2UYDSABKAsyGi5tZXNodGFzdGljLk'
+    'RldmljZU1ldGFkYXRhSABSGWdldERldmljZU1ldGFkYXRhUmVzcG9uc2USMgoUZ2V0X3Jpbmd0'
+    'b25lX3JlcXVlc3QYDiABKAhIAFISZ2V0UmluZ3RvbmVSZXF1ZXN0EjQKFWdldF9yaW5ndG9uZV'
+    '9yZXNwb25zZRgPIAEoCUgAUhNnZXRSaW5ndG9uZVJlc3BvbnNlElAKJGdldF9kZXZpY2VfY29u'
+    'bmVjdGlvbl9zdGF0dXNfcmVxdWVzdBgQIAEoCEgAUiBnZXREZXZpY2VDb25uZWN0aW9uU3RhdH'
+    'VzUmVxdWVzdBJ2CiVnZXRfZGV2aWNlX2Nvbm5lY3Rpb25fc3RhdHVzX3Jlc3BvbnNlGBEgASgL'
+    'MiIubWVzaHRhc3RpYy5EZXZpY2VDb25uZWN0aW9uU3RhdHVzSABSIWdldERldmljZUNvbm5lY3'
+    'Rpb25TdGF0dXNSZXNwb25zZRI9CgxzZXRfaGFtX21vZGUYEiABKAsyGS5tZXNodGFzdGljLkhh'
+    'bVBhcmFtZXRlcnNIAFIKc2V0SGFtTW9kZRJRCiVnZXRfbm9kZV9yZW1vdGVfaGFyZHdhcmVfcG'
+    'luc19yZXF1ZXN0GBMgASgISABSIGdldE5vZGVSZW1vdGVIYXJkd2FyZVBpbnNSZXF1ZXN0En8K'
+    'JmdldF9ub2RlX3JlbW90ZV9oYXJkd2FyZV9waW5zX3Jlc3BvbnNlGBQgASgLMioubWVzaHRhc3'
+    'RpYy5Ob2RlUmVtb3RlSGFyZHdhcmVQaW5zUmVzcG9uc2VIAFIhZ2V0Tm9kZVJlbW90ZUhhcmR3'
+    'YXJlUGluc1Jlc3BvbnNlEjUKFmVudGVyX2RmdV9tb2RlX3JlcXVlc3QYFSABKAhIAFITZW50ZX'
+    'JEZnVNb2RlUmVxdWVzdBIwChNkZWxldGVfZmlsZV9yZXF1ZXN0GBYgASgJSABSEWRlbGV0ZUZp'
+    'bGVSZXF1ZXN0Eh0KCXNldF9zY2FsZRgXIAEoDUgAUghzZXRTY2FsZRJYChJiYWNrdXBfcHJlZm'
+    'VyZW5jZXMYGCABKA4yJy5tZXNodGFzdGljLkFkbWluTWVzc2FnZS5CYWNrdXBMb2NhdGlvbkgA'
+    'UhFiYWNrdXBQcmVmZXJlbmNlcxJaChNyZXN0b3JlX3ByZWZlcmVuY2VzGBkgASgOMicubWVzaH'
+    'Rhc3RpYy5BZG1pbk1lc3NhZ2UuQmFja3VwTG9jYXRpb25IAFIScmVzdG9yZVByZWZlcmVuY2Vz'
+    'EmUKGXJlbW92ZV9iYWNrdXBfcHJlZmVyZW5jZXMYGiABKA4yJy5tZXNodGFzdGljLkFkbWluTW'
+    'Vzc2FnZS5CYWNrdXBMb2NhdGlvbkgAUhdyZW1vdmVCYWNrdXBQcmVmZXJlbmNlcxJPChBzZW5k'
+    'X2lucHV0X2V2ZW50GBsgASgLMiMubWVzaHRhc3RpYy5BZG1pbk1lc3NhZ2UuSW5wdXRFdmVudE'
+    'gAUg5zZW5kSW5wdXRFdmVudBIvCglzZXRfb3duZXIYICABKAsyEC5tZXNodGFzdGljLlVzZXJI'
+    'AFIIc2V0T3duZXISNgoLc2V0X2NoYW5uZWwYISABKAsyEy5tZXNodGFzdGljLkNoYW5uZWxIAF'
+    'IKc2V0Q2hhbm5lbBIzCgpzZXRfY29uZmlnGCIgASgLMhIubWVzaHRhc3RpYy5Db25maWdIAFIJ'
+    'c2V0Q29uZmlnEkYKEXNldF9tb2R1bGVfY29uZmlnGCMgASgLMhgubWVzaHRhc3RpYy5Nb2R1bG'
+    'VDb25maWdIAFIPc2V0TW9kdWxlQ29uZmlnEkwKInNldF9jYW5uZWRfbWVzc2FnZV9tb2R1bGVf'
+    'bWVzc2FnZXMYJCABKAlIAFIec2V0Q2FubmVkTWVzc2FnZU1vZHVsZU1lc3NhZ2VzEjIKFHNldF'
+    '9yaW5ndG9uZV9tZXNzYWdlGCUgASgJSABSEnNldFJpbmd0b25lTWVzc2FnZRIsChFyZW1vdmVf'
+    'Ynlfbm9kZW51bRgmIAEoDUgAUg9yZW1vdmVCeU5vZGVudW0SLAoRc2V0X2Zhdm9yaXRlX25vZG'
+    'UYJyABKA1IAFIPc2V0RmF2b3JpdGVOb2RlEjIKFHJlbW92ZV9mYXZvcml0ZV9ub2RlGCggASgN'
+    'SABSEnJlbW92ZUZhdm9yaXRlTm9kZRJEChJzZXRfZml4ZWRfcG9zaXRpb24YKSABKAsyFC5tZX'
+    'NodGFzdGljLlBvc2l0aW9uSABSEHNldEZpeGVkUG9zaXRpb24SNAoVcmVtb3ZlX2ZpeGVkX3Bv'
+    'c2l0aW9uGCogASgISABSE3JlbW92ZUZpeGVkUG9zaXRpb24SJAoNc2V0X3RpbWVfb25seRgrIA'
+    'EoB0gAUgtzZXRUaW1lT25seRIzChVnZXRfdWlfY29uZmlnX3JlcXVlc3QYLCABKAhIAFISZ2V0'
+    'VWlDb25maWdSZXF1ZXN0ElEKFmdldF91aV9jb25maWdfcmVzcG9uc2UYLSABKAsyGi5tZXNodG'
+    'FzdGljLkRldmljZVVJQ29uZmlnSABSE2dldFVpQ29uZmlnUmVzcG9uc2USRAoPc3RvcmVfdWlf'
+    'Y29uZmlnGC4gASgLMhoubWVzaHRhc3RpYy5EZXZpY2VVSUNvbmZpZ0gAUg1zdG9yZVVpQ29uZm'
+    'lnEioKEHNldF9pZ25vcmVkX25vZGUYLyABKA1IAFIOc2V0SWdub3JlZE5vZGUSMAoTcmVtb3Zl'
+    'X2lnbm9yZWRfbm9kZRgwIAEoDUgAUhFyZW1vdmVJZ25vcmVkTm9kZRIsChF0b2dnbGVfbXV0ZW'
+    'Rfbm9kZRgxIAEoDUgAUg90b2dnbGVNdXRlZE5vZGUSMAoTYmVnaW5fZWRpdF9zZXR0aW5ncxhA'
+    'IAEoCEgAUhFiZWdpbkVkaXRTZXR0aW5ncxIyChRjb21taXRfZWRpdF9zZXR0aW5ncxhBIAEoCE'
+    'gAUhJjb21taXRFZGl0U2V0dGluZ3MSPAoLYWRkX2NvbnRhY3QYQiABKAsyGS5tZXNodGFzdGlj'
+    'LlNoYXJlZENvbnRhY3RIAFIKYWRkQ29udGFjdBJNChBrZXlfdmVyaWZpY2F0aW9uGEMgASgLMi'
+    'AubWVzaHRhc3RpYy5LZXlWZXJpZmljYXRpb25BZG1pbkgAUg9rZXlWZXJpZmljYXRpb24SMgoU'
+    'ZmFjdG9yeV9yZXNldF9kZXZpY2UYXiABKAVIAFISZmFjdG9yeVJlc2V0RGV2aWNlEjIKEnJlYm'
+    '9vdF9vdGFfc2Vjb25kcxhfIAEoBUICGAFIAFIQcmVib290T3RhU2Vjb25kcxInCg5leGl0X3Np'
+    'bXVsYXRvchhgIAEoCEgAUg1leGl0U2ltdWxhdG9yEicKDnJlYm9vdF9zZWNvbmRzGGEgASgFSA'
+    'BSDXJlYm9vdFNlY29uZHMSKwoQc2h1dGRvd25fc2Vjb25kcxhiIAEoBUgAUg9zaHV0ZG93blNl'
+    'Y29uZHMSMgoUZmFjdG9yeV9yZXNldF9jb25maWcYYyABKAVIAFISZmFjdG9yeVJlc2V0Q29uZm'
+    'lnEiMKDG5vZGVkYl9yZXNldBhkIAEoCEgAUgtub2RlZGJSZXNldBJECgtvdGFfcmVxdWVzdBhm'
+    'IAEoCzIhLm1lc2h0YXN0aWMuQWRtaW5NZXNzYWdlLk9UQUV2ZW50SABSCm90YVJlcXVlc3QSPw'
+    'oNc2Vuc29yX2NvbmZpZxhnIAEoCzIYLm1lc2h0YXN0aWMuU2Vuc29yQ29uZmlnSABSDHNlbnNv'
+    'ckNvbmZpZxI/Cg1sb2NrZG93bl9hdXRoGGggASgLMhgubWVzaHRhc3RpYy5Mb2NrZG93bkF1dG'
+    'hIAFIMbG9ja2Rvd25BdXRoGnYKCklucHV0RXZlbnQSHQoKZXZlbnRfY29kZRgBIAEoDVIJZXZl'
+    'bnRDb2RlEhcKB2tiX2NoYXIYAiABKA1SBmtiQ2hhchIXCgd0b3VjaF94GAMgASgNUgZ0b3VjaF'
+    'gSFwoHdG91Y2hfeRgEIAEoDVIGdG91Y2hZGmIKCE9UQUV2ZW50EjsKD3JlYm9vdF9vdGFfbW9k'
+    'ZRgBIAEoDjITLm1lc2h0YXN0aWMuT1RBTW9kZVINcmVib290T3RhTW9kZRIZCghvdGFfaGFzaB'
+    'gCIAEoDFIHb3RhSGFzaCLWAQoKQ29uZmlnVHlwZRIRCg1ERVZJQ0VfQ09ORklHEAASEwoPUE9T'
+    'SVRJT05fQ09ORklHEAESEAoMUE9XRVJfQ09ORklHEAISEgoOTkVUV09SS19DT05GSUcQAxISCg'
+    '5ESVNQTEFZX0NPTkZJRxAEEg8KC0xPUkFfQ09ORklHEAUSFAoQQkxVRVRPT1RIX0NPTkZJRxAG'
+    'EhMKD1NFQ1VSSVRZX0NPTkZJRxAHEhUKEVNFU1NJT05LRVlfQ09ORklHEAgSEwoPREVWSUNFVU'
+    'lfQ09ORklHEAkimgMKEE1vZHVsZUNvbmZpZ1R5cGUSDwoLTVFUVF9DT05GSUcQABIRCg1TRVJJ'
+    'QUxfQ09ORklHEAESEwoPRVhUTk9USUZfQ09ORklHEAISFwoTU1RPUkVGT1JXQVJEX0NPTkZJRx'
+    'ADEhQKEFJBTkdFVEVTVF9DT05GSUcQBBIUChBURUxFTUVUUllfQ09ORklHEAUSFAoQQ0FOTkVE'
+    'TVNHX0NPTkZJRxAGEhAKDEFVRElPX0NPTkZJRxAHEhkKFVJFTU9URUhBUkRXQVJFX0NPTkZJRx'
+    'AIEhcKE05FSUdIQk9SSU5GT19DT05GSUcQCRIaChZBTUJJRU5UTElHSFRJTkdfQ09ORklHEAoS'
+    'GgoWREVURUNUSU9OU0VOU09SX0NPTkZJRxALEhUKEVBBWENPVU5URVJfQ09ORklHEAwSGAoUU1'
+    'RBVFVTTUVTU0FHRV9DT05GSUcQDRIcChhUUkFGRklDTUFOQUdFTUVOVF9DT05GSUcQDhIOCgpU'
+    'QUtfQ09ORklHEA8SFQoRTUVTSEJFQUNPTl9DT05GSUcQECIjCg5CYWNrdXBMb2NhdGlvbhIJCg'
+    'VGTEFTSBAAEgYKAlNEEAFCEQoPcGF5bG9hZF92YXJpYW50');
+
+@$core.Deprecated('Use lockdownAuthDescriptor instead')
+const LockdownAuth$json = {
+  '1': 'LockdownAuth',
+  '2': [
+    {'1': 'passphrase', '3': 1, '4': 1, '5': 12, '10': 'passphrase'},
+    {'1': 'boots_remaining', '3': 2, '4': 1, '5': 13, '10': 'bootsRemaining'},
+    {
+      '1': 'valid_until_epoch',
+      '3': 3,
+      '4': 1,
+      '5': 13,
+      '10': 'validUntilEpoch'
+    },
+    {'1': 'lock_now', '3': 4, '4': 1, '5': 8, '10': 'lockNow'},
+    {
+      '1': 'max_session_seconds',
+      '3': 5,
+      '4': 1,
+      '5': 13,
+      '10': 'maxSessionSeconds'
+    },
+    {'1': 'disable', '3': 6, '4': 1, '5': 8, '10': 'disable'},
+  ],
+};
+
+/// Descriptor for `LockdownAuth`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List lockdownAuthDescriptor = $convert.base64Decode(
+    'CgxMb2NrZG93bkF1dGgSHgoKcGFzc3BocmFzZRgBIAEoDFIKcGFzc3BocmFzZRInCg9ib290c1'
+    '9yZW1haW5pbmcYAiABKA1SDmJvb3RzUmVtYWluaW5nEioKEXZhbGlkX3VudGlsX2Vwb2NoGAMg'
+    'ASgNUg92YWxpZFVudGlsRXBvY2gSGQoIbG9ja19ub3cYBCABKAhSB2xvY2tOb3cSLgoTbWF4X3'
+    'Nlc3Npb25fc2Vjb25kcxgFIAEoDVIRbWF4U2Vzc2lvblNlY29uZHMSGAoHZGlzYWJsZRgGIAEo'
+    'CFIHZGlzYWJsZQ==');
+
+@$core.Deprecated('Use hamParametersDescriptor instead')
+const HamParameters$json = {
+  '1': 'HamParameters',
+  '2': [
+    {'1': 'call_sign', '3': 1, '4': 1, '5': 9, '10': 'callSign'},
+    {'1': 'tx_power', '3': 2, '4': 1, '5': 5, '10': 'txPower'},
+    {'1': 'frequency', '3': 3, '4': 1, '5': 2, '10': 'frequency'},
+    {'1': 'short_name', '3': 4, '4': 1, '5': 9, '10': 'shortName'},
+    {'1': 'long_name', '3': 5, '4': 1, '5': 9, '10': 'longName'},
+  ],
+};
+
+/// Descriptor for `HamParameters`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List hamParametersDescriptor = $convert.base64Decode(
+    'Cg1IYW1QYXJhbWV0ZXJzEhsKCWNhbGxfc2lnbhgBIAEoCVIIY2FsbFNpZ24SGQoIdHhfcG93ZX'
+    'IYAiABKAVSB3R4UG93ZXISHAoJZnJlcXVlbmN5GAMgASgCUglmcmVxdWVuY3kSHQoKc2hvcnRf'
+    'bmFtZRgEIAEoCVIJc2hvcnROYW1lEhsKCWxvbmdfbmFtZRgFIAEoCVIIbG9uZ05hbWU=');
+
+@$core.Deprecated('Use nodeRemoteHardwarePinsResponseDescriptor instead')
+const NodeRemoteHardwarePinsResponse$json = {
+  '1': 'NodeRemoteHardwarePinsResponse',
+  '2': [
+    {
+      '1': 'node_remote_hardware_pins',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.meshtastic.NodeRemoteHardwarePin',
+      '10': 'nodeRemoteHardwarePins'
+    },
+  ],
+};
+
+/// Descriptor for `NodeRemoteHardwarePinsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List nodeRemoteHardwarePinsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5Ob2RlUmVtb3RlSGFyZHdhcmVQaW5zUmVzcG9uc2USXAoZbm9kZV9yZW1vdGVfaGFyZHdhcm'
+        'VfcGlucxgBIAMoCzIhLm1lc2h0YXN0aWMuTm9kZVJlbW90ZUhhcmR3YXJlUGluUhZub2RlUmVt'
+        'b3RlSGFyZHdhcmVQaW5z');
+
+@$core.Deprecated('Use sharedContactDescriptor instead')
+const SharedContact$json = {
+  '1': 'SharedContact',
+  '2': [
+    {'1': 'node_num', '3': 1, '4': 1, '5': 13, '10': 'nodeNum'},
+    {
+      '1': 'user',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.User',
+      '10': 'user'
+    },
+    {'1': 'should_ignore', '3': 3, '4': 1, '5': 8, '10': 'shouldIgnore'},
+    {
+      '1': 'manually_verified',
+      '3': 4,
+      '4': 1,
+      '5': 8,
+      '10': 'manuallyVerified'
+    },
+  ],
+};
+
+/// Descriptor for `SharedContact`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sharedContactDescriptor = $convert.base64Decode(
+    'Cg1TaGFyZWRDb250YWN0EhkKCG5vZGVfbnVtGAEgASgNUgdub2RlTnVtEiQKBHVzZXIYAiABKA'
+    'syEC5tZXNodGFzdGljLlVzZXJSBHVzZXISIwoNc2hvdWxkX2lnbm9yZRgDIAEoCFIMc2hvdWxk'
+    'SWdub3JlEisKEW1hbnVhbGx5X3ZlcmlmaWVkGAQgASgIUhBtYW51YWxseVZlcmlmaWVk');
+
+@$core.Deprecated('Use keyVerificationAdminDescriptor instead')
+const KeyVerificationAdmin$json = {
+  '1': 'KeyVerificationAdmin',
+  '2': [
+    {
+      '1': 'message_type',
+      '3': 1,
+      '4': 1,
+      '5': 14,
+      '6': '.meshtastic.KeyVerificationAdmin.MessageType',
+      '10': 'messageType'
+    },
+    {'1': 'remote_nodenum', '3': 2, '4': 1, '5': 13, '10': 'remoteNodenum'},
+    {'1': 'nonce', '3': 3, '4': 1, '5': 4, '10': 'nonce'},
+    {
+      '1': 'security_number',
+      '3': 4,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'securityNumber',
+      '17': true
+    },
+  ],
+  '4': [KeyVerificationAdmin_MessageType$json],
+  '8': [
+    {'1': '_security_number'},
+  ],
+};
+
+@$core.Deprecated('Use keyVerificationAdminDescriptor instead')
+const KeyVerificationAdmin_MessageType$json = {
+  '1': 'MessageType',
+  '2': [
+    {'1': 'INITIATE_VERIFICATION', '2': 0},
+    {'1': 'PROVIDE_SECURITY_NUMBER', '2': 1},
+    {'1': 'DO_VERIFY', '2': 2},
+    {'1': 'DO_NOT_VERIFY', '2': 3},
+  ],
+};
+
+/// Descriptor for `KeyVerificationAdmin`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List keyVerificationAdminDescriptor = $convert.base64Decode(
+    'ChRLZXlWZXJpZmljYXRpb25BZG1pbhJPCgxtZXNzYWdlX3R5cGUYASABKA4yLC5tZXNodGFzdG'
+    'ljLktleVZlcmlmaWNhdGlvbkFkbWluLk1lc3NhZ2VUeXBlUgttZXNzYWdlVHlwZRIlCg5yZW1v'
+    'dGVfbm9kZW51bRgCIAEoDVINcmVtb3RlTm9kZW51bRIUCgVub25jZRgDIAEoBFIFbm9uY2USLA'
+    'oPc2VjdXJpdHlfbnVtYmVyGAQgASgNSABSDnNlY3VyaXR5TnVtYmVyiAEBImcKC01lc3NhZ2VU'
+    'eXBlEhkKFUlOSVRJQVRFX1ZFUklGSUNBVElPThAAEhsKF1BST1ZJREVfU0VDVVJJVFlfTlVNQk'
+    'VSEAESDQoJRE9fVkVSSUZZEAISEQoNRE9fTk9UX1ZFUklGWRADQhIKEF9zZWN1cml0eV9udW1i'
+    'ZXI=');
+
+@$core.Deprecated('Use sensorConfigDescriptor instead')
+const SensorConfig$json = {
+  '1': 'SensorConfig',
+  '2': [
+    {
+      '1': 'scd4x_config',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.SCD4X_config',
+      '10': 'scd4xConfig'
+    },
+    {
+      '1': 'sen5x_config',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.SEN5X_config',
+      '10': 'sen5xConfig'
+    },
+    {
+      '1': 'scd30_config',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.SCD30_config',
+      '10': 'scd30Config'
+    },
+    {
+      '1': 'shtxx_config',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.SHTXX_config',
+      '10': 'shtxxConfig'
+    },
+    {
+      '1': 'ds248x_config',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.DS248X_config',
+      '10': 'ds248xConfig'
+    },
+    {
+      '1': 'sen6x_config',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.SEN6X_config',
+      '10': 'sen6xConfig'
+    },
+    {
+      '1': 'as3935_config',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.meshtastic.AS3935_config',
+      '10': 'as3935Config'
+    },
+  ],
+};
+
+/// Descriptor for `SensorConfig`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sensorConfigDescriptor = $convert.base64Decode(
+    'CgxTZW5zb3JDb25maWcSOwoMc2NkNHhfY29uZmlnGAEgASgLMhgubWVzaHRhc3RpYy5TQ0Q0WF'
+    '9jb25maWdSC3NjZDR4Q29uZmlnEjsKDHNlbjV4X2NvbmZpZxgCIAEoCzIYLm1lc2h0YXN0aWMu'
+    'U0VONVhfY29uZmlnUgtzZW41eENvbmZpZxI7CgxzY2QzMF9jb25maWcYAyABKAsyGC5tZXNodG'
+    'FzdGljLlNDRDMwX2NvbmZpZ1ILc2NkMzBDb25maWcSOwoMc2h0eHhfY29uZmlnGAQgASgLMhgu'
+    'bWVzaHRhc3RpYy5TSFRYWF9jb25maWdSC3NodHh4Q29uZmlnEj4KDWRzMjQ4eF9jb25maWcYBS'
+    'ABKAsyGS5tZXNodGFzdGljLkRTMjQ4WF9jb25maWdSDGRzMjQ4eENvbmZpZxI7CgxzZW42eF9j'
+    'b25maWcYBiABKAsyGC5tZXNodGFzdGljLlNFTjZYX2NvbmZpZ1ILc2VuNnhDb25maWcSPgoNYX'
+    'MzOTM1X2NvbmZpZxgHIAEoCzIZLm1lc2h0YXN0aWMuQVMzOTM1X2NvbmZpZ1IMYXMzOTM1Q29u'
+    'Zmln');
+
+@$core.Deprecated('Use sCD4X_configDescriptor instead')
+const SCD4X_config$json = {
+  '1': 'SCD4X_config',
+  '2': [
+    {
+      '1': 'set_asc',
+      '3': 1,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'setAsc',
+      '17': true
+    },
+    {
+      '1': 'set_target_co2_conc',
+      '3': 2,
+      '4': 1,
+      '5': 13,
+      '9': 1,
+      '10': 'setTargetCo2Conc',
+      '17': true
+    },
+    {
+      '1': 'set_temperature',
+      '3': 3,
+      '4': 1,
+      '5': 2,
+      '9': 2,
+      '10': 'setTemperature',
+      '17': true
+    },
+    {
+      '1': 'set_altitude',
+      '3': 4,
+      '4': 1,
+      '5': 13,
+      '9': 3,
+      '10': 'setAltitude',
+      '17': true
+    },
+    {
+      '1': 'set_ambient_pressure',
+      '3': 5,
+      '4': 1,
+      '5': 13,
+      '9': 4,
+      '10': 'setAmbientPressure',
+      '17': true
+    },
+    {
+      '1': 'factory_reset',
+      '3': 6,
+      '4': 1,
+      '5': 8,
+      '9': 5,
+      '10': 'factoryReset',
+      '17': true
+    },
+    {
+      '1': 'set_power_mode',
+      '3': 7,
+      '4': 1,
+      '5': 8,
+      '9': 6,
+      '10': 'setPowerMode',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_set_asc'},
+    {'1': '_set_target_co2_conc'},
+    {'1': '_set_temperature'},
+    {'1': '_set_altitude'},
+    {'1': '_set_ambient_pressure'},
+    {'1': '_factory_reset'},
+    {'1': '_set_power_mode'},
+  ],
+};
+
+/// Descriptor for `SCD4X_config`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sCD4X_configDescriptor = $convert.base64Decode(
+    'CgxTQ0Q0WF9jb25maWcSHAoHc2V0X2FzYxgBIAEoCEgAUgZzZXRBc2OIAQESMgoTc2V0X3Rhcm'
+    'dldF9jbzJfY29uYxgCIAEoDUgBUhBzZXRUYXJnZXRDbzJDb25jiAEBEiwKD3NldF90ZW1wZXJh'
+    'dHVyZRgDIAEoAkgCUg5zZXRUZW1wZXJhdHVyZYgBARImCgxzZXRfYWx0aXR1ZGUYBCABKA1IA1'
+    'ILc2V0QWx0aXR1ZGWIAQESNQoUc2V0X2FtYmllbnRfcHJlc3N1cmUYBSABKA1IBFISc2V0QW1i'
+    'aWVudFByZXNzdXJliAEBEigKDWZhY3RvcnlfcmVzZXQYBiABKAhIBVIMZmFjdG9yeVJlc2V0iA'
+    'EBEikKDnNldF9wb3dlcl9tb2RlGAcgASgISAZSDHNldFBvd2VyTW9kZYgBAUIKCghfc2V0X2Fz'
+    'Y0IWChRfc2V0X3RhcmdldF9jbzJfY29uY0ISChBfc2V0X3RlbXBlcmF0dXJlQg8KDV9zZXRfYW'
+    'x0aXR1ZGVCFwoVX3NldF9hbWJpZW50X3ByZXNzdXJlQhAKDl9mYWN0b3J5X3Jlc2V0QhEKD19z'
+    'ZXRfcG93ZXJfbW9kZQ==');
+
+@$core.Deprecated('Use sEN5X_configDescriptor instead')
+const SEN5X_config$json = {
+  '1': 'SEN5X_config',
+  '2': [
+    {
+      '1': 'set_temperature',
+      '3': 1,
+      '4': 1,
+      '5': 2,
+      '9': 0,
+      '10': 'setTemperature',
+      '17': true
+    },
+    {
+      '1': 'set_one_shot_mode',
+      '3': 2,
+      '4': 1,
+      '5': 8,
+      '9': 1,
+      '10': 'setOneShotMode',
+      '17': true
+    },
+    {
+      '1': 'start_fan_cleaning',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '9': 2,
+      '10': 'startFanCleaning',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_set_temperature'},
+    {'1': '_set_one_shot_mode'},
+    {'1': '_start_fan_cleaning'},
+  ],
+};
+
+/// Descriptor for `SEN5X_config`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sEN5X_configDescriptor = $convert.base64Decode(
+    'CgxTRU41WF9jb25maWcSLAoPc2V0X3RlbXBlcmF0dXJlGAEgASgCSABSDnNldFRlbXBlcmF0dX'
+    'JliAEBEi4KEXNldF9vbmVfc2hvdF9tb2RlGAIgASgISAFSDnNldE9uZVNob3RNb2RliAEBEjEK'
+    'EnN0YXJ0X2Zhbl9jbGVhbmluZxgDIAEoCEgCUhBzdGFydEZhbkNsZWFuaW5niAEBQhIKEF9zZX'
+    'RfdGVtcGVyYXR1cmVCFAoSX3NldF9vbmVfc2hvdF9tb2RlQhUKE19zdGFydF9mYW5fY2xlYW5p'
+    'bmc=');
+
+@$core.Deprecated('Use sEN6X_configDescriptor instead')
+const SEN6X_config$json = {
+  '1': 'SEN6X_config',
+  '2': [
+    {
+      '1': 'set_temperature',
+      '3': 1,
+      '4': 1,
+      '5': 2,
+      '9': 0,
+      '10': 'setTemperature',
+      '17': true
+    },
+    {
+      '1': 'set_one_shot_mode',
+      '3': 2,
+      '4': 1,
+      '5': 8,
+      '9': 1,
+      '10': 'setOneShotMode',
+      '17': true
+    },
+    {
+      '1': 'start_fan_cleaning',
+      '3': 3,
+      '4': 1,
+      '5': 8,
+      '9': 2,
+      '10': 'startFanCleaning',
+      '17': true
+    },
+    {
+      '1': 'set_asc',
+      '3': 4,
+      '4': 1,
+      '5': 8,
+      '9': 3,
+      '10': 'setAsc',
+      '17': true
+    },
+    {
+      '1': 'set_target_co2_conc',
+      '3': 5,
+      '4': 1,
+      '5': 13,
+      '9': 4,
+      '10': 'setTargetCo2Conc',
+      '17': true
+    },
+    {
+      '1': 'set_altitude',
+      '3': 6,
+      '4': 1,
+      '5': 13,
+      '9': 5,
+      '10': 'setAltitude',
+      '17': true
+    },
+    {
+      '1': 'set_ambient_pressure',
+      '3': 7,
+      '4': 1,
+      '5': 13,
+      '9': 6,
+      '10': 'setAmbientPressure',
+      '17': true
+    },
+    {
+      '1': 'factory_reset',
+      '3': 8,
+      '4': 1,
+      '5': 8,
+      '9': 7,
+      '10': 'factoryReset',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_set_temperature'},
+    {'1': '_set_one_shot_mode'},
+    {'1': '_start_fan_cleaning'},
+    {'1': '_set_asc'},
+    {'1': '_set_target_co2_conc'},
+    {'1': '_set_altitude'},
+    {'1': '_set_ambient_pressure'},
+    {'1': '_factory_reset'},
+  ],
+};
+
+/// Descriptor for `SEN6X_config`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sEN6X_configDescriptor = $convert.base64Decode(
+    'CgxTRU42WF9jb25maWcSLAoPc2V0X3RlbXBlcmF0dXJlGAEgASgCSABSDnNldFRlbXBlcmF0dX'
+    'JliAEBEi4KEXNldF9vbmVfc2hvdF9tb2RlGAIgASgISAFSDnNldE9uZVNob3RNb2RliAEBEjEK'
+    'EnN0YXJ0X2Zhbl9jbGVhbmluZxgDIAEoCEgCUhBzdGFydEZhbkNsZWFuaW5niAEBEhwKB3NldF'
+    '9hc2MYBCABKAhIA1IGc2V0QXNjiAEBEjIKE3NldF90YXJnZXRfY28yX2NvbmMYBSABKA1IBFIQ'
+    'c2V0VGFyZ2V0Q28yQ29uY4gBARImCgxzZXRfYWx0aXR1ZGUYBiABKA1IBVILc2V0QWx0aXR1ZG'
+    'WIAQESNQoUc2V0X2FtYmllbnRfcHJlc3N1cmUYByABKA1IBlISc2V0QW1iaWVudFByZXNzdXJl'
+    'iAEBEigKDWZhY3RvcnlfcmVzZXQYCCABKAhIB1IMZmFjdG9yeVJlc2V0iAEBQhIKEF9zZXRfdG'
+    'VtcGVyYXR1cmVCFAoSX3NldF9vbmVfc2hvdF9tb2RlQhUKE19zdGFydF9mYW5fY2xlYW5pbmdC'
+    'CgoIX3NldF9hc2NCFgoUX3NldF90YXJnZXRfY28yX2NvbmNCDwoNX3NldF9hbHRpdHVkZUIXCh'
+    'Vfc2V0X2FtYmllbnRfcHJlc3N1cmVCEAoOX2ZhY3RvcnlfcmVzZXQ=');
+
+@$core.Deprecated('Use sCD30_configDescriptor instead')
+const SCD30_config$json = {
+  '1': 'SCD30_config',
+  '2': [
+    {
+      '1': 'set_asc',
+      '3': 1,
+      '4': 1,
+      '5': 8,
+      '9': 0,
+      '10': 'setAsc',
+      '17': true
+    },
+    {
+      '1': 'set_target_co2_conc',
+      '3': 2,
+      '4': 1,
+      '5': 13,
+      '9': 1,
+      '10': 'setTargetCo2Conc',
+      '17': true
+    },
+    {
+      '1': 'set_temperature',
+      '3': 3,
+      '4': 1,
+      '5': 2,
+      '9': 2,
+      '10': 'setTemperature',
+      '17': true
+    },
+    {
+      '1': 'set_altitude',
+      '3': 4,
+      '4': 1,
+      '5': 13,
+      '9': 3,
+      '10': 'setAltitude',
+      '17': true
+    },
+    {
+      '1': 'set_measurement_interval',
+      '3': 5,
+      '4': 1,
+      '5': 13,
+      '9': 4,
+      '10': 'setMeasurementInterval',
+      '17': true
+    },
+    {
+      '1': 'soft_reset',
+      '3': 6,
+      '4': 1,
+      '5': 8,
+      '9': 5,
+      '10': 'softReset',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_set_asc'},
+    {'1': '_set_target_co2_conc'},
+    {'1': '_set_temperature'},
+    {'1': '_set_altitude'},
+    {'1': '_set_measurement_interval'},
+    {'1': '_soft_reset'},
+  ],
+};
+
+/// Descriptor for `SCD30_config`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sCD30_configDescriptor = $convert.base64Decode(
+    'CgxTQ0QzMF9jb25maWcSHAoHc2V0X2FzYxgBIAEoCEgAUgZzZXRBc2OIAQESMgoTc2V0X3Rhcm'
+    'dldF9jbzJfY29uYxgCIAEoDUgBUhBzZXRUYXJnZXRDbzJDb25jiAEBEiwKD3NldF90ZW1wZXJh'
+    'dHVyZRgDIAEoAkgCUg5zZXRUZW1wZXJhdHVyZYgBARImCgxzZXRfYWx0aXR1ZGUYBCABKA1IA1'
+    'ILc2V0QWx0aXR1ZGWIAQESPQoYc2V0X21lYXN1cmVtZW50X2ludGVydmFsGAUgASgNSARSFnNl'
+    'dE1lYXN1cmVtZW50SW50ZXJ2YWyIAQESIgoKc29mdF9yZXNldBgGIAEoCEgFUglzb2Z0UmVzZX'
+    'SIAQFCCgoIX3NldF9hc2NCFgoUX3NldF90YXJnZXRfY28yX2NvbmNCEgoQX3NldF90ZW1wZXJh'
+    'dHVyZUIPCg1fc2V0X2FsdGl0dWRlQhsKGV9zZXRfbWVhc3VyZW1lbnRfaW50ZXJ2YWxCDQoLX3'
+    'NvZnRfcmVzZXQ=');
+
+@$core.Deprecated('Use sHTXX_configDescriptor instead')
+const SHTXX_config$json = {
+  '1': 'SHTXX_config',
+  '2': [
+    {
+      '1': 'set_accuracy',
+      '3': 1,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'setAccuracy',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_set_accuracy'},
+  ],
+};
+
+/// Descriptor for `SHTXX_config`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sHTXX_configDescriptor = $convert.base64Decode(
+    'CgxTSFRYWF9jb25maWcSJgoMc2V0X2FjY3VyYWN5GAEgASgNSABSC3NldEFjY3VyYWN5iAEBQg'
+    '8KDV9zZXRfYWNjdXJhY3k=');
+
+@$core.Deprecated('Use dS248X_configDescriptor instead')
+const DS248X_config$json = {
+  '1': 'DS248X_config',
+  '2': [
+    {
+      '1': 'main_temperature_channel',
+      '3': 1,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'mainTemperatureChannel',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_main_temperature_channel'},
+  ],
+};
+
+/// Descriptor for `DS248X_config`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List dS248X_configDescriptor = $convert.base64Decode(
+    'Cg1EUzI0OFhfY29uZmlnEj0KGG1haW5fdGVtcGVyYXR1cmVfY2hhbm5lbBgBIAEoDUgAUhZtYW'
+    'luVGVtcGVyYXR1cmVDaGFubmVsiAEBQhsKGV9tYWluX3RlbXBlcmF0dXJlX2NoYW5uZWw=');
+
+@$core.Deprecated('Use aS3935_configDescriptor instead')
+const AS3935_config$json = {
+  '1': 'AS3935_config',
+  '2': [
+    {
+      '1': 'set_tuning_cap_pf',
+      '3': 1,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'setTuningCapPf',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_set_tuning_cap_pf'},
+  ],
+};
+
+/// Descriptor for `AS3935_config`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List aS3935_configDescriptor = $convert.base64Decode(
+    'Cg1BUzM5MzVfY29uZmlnEi4KEXNldF90dW5pbmdfY2FwX3BmGAEgASgNSABSDnNldFR1bmluZ0'
+    'NhcFBmiAEBQhQKEl9zZXRfdHVuaW5nX2NhcF9wZg==');

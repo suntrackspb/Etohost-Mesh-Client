@@ -1,0 +1,11 @@
+targets:
+  $default:
+    sources:
+      - lib/data/**
+      - lib/$lib$
+      - $package$
+    builders:
+      drift_dev:
+        options:
+          # ISO-8601 с миллисекундами: порядок событий внутри одной секунды.
+          store_date_time_values_as_text: true

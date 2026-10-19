@@ -1,0 +1,15 @@
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+# Платформенные папки генерирует CI (flutter create), см. .github/workflows/build.yml
+android/
+ios/
+macos/
+windows/
+linux/
+web/
+PLAN.md

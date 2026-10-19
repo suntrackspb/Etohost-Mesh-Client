@@ -1,0 +1,5885 @@
+// This is a generated file - do not edit.
+//
+// Generated from meshtastic/mesh.proto.
+
+// @dart = 3.3
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
+
+import 'dart:core' as $core;
+
+import 'package:fixnum/fixnum.dart' as $fixnum;
+import 'package:protobuf/protobuf.dart' as $pb;
+
+import 'channel.pb.dart' as $3;
+import 'config.pb.dart' as $1;
+import 'device_ui.pb.dart' as $5;
+import 'mesh.pbenum.dart';
+import 'module_config.pb.dart' as $2;
+import 'portnums.pbenum.dart' as $6;
+import 'telemetry.pb.dart' as $0;
+import 'xmodem.pb.dart' as $4;
+
+export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
+
+export 'mesh.pbenum.dart';
+
+///
+///  A GPS Position
+class Position extends $pb.GeneratedMessage {
+  factory Position({
+    $core.int? latitudeI,
+    $core.int? longitudeI,
+    $core.int? altitude,
+    $core.int? time,
+    Position_LocSource? locationSource,
+    Position_AltSource? altitudeSource,
+    $core.int? timestamp,
+    $core.int? timestampMillisAdjust,
+    $core.int? altitudeHae,
+    $core.int? altitudeGeoidalSeparation,
+    $core.int? pDOP,
+    $core.int? hDOP,
+    $core.int? vDOP,
+    $core.int? gpsAccuracy,
+    $core.int? groundSpeed,
+    $core.int? groundTrack,
+    $core.int? fixQuality,
+    $core.int? fixType,
+    $core.int? satsInView,
+    $core.int? sensorId,
+    $core.int? nextUpdate,
+    $core.int? seqNumber,
+    $core.int? precisionBits,
+  }) {
+    final result = Position._();
+    if (latitudeI != null) result.latitudeI = latitudeI;
+    if (longitudeI != null) result.longitudeI = longitudeI;
+    if (altitude != null) result.altitude = altitude;
+    if (time != null) result.time = time;
+    if (locationSource != null) result.locationSource = locationSource;
+    if (altitudeSource != null) result.altitudeSource = altitudeSource;
+    if (timestamp != null) result.timestamp = timestamp;
+    if (timestampMillisAdjust != null)
+      result.timestampMillisAdjust = timestampMillisAdjust;
+    if (altitudeHae != null) result.altitudeHae = altitudeHae;
+    if (altitudeGeoidalSeparation != null)
+      result.altitudeGeoidalSeparation = altitudeGeoidalSeparation;
+    if (pDOP != null) result.pDOP = pDOP;
+    if (hDOP != null) result.hDOP = hDOP;
+    if (vDOP != null) result.vDOP = vDOP;
+    if (gpsAccuracy != null) result.gpsAccuracy = gpsAccuracy;
+    if (groundSpeed != null) result.groundSpeed = groundSpeed;
+    if (groundTrack != null) result.groundTrack = groundTrack;
+    if (fixQuality != null) result.fixQuality = fixQuality;
+    if (fixType != null) result.fixType = fixType;
+    if (satsInView != null) result.satsInView = satsInView;
+    if (sensorId != null) result.sensorId = sensorId;
+    if (nextUpdate != null) result.nextUpdate = nextUpdate;
+    if (seqNumber != null) result.seqNumber = seqNumber;
+    if (precisionBits != null) result.precisionBits = precisionBits;
+    return result;
+  }
+
+  Position._();
+
+  factory Position.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Position()..mergeFromBuffer(data, registry);
+  factory Position.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Position()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Position',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: Position.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'latitudeI', fieldType: $pb.PbFieldType.OSF3)
+    ..aI(2, _omitFieldNames ? '' : 'longitudeI',
+        fieldType: $pb.PbFieldType.OSF3)
+    ..aI(3, _omitFieldNames ? '' : 'altitude')
+    ..aI(4, _omitFieldNames ? '' : 'time', fieldType: $pb.PbFieldType.OF3)
+    ..aE<Position_LocSource>(5, _omitFieldNames ? '' : 'locationSource',
+        enumValues: Position_LocSource.values)
+    ..aE<Position_AltSource>(6, _omitFieldNames ? '' : 'altitudeSource',
+        enumValues: Position_AltSource.values)
+    ..aI(7, _omitFieldNames ? '' : 'timestamp', fieldType: $pb.PbFieldType.OF3)
+    ..aI(8, _omitFieldNames ? '' : 'timestampMillisAdjust')
+    ..aI(9, _omitFieldNames ? '' : 'altitudeHae',
+        fieldType: $pb.PbFieldType.OS3)
+    ..aI(10, _omitFieldNames ? '' : 'altitudeGeoidalSeparation',
+        fieldType: $pb.PbFieldType.OS3)
+    ..aI(11, _omitFieldNames ? '' : 'PDOP',
+        protoName: 'PDOP', fieldType: $pb.PbFieldType.OU3)
+    ..aI(12, _omitFieldNames ? '' : 'HDOP',
+        protoName: 'HDOP', fieldType: $pb.PbFieldType.OU3)
+    ..aI(13, _omitFieldNames ? '' : 'VDOP',
+        protoName: 'VDOP', fieldType: $pb.PbFieldType.OU3)
+    ..aI(14, _omitFieldNames ? '' : 'gpsAccuracy',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(15, _omitFieldNames ? '' : 'groundSpeed',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(16, _omitFieldNames ? '' : 'groundTrack',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(17, _omitFieldNames ? '' : 'fixQuality',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(18, _omitFieldNames ? '' : 'fixType', fieldType: $pb.PbFieldType.OU3)
+    ..aI(19, _omitFieldNames ? '' : 'satsInView',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(20, _omitFieldNames ? '' : 'sensorId', fieldType: $pb.PbFieldType.OU3)
+    ..aI(21, _omitFieldNames ? '' : 'nextUpdate',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(22, _omitFieldNames ? '' : 'seqNumber', fieldType: $pb.PbFieldType.OU3)
+    ..aI(23, _omitFieldNames ? '' : 'precisionBits',
+        fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Position clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Position copyWith(void Function(Position) updates) =>
+      super.copyWith((message) => updates(message as Position)) as Position;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Position() / Position.new instead')
+  static Position create() => Position._();
+  static $pb.GeneratedMessage $_createMessage() => Position._();
+  @$core.override
+  Position createEmptyInstance() => Position._();
+  @$core.pragma('dart2js:noInline')
+  static Position getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Position>(Position.$_createMessage);
+  static Position? _defaultInstance;
+
+  ///
+  ///  The new preferred location encoding, multiply by 1e-7 to get degrees
+  ///  in floating point
+  @$pb.TagNumber(1)
+  $core.int get latitudeI => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set latitudeI($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLatitudeI() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLatitudeI() => $_clearField(1);
+
+  ///
+  ///  TODO: REPLACE
+  @$pb.TagNumber(2)
+  $core.int get longitudeI => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set longitudeI($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLongitudeI() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLongitudeI() => $_clearField(2);
+
+  ///
+  ///  In meters above MSL (but see issue #359)
+  @$pb.TagNumber(3)
+  $core.int get altitude => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set altitude($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAltitude() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAltitude() => $_clearField(3);
+
+  ///
+  ///  This is usually not sent over the mesh (to save space), but it is sent
+  ///  from the phone so that the local device can set its time if it is sent over
+  ///  the mesh (because there are devices on the mesh without GPS or RTC).
+  ///  seconds since 1970
+  @$pb.TagNumber(4)
+  $core.int get time => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set time($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasTime() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTime() => $_clearField(4);
+
+  ///
+  ///  TODO: REPLACE
+  @$pb.TagNumber(5)
+  Position_LocSource get locationSource => $_getN(4);
+  @$pb.TagNumber(5)
+  set locationSource(Position_LocSource value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasLocationSource() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearLocationSource() => $_clearField(5);
+
+  ///
+  ///  TODO: REPLACE
+  @$pb.TagNumber(6)
+  Position_AltSource get altitudeSource => $_getN(5);
+  @$pb.TagNumber(6)
+  set altitudeSource(Position_AltSource value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasAltitudeSource() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAltitudeSource() => $_clearField(6);
+
+  ///
+  ///  Positional timestamp (actual timestamp of GPS solution) in integer epoch seconds
+  @$pb.TagNumber(7)
+  $core.int get timestamp => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set timestamp($core.int value) => $_setUnsignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasTimestamp() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearTimestamp() => $_clearField(7);
+
+  ///
+  ///  Pos. timestamp milliseconds adjustment (rarely available or required)
+  @$pb.TagNumber(8)
+  $core.int get timestampMillisAdjust => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set timestampMillisAdjust($core.int value) => $_setSignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasTimestampMillisAdjust() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTimestampMillisAdjust() => $_clearField(8);
+
+  ///
+  ///  HAE altitude in meters - can be used instead of MSL altitude
+  @$pb.TagNumber(9)
+  $core.int get altitudeHae => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set altitudeHae($core.int value) => $_setSignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasAltitudeHae() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearAltitudeHae() => $_clearField(9);
+
+  ///
+  ///  Geoidal separation in meters
+  @$pb.TagNumber(10)
+  $core.int get altitudeGeoidalSeparation => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set altitudeGeoidalSeparation($core.int value) => $_setSignedInt32(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasAltitudeGeoidalSeparation() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearAltitudeGeoidalSeparation() => $_clearField(10);
+
+  ///
+  ///  Horizontal, Vertical and Position Dilution of Precision, in 1/100 units
+  ///  - PDOP is sufficient for most cases
+  ///  - for higher precision scenarios, HDOP and VDOP can be used instead,
+  ///    in which case PDOP becomes redundant (PDOP=sqrt(HDOP^2 + VDOP^2))
+  ///  TODO: REMOVE/INTEGRATE
+  @$pb.TagNumber(11)
+  $core.int get pDOP => $_getIZ(10);
+  @$pb.TagNumber(11)
+  set pDOP($core.int value) => $_setUnsignedInt32(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasPDOP() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearPDOP() => $_clearField(11);
+
+  ///
+  ///  TODO: REPLACE
+  @$pb.TagNumber(12)
+  $core.int get hDOP => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set hDOP($core.int value) => $_setUnsignedInt32(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasHDOP() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearHDOP() => $_clearField(12);
+
+  ///
+  ///  TODO: REPLACE
+  @$pb.TagNumber(13)
+  $core.int get vDOP => $_getIZ(12);
+  @$pb.TagNumber(13)
+  set vDOP($core.int value) => $_setUnsignedInt32(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasVDOP() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearVDOP() => $_clearField(13);
+
+  ///
+  ///  GPS accuracy (a hardware specific constant) in mm
+  ///    multiplied with DOP to calculate positional accuracy
+  ///  Default: "'bout three meters-ish" :)
+  @$pb.TagNumber(14)
+  $core.int get gpsAccuracy => $_getIZ(13);
+  @$pb.TagNumber(14)
+  set gpsAccuracy($core.int value) => $_setUnsignedInt32(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasGpsAccuracy() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearGpsAccuracy() => $_clearField(14);
+
+  ///
+  ///  Ground speed in km/h and True North TRACK in 1/100 degrees
+  ///  Clarification of terms:
+  ///  - "track" is the direction of motion (measured in horizontal plane)
+  ///  - "heading" is where the fuselage points (measured in horizontal plane)
+  ///  - "yaw" indicates a relative rotation about the vertical axis
+  ///  TODO: REMOVE/INTEGRATE
+  @$pb.TagNumber(15)
+  $core.int get groundSpeed => $_getIZ(14);
+  @$pb.TagNumber(15)
+  set groundSpeed($core.int value) => $_setUnsignedInt32(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasGroundSpeed() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearGroundSpeed() => $_clearField(15);
+
+  ///
+  ///  TODO: REPLACE
+  @$pb.TagNumber(16)
+  $core.int get groundTrack => $_getIZ(15);
+  @$pb.TagNumber(16)
+  set groundTrack($core.int value) => $_setUnsignedInt32(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasGroundTrack() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearGroundTrack() => $_clearField(16);
+
+  ///
+  ///  GPS fix quality (from NMEA GxGGA statement or similar)
+  @$pb.TagNumber(17)
+  $core.int get fixQuality => $_getIZ(16);
+  @$pb.TagNumber(17)
+  set fixQuality($core.int value) => $_setUnsignedInt32(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasFixQuality() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearFixQuality() => $_clearField(17);
+
+  ///
+  ///  GPS fix type 2D/3D (from NMEA GxGSA statement)
+  @$pb.TagNumber(18)
+  $core.int get fixType => $_getIZ(17);
+  @$pb.TagNumber(18)
+  set fixType($core.int value) => $_setUnsignedInt32(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasFixType() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearFixType() => $_clearField(18);
+
+  ///
+  ///  GPS "Satellites in View" number
+  @$pb.TagNumber(19)
+  $core.int get satsInView => $_getIZ(18);
+  @$pb.TagNumber(19)
+  set satsInView($core.int value) => $_setUnsignedInt32(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasSatsInView() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearSatsInView() => $_clearField(19);
+
+  ///
+  ///  Sensor ID - in case multiple positioning sensors are being used
+  @$pb.TagNumber(20)
+  $core.int get sensorId => $_getIZ(19);
+  @$pb.TagNumber(20)
+  set sensorId($core.int value) => $_setUnsignedInt32(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasSensorId() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearSensorId() => $_clearField(20);
+
+  ///
+  ///  Estimated/expected time (in seconds) until next update:
+  ///  - if we update at fixed intervals of X seconds, use X
+  ///  - if we update at dynamic intervals (based on relative movement etc),
+  ///    but "AT LEAST every Y seconds", use Y
+  @$pb.TagNumber(21)
+  $core.int get nextUpdate => $_getIZ(20);
+  @$pb.TagNumber(21)
+  set nextUpdate($core.int value) => $_setUnsignedInt32(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasNextUpdate() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearNextUpdate() => $_clearField(21);
+
+  ///
+  ///  A sequence number, incremented with each Position message to help
+  ///    detect lost updates if needed
+  @$pb.TagNumber(22)
+  $core.int get seqNumber => $_getIZ(21);
+  @$pb.TagNumber(22)
+  set seqNumber($core.int value) => $_setUnsignedInt32(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasSeqNumber() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearSeqNumber() => $_clearField(22);
+
+  ///
+  ///  Indicates the bits of precision set by the sending node
+  @$pb.TagNumber(23)
+  $core.int get precisionBits => $_getIZ(22);
+  @$pb.TagNumber(23)
+  set precisionBits($core.int value) => $_setUnsignedInt32(22, value);
+  @$pb.TagNumber(23)
+  $core.bool hasPrecisionBits() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearPrecisionBits() => $_clearField(23);
+}
+
+///
+///  Broadcast when a newly powered mesh node wants to find a node num it can use
+///  Sent from the phone over bluetooth to set the user id for the owner of this node.
+///  Also sent from nodes to each other when a new node signs on (so all clients can have this info)
+///  The algorithm is as follows:
+///  when a node starts up, it broadcasts their user and the normal flow is for all
+///  other nodes to reply with their User as well (so the new node can build its nodedb)
+///  If a node ever receives a User (not just the first broadcast) message where
+///  the sender node number equals our node number, that indicates a collision has
+///  occurred and the following steps should happen:
+///  If the receiving node (that was already in the mesh)'s macaddr is LOWER than the
+///  new User who just tried to sign in: it gets to keep its nodenum.
+///  We send a broadcast message of OUR User (we use a broadcast so that the other node can
+///  receive our message, considering we have the same id - it also serves to let
+///  observers correct their nodedb) - this case is rare so it should be okay.
+///  If any node receives a User where the macaddr is GTE than their local macaddr,
+///  they have been vetoed and should pick a new random nodenum (filtering against
+///  whatever it knows about the nodedb) and rebroadcast their User.
+///  A few nodenums are reserved and will never be requested:
+///  0xff - broadcast
+///  0 through 3 - for future use
+class User extends $pb.GeneratedMessage {
+  factory User({
+    $core.String? id,
+    $core.String? longName,
+    $core.String? shortName,
+    @$core.Deprecated('This field is deprecated.')
+    $core.List<$core.int>? macaddr,
+    HardwareModel? hwModel,
+    $core.bool? isLicensed,
+    $1.Config_DeviceConfig_Role? role,
+    $core.List<$core.int>? publicKey,
+    $core.bool? isUnmessagable,
+  }) {
+    final result = User._();
+    if (id != null) result.id = id;
+    if (longName != null) result.longName = longName;
+    if (shortName != null) result.shortName = shortName;
+    if (macaddr != null) result.macaddr = macaddr;
+    if (hwModel != null) result.hwModel = hwModel;
+    if (isLicensed != null) result.isLicensed = isLicensed;
+    if (role != null) result.role = role;
+    if (publicKey != null) result.publicKey = publicKey;
+    if (isUnmessagable != null) result.isUnmessagable = isUnmessagable;
+    return result;
+  }
+
+  User._();
+
+  factory User.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      User()..mergeFromBuffer(data, registry);
+  factory User.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      User()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'User',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: User.$_createMessage)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'longName')
+    ..aOS(3, _omitFieldNames ? '' : 'shortName')
+    ..a<$core.List<$core.int>>(
+        4, _omitFieldNames ? '' : 'macaddr', $pb.PbFieldType.OY)
+    ..aE<HardwareModel>(5, _omitFieldNames ? '' : 'hwModel',
+        enumValues: HardwareModel.values)
+    ..aOB(6, _omitFieldNames ? '' : 'isLicensed')
+    ..aE<$1.Config_DeviceConfig_Role>(7, _omitFieldNames ? '' : 'role',
+        enumValues: $1.Config_DeviceConfig_Role.values)
+    ..a<$core.List<$core.int>>(
+        8, _omitFieldNames ? '' : 'publicKey', $pb.PbFieldType.OY)
+    ..aOB(9, _omitFieldNames ? '' : 'isUnmessagable')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  User clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  User copyWith(void Function(User) updates) =>
+      super.copyWith((message) => updates(message as User)) as User;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use User() / User.new instead')
+  static User create() => User._();
+  static $pb.GeneratedMessage $_createMessage() => User._();
+  @$core.override
+  User createEmptyInstance() => User._();
+  @$core.pragma('dart2js:noInline')
+  static User getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<User>(User.$_createMessage);
+  static User? _defaultInstance;
+
+  ///
+  ///  A globally unique ID string for this user.
+  ///  In the case of Signal that would mean +16504442323, for the default macaddr derived id it would be !<8 hexidecimal bytes>.
+  ///  Note: app developers are encouraged to also use the following standard
+  ///  node IDs "^all" (for broadcast), "^local" (for the locally connected node)
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  ///
+  ///  A full name for this user, i.e. "Kevin Hester"
+  ///  Limited to 24 bytes of UTF-8: longer names are accepted from senders
+  ///  built against the older 39-byte limit, but devices truncate them before
+  ///  storing or rebroadcasting. Clients should enforce 24 bytes in their UI.
+  @$pb.TagNumber(2)
+  $core.String get longName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set longName($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLongName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLongName() => $_clearField(2);
+
+  ///
+  ///  A VERY short name, ideally two characters.
+  ///  Suitable for a tiny OLED screen
+  @$pb.TagNumber(3)
+  $core.String get shortName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set shortName($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasShortName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearShortName() => $_clearField(3);
+
+  ///
+  ///  Deprecated in Meshtastic 2.1.x
+  ///  This is the addr of the radio.
+  ///  Not populated by the phone, but added by the esp32 when broadcasting
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(4)
+  $core.List<$core.int> get macaddr => $_getN(3);
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(4)
+  set macaddr($core.List<$core.int> value) => $_setBytes(3, value);
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(4)
+  $core.bool hasMacaddr() => $_has(3);
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(4)
+  void clearMacaddr() => $_clearField(4);
+
+  ///
+  ///  TBEAM, HELTEC, etc...
+  ///  Starting in 1.2.11 moved to hw_model enum in the NodeInfo object.
+  ///  Apps will still need the string here for older builds
+  ///  (so OTA update can find the right image), but if the enum is available it will be used instead.
+  @$pb.TagNumber(5)
+  HardwareModel get hwModel => $_getN(4);
+  @$pb.TagNumber(5)
+  set hwModel(HardwareModel value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasHwModel() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHwModel() => $_clearField(5);
+
+  ///
+  ///  In some regions Ham radio operators have different bandwidth limitations than others.
+  ///  If this user is a licensed operator, set this flag.
+  ///  Also, "long_name" should be their licence number.
+  @$pb.TagNumber(6)
+  $core.bool get isLicensed => $_getBF(5);
+  @$pb.TagNumber(6)
+  set isLicensed($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasIsLicensed() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearIsLicensed() => $_clearField(6);
+
+  ///
+  ///  Indicates that the user's role in the mesh
+  @$pb.TagNumber(7)
+  $1.Config_DeviceConfig_Role get role => $_getN(6);
+  @$pb.TagNumber(7)
+  set role($1.Config_DeviceConfig_Role value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasRole() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRole() => $_clearField(7);
+
+  ///
+  ///  The public key of the user's device.
+  ///  This is sent out to other nodes on the mesh to allow them to compute a shared secret key.
+  @$pb.TagNumber(8)
+  $core.List<$core.int> get publicKey => $_getN(7);
+  @$pb.TagNumber(8)
+  set publicKey($core.List<$core.int> value) => $_setBytes(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasPublicKey() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPublicKey() => $_clearField(8);
+
+  ///
+  ///  Whether or not the node can be messaged
+  @$pb.TagNumber(9)
+  $core.bool get isUnmessagable => $_getBF(8);
+  @$pb.TagNumber(9)
+  set isUnmessagable($core.bool value) => $_setBool(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasIsUnmessagable() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIsUnmessagable() => $_clearField(9);
+}
+
+///
+///  A message used in a traceroute
+class RouteDiscovery extends $pb.GeneratedMessage {
+  factory RouteDiscovery({
+    $core.Iterable<$core.int>? route,
+    $core.Iterable<$core.int>? snrTowards,
+    $core.Iterable<$core.int>? routeBack,
+    $core.Iterable<$core.int>? snrBack,
+  }) {
+    final result = RouteDiscovery._();
+    if (route != null) result.route.addAll(route);
+    if (snrTowards != null) result.snrTowards.addAll(snrTowards);
+    if (routeBack != null) result.routeBack.addAll(routeBack);
+    if (snrBack != null) result.snrBack.addAll(snrBack);
+    return result;
+  }
+
+  RouteDiscovery._();
+
+  factory RouteDiscovery.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      RouteDiscovery()..mergeFromBuffer(data, registry);
+  factory RouteDiscovery.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      RouteDiscovery()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RouteDiscovery',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: RouteDiscovery.$_createMessage)
+    ..p<$core.int>(1, _omitFieldNames ? '' : 'route', $pb.PbFieldType.KF3)
+    ..p<$core.int>(2, _omitFieldNames ? '' : 'snrTowards', $pb.PbFieldType.K3)
+    ..p<$core.int>(3, _omitFieldNames ? '' : 'routeBack', $pb.PbFieldType.KF3)
+    ..p<$core.int>(4, _omitFieldNames ? '' : 'snrBack', $pb.PbFieldType.K3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RouteDiscovery clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RouteDiscovery copyWith(void Function(RouteDiscovery) updates) =>
+      super.copyWith((message) => updates(message as RouteDiscovery))
+          as RouteDiscovery;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use RouteDiscovery() / RouteDiscovery.new instead')
+  static RouteDiscovery create() => RouteDiscovery._();
+  static $pb.GeneratedMessage $_createMessage() => RouteDiscovery._();
+  @$core.override
+  RouteDiscovery createEmptyInstance() => RouteDiscovery._();
+  @$core.pragma('dart2js:noInline')
+  static RouteDiscovery getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RouteDiscovery>(
+          RouteDiscovery.$_createMessage);
+  static RouteDiscovery? _defaultInstance;
+
+  ///
+  ///  The list of nodenums this packet has visited so far to the destination.
+  @$pb.TagNumber(1)
+  $pb.PbList<$core.int> get route => $_getList(0);
+
+  ///
+  ///  The list of SNRs (in dB, scaled by 4) in the route towards the destination.
+  @$pb.TagNumber(2)
+  $pb.PbList<$core.int> get snrTowards => $_getList(1);
+
+  ///
+  ///  The list of nodenums the packet has visited on the way back from the destination.
+  @$pb.TagNumber(3)
+  $pb.PbList<$core.int> get routeBack => $_getList(2);
+
+  ///
+  ///  The list of SNRs (in dB, scaled by 4) in the route back from the destination.
+  @$pb.TagNumber(4)
+  $pb.PbList<$core.int> get snrBack => $_getList(3);
+}
+
+enum Routing_Variant { routeRequest, routeReply, errorReason, notSet }
+
+///
+///  A Routing control Data packet handled by the routing module
+class Routing extends $pb.GeneratedMessage {
+  factory Routing({
+    RouteDiscovery? routeRequest,
+    RouteDiscovery? routeReply,
+    Routing_Error? errorReason,
+    $core.List<$core.int>? ackProof,
+  }) {
+    final result = Routing._();
+    if (routeRequest != null) result.routeRequest = routeRequest;
+    if (routeReply != null) result.routeReply = routeReply;
+    if (errorReason != null) result.errorReason = errorReason;
+    if (ackProof != null) result.ackProof = ackProof;
+    return result;
+  }
+
+  Routing._();
+
+  factory Routing.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Routing()..mergeFromBuffer(data, registry);
+  factory Routing.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Routing()..mergeFromJson(json, registry);
+
+  static const $core.Map<$core.int, Routing_Variant> _Routing_VariantByTag = {
+    1: Routing_Variant.routeRequest,
+    2: Routing_Variant.routeReply,
+    3: Routing_Variant.errorReason,
+    0: Routing_Variant.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Routing',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: Routing.$_createMessage)
+    ..oo(0, [1, 2, 3])
+    ..aOM<RouteDiscovery>(1, _omitFieldNames ? '' : 'routeRequest',
+        subBuilder: RouteDiscovery.$_createMessage)
+    ..aOM<RouteDiscovery>(2, _omitFieldNames ? '' : 'routeReply',
+        subBuilder: RouteDiscovery.$_createMessage)
+    ..aE<Routing_Error>(3, _omitFieldNames ? '' : 'errorReason',
+        enumValues: Routing_Error.values)
+    ..a<$core.List<$core.int>>(
+        4, _omitFieldNames ? '' : 'ackProof', $pb.PbFieldType.OY)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Routing clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Routing copyWith(void Function(Routing) updates) =>
+      super.copyWith((message) => updates(message as Routing)) as Routing;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Routing() / Routing.new instead')
+  static Routing create() => Routing._();
+  static $pb.GeneratedMessage $_createMessage() => Routing._();
+  @$core.override
+  Routing createEmptyInstance() => Routing._();
+  @$core.pragma('dart2js:noInline')
+  static Routing getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Routing>(Routing.$_createMessage);
+  static Routing? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  @$pb.TagNumber(2)
+  @$pb.TagNumber(3)
+  Routing_Variant whichVariant() => _Routing_VariantByTag[$_whichOneof(0)]!;
+  @$pb.TagNumber(1)
+  @$pb.TagNumber(2)
+  @$pb.TagNumber(3)
+  void clearVariant() => $_clearField($_whichOneof(0));
+
+  ///
+  ///  A route request going from the requester
+  @$pb.TagNumber(1)
+  RouteDiscovery get routeRequest => $_getN(0);
+  @$pb.TagNumber(1)
+  set routeRequest(RouteDiscovery value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasRouteRequest() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRouteRequest() => $_clearField(1);
+  @$pb.TagNumber(1)
+  RouteDiscovery ensureRouteRequest() => $_ensure(0);
+
+  ///
+  ///  A route reply
+  @$pb.TagNumber(2)
+  RouteDiscovery get routeReply => $_getN(1);
+  @$pb.TagNumber(2)
+  set routeReply(RouteDiscovery value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRouteReply() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRouteReply() => $_clearField(2);
+  @$pb.TagNumber(2)
+  RouteDiscovery ensureRouteReply() => $_ensure(1);
+
+  ///
+  ///  A failure in delivering a message (usually used for routing control messages, but might be provided
+  ///  in addition to ack.fail_id to provide details on the type of failure).
+  @$pb.TagNumber(3)
+  Routing_Error get errorReason => $_getN(2);
+  @$pb.TagNumber(3)
+  set errorReason(Routing_Error value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorReason() => $_clearField(3);
+
+  ///
+  ///  Optional proof that this ack/nak was produced by the node that actually received the packet
+  ///  identified by Data.request_id, rather than by anyone holding the channel key.
+  ///
+  ///  Explicit acks are usually sent on the channel, and channel traffic is encrypted but not
+  ///  authenticated, so such an ack can be forged by any listener holding the PSK. When the
+  ///  acknowledged packet WAS PKI encrypted, the two endpoints already share a Curve25519 secret, so
+  ///  the receiver can prove receipt cheaply rather than signing the ack:
+  ///
+  ///    ack_proof = HMAC-SHA256(shared_key,
+  ///                            "ack" | LE32(from) | LE32(to) | LE32(request_id) | routing)[0..8)
+  ///
+  ///  where shared_key is the same SHA256(X25519(sender_private, receiver_public)) used for PKI
+  ///  packet encryption, and `routing` is this encoded Routing message without the ack_proof field.
+  ///
+  ///  Each input is load-bearing. request_id stops a captured proof being replayed against a
+  ///  different outstanding packet. The Routing bytes stop a bit-flip turning a proven success into a
+  ///  failure: an ack and a nak for one packet otherwise share every other input, and channel
+  ///  encryption is CTR with no integrity check. Integers are little-endian so the value is a
+  ///  property of the protocol rather than of the host that computed it.
+  ///
+  ///  Unset when no pairwise key is available, including the PKI_UNKNOWN_PUBKEY and NO_CHANNEL naks,
+  ///  which are emitted precisely because the packet could not be decrypted. Receivers that do not
+  ///  understand this field ignore it. It does not replace xeddsa_signature, which remains the only
+  ///  option for traffic with no pairwise key and the only proof a third party can check.
+  @$pb.TagNumber(4)
+  $core.List<$core.int> get ackProof => $_getN(3);
+  @$pb.TagNumber(4)
+  set ackProof($core.List<$core.int> value) => $_setBytes(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasAckProof() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAckProof() => $_clearField(4);
+}
+
+///
+///  (Formerly called SubPacket)
+///  The payload portion fo a packet, this is the actual bytes that are sent
+///  inside a radio packet (because from/to are broken out by the comms library)
+class Data extends $pb.GeneratedMessage {
+  factory Data({
+    $6.PortNum? portnum,
+    $core.List<$core.int>? payload,
+    $core.bool? wantResponse,
+    $core.int? dest,
+    $core.int? source,
+    $core.int? requestId,
+    $core.int? replyId,
+    $core.int? emoji,
+    $core.int? bitfield,
+    $core.List<$core.int>? xeddsaSignature,
+  }) {
+    final result = Data._();
+    if (portnum != null) result.portnum = portnum;
+    if (payload != null) result.payload = payload;
+    if (wantResponse != null) result.wantResponse = wantResponse;
+    if (dest != null) result.dest = dest;
+    if (source != null) result.source = source;
+    if (requestId != null) result.requestId = requestId;
+    if (replyId != null) result.replyId = replyId;
+    if (emoji != null) result.emoji = emoji;
+    if (bitfield != null) result.bitfield = bitfield;
+    if (xeddsaSignature != null) result.xeddsaSignature = xeddsaSignature;
+    return result;
+  }
+
+  Data._();
+
+  factory Data.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Data()..mergeFromBuffer(data, registry);
+  factory Data.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Data()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Data',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: Data.$_createMessage)
+    ..aE<$6.PortNum>(1, _omitFieldNames ? '' : 'portnum',
+        enumValues: $6.PortNum.values)
+    ..a<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'payload', $pb.PbFieldType.OY)
+    ..aOB(3, _omitFieldNames ? '' : 'wantResponse')
+    ..aI(4, _omitFieldNames ? '' : 'dest', fieldType: $pb.PbFieldType.OF3)
+    ..aI(5, _omitFieldNames ? '' : 'source', fieldType: $pb.PbFieldType.OF3)
+    ..aI(6, _omitFieldNames ? '' : 'requestId', fieldType: $pb.PbFieldType.OF3)
+    ..aI(7, _omitFieldNames ? '' : 'replyId', fieldType: $pb.PbFieldType.OF3)
+    ..aI(8, _omitFieldNames ? '' : 'emoji', fieldType: $pb.PbFieldType.OF3)
+    ..aI(9, _omitFieldNames ? '' : 'bitfield', fieldType: $pb.PbFieldType.OU3)
+    ..a<$core.List<$core.int>>(
+        10, _omitFieldNames ? '' : 'xeddsaSignature', $pb.PbFieldType.OY)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Data clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Data copyWith(void Function(Data) updates) =>
+      super.copyWith((message) => updates(message as Data)) as Data;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Data() / Data.new instead')
+  static Data create() => Data._();
+  static $pb.GeneratedMessage $_createMessage() => Data._();
+  @$core.override
+  Data createEmptyInstance() => Data._();
+  @$core.pragma('dart2js:noInline')
+  static Data getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Data>(Data.$_createMessage);
+  static Data? _defaultInstance;
+
+  ///
+  ///  Formerly named typ and of type Type
+  @$pb.TagNumber(1)
+  $6.PortNum get portnum => $_getN(0);
+  @$pb.TagNumber(1)
+  set portnum($6.PortNum value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPortnum() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPortnum() => $_clearField(1);
+
+  ///
+  ///  TODO: REPLACE
+  @$pb.TagNumber(2)
+  $core.List<$core.int> get payload => $_getN(1);
+  @$pb.TagNumber(2)
+  set payload($core.List<$core.int> value) => $_setBytes(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPayload() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPayload() => $_clearField(2);
+
+  ///
+  ///  Not normally used, but for testing a sender can request that recipient
+  ///  responds in kind (i.e. if it received a position, it should unicast back it's position).
+  ///  Note: that if you set this on a broadcast you will receive many replies.
+  @$pb.TagNumber(3)
+  $core.bool get wantResponse => $_getBF(2);
+  @$pb.TagNumber(3)
+  set wantResponse($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasWantResponse() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearWantResponse() => $_clearField(3);
+
+  ///
+  ///  The address of the destination node.
+  ///  This field is is filled in by the mesh radio device software, application
+  ///  layer software should never need it.
+  ///  RouteDiscovery messages _must_ populate this.
+  ///  Other message types might need to if they are doing multihop routing.
+  @$pb.TagNumber(4)
+  $core.int get dest => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set dest($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDest() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDest() => $_clearField(4);
+
+  ///
+  ///  The address of the original sender for this message.
+  ///  This field should _only_ be populated for reliable multihop packets (to keep
+  ///  packets small).
+  @$pb.TagNumber(5)
+  $core.int get source => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set source($core.int value) => $_setUnsignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasSource() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSource() => $_clearField(5);
+
+  ///
+  ///  Only used in routing or response messages.
+  ///  Indicates the original message ID that this message is reporting failure on. (formerly called original_id)
+  @$pb.TagNumber(6)
+  $core.int get requestId => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set requestId($core.int value) => $_setUnsignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasRequestId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRequestId() => $_clearField(6);
+
+  ///
+  ///  If set, this message is intened to be a reply to a previously sent message with the defined id.
+  @$pb.TagNumber(7)
+  $core.int get replyId => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set replyId($core.int value) => $_setUnsignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasReplyId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearReplyId() => $_clearField(7);
+
+  ///
+  ///  Defaults to false. If true, then what is in the payload should be treated as an emoji like giving
+  ///  a message a heart or poop emoji.
+  @$pb.TagNumber(8)
+  $core.int get emoji => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set emoji($core.int value) => $_setUnsignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasEmoji() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearEmoji() => $_clearField(8);
+
+  ///
+  ///  Bitfield for extra flags. First use is to indicate that user approves the packet being uploaded to MQTT.
+  @$pb.TagNumber(9)
+  $core.int get bitfield => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set bitfield($core.int value) => $_setUnsignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasBitfield() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearBitfield() => $_clearField(9);
+
+  ///
+  ///  XEdDSA signature for the payload
+  @$pb.TagNumber(10)
+  $core.List<$core.int> get xeddsaSignature => $_getN(9);
+  @$pb.TagNumber(10)
+  set xeddsaSignature($core.List<$core.int> value) => $_setBytes(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasXeddsaSignature() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearXeddsaSignature() => $_clearField(10);
+}
+
+///
+///  The actual over-the-mesh message doing KeyVerification
+class KeyVerification extends $pb.GeneratedMessage {
+  factory KeyVerification({
+    $fixnum.Int64? nonce,
+    $core.List<$core.int>? hash1,
+    $core.List<$core.int>? hash2,
+  }) {
+    final result = KeyVerification._();
+    if (nonce != null) result.nonce = nonce;
+    if (hash1 != null) result.hash1 = hash1;
+    if (hash2 != null) result.hash2 = hash2;
+    return result;
+  }
+
+  KeyVerification._();
+
+  factory KeyVerification.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      KeyVerification()..mergeFromBuffer(data, registry);
+  factory KeyVerification.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      KeyVerification()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'KeyVerification',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: KeyVerification.$_createMessage)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'nonce', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'hash1', $pb.PbFieldType.OY)
+    ..a<$core.List<$core.int>>(
+        3, _omitFieldNames ? '' : 'hash2', $pb.PbFieldType.OY)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  KeyVerification clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  KeyVerification copyWith(void Function(KeyVerification) updates) =>
+      super.copyWith((message) => updates(message as KeyVerification))
+          as KeyVerification;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use KeyVerification() / KeyVerification.new instead')
+  static KeyVerification create() => KeyVerification._();
+  static $pb.GeneratedMessage $_createMessage() => KeyVerification._();
+  @$core.override
+  KeyVerification createEmptyInstance() => KeyVerification._();
+  @$core.pragma('dart2js:noInline')
+  static KeyVerification getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<KeyVerification>(
+          KeyVerification.$_createMessage);
+  static KeyVerification? _defaultInstance;
+
+  ///
+  ///  random value Selected by the requesting node
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get nonce => $_getI64(0);
+  @$pb.TagNumber(1)
+  set nonce($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNonce() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNonce() => $_clearField(1);
+
+  ///
+  ///  The final authoritative hash, only to be sent by NodeA at the end of the handshake
+  @$pb.TagNumber(2)
+  $core.List<$core.int> get hash1 => $_getN(1);
+  @$pb.TagNumber(2)
+  set hash1($core.List<$core.int> value) => $_setBytes(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasHash1() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearHash1() => $_clearField(2);
+
+  ///
+  ///  The intermediary hash (actually derived from hash1),
+  ///  sent from NodeB to NodeA in response to the initial message.
+  @$pb.TagNumber(3)
+  $core.List<$core.int> get hash2 => $_getN(2);
+  @$pb.TagNumber(3)
+  set hash2($core.List<$core.int> value) => $_setBytes(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasHash2() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearHash2() => $_clearField(3);
+}
+
+///
+///  The actual over-the-mesh message doing store and forward++
+class StoreForwardPlusPlus extends $pb.GeneratedMessage {
+  factory StoreForwardPlusPlus({
+    StoreForwardPlusPlus_SFPP_message_type? sfppMessageType,
+    $core.List<$core.int>? messageHash,
+    $core.List<$core.int>? commitHash,
+    $core.List<$core.int>? rootHash,
+    $core.List<$core.int>? message,
+    $core.int? encapsulatedId,
+    $core.int? encapsulatedTo,
+    $core.int? encapsulatedFrom,
+    $core.int? encapsulatedRxtime,
+    $core.int? chainCount,
+  }) {
+    final result = StoreForwardPlusPlus._();
+    if (sfppMessageType != null) result.sfppMessageType = sfppMessageType;
+    if (messageHash != null) result.messageHash = messageHash;
+    if (commitHash != null) result.commitHash = commitHash;
+    if (rootHash != null) result.rootHash = rootHash;
+    if (message != null) result.message = message;
+    if (encapsulatedId != null) result.encapsulatedId = encapsulatedId;
+    if (encapsulatedTo != null) result.encapsulatedTo = encapsulatedTo;
+    if (encapsulatedFrom != null) result.encapsulatedFrom = encapsulatedFrom;
+    if (encapsulatedRxtime != null)
+      result.encapsulatedRxtime = encapsulatedRxtime;
+    if (chainCount != null) result.chainCount = chainCount;
+    return result;
+  }
+
+  StoreForwardPlusPlus._();
+
+  factory StoreForwardPlusPlus.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      StoreForwardPlusPlus()..mergeFromBuffer(data, registry);
+  factory StoreForwardPlusPlus.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      StoreForwardPlusPlus()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'StoreForwardPlusPlus',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: StoreForwardPlusPlus.$_createMessage)
+    ..aE<StoreForwardPlusPlus_SFPP_message_type>(
+        1, _omitFieldNames ? '' : 'sfppMessageType',
+        enumValues: StoreForwardPlusPlus_SFPP_message_type.values)
+    ..a<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'messageHash', $pb.PbFieldType.OY)
+    ..a<$core.List<$core.int>>(
+        3, _omitFieldNames ? '' : 'commitHash', $pb.PbFieldType.OY)
+    ..a<$core.List<$core.int>>(
+        4, _omitFieldNames ? '' : 'rootHash', $pb.PbFieldType.OY)
+    ..a<$core.List<$core.int>>(
+        5, _omitFieldNames ? '' : 'message', $pb.PbFieldType.OY)
+    ..aI(6, _omitFieldNames ? '' : 'encapsulatedId',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(7, _omitFieldNames ? '' : 'encapsulatedTo',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(8, _omitFieldNames ? '' : 'encapsulatedFrom',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(9, _omitFieldNames ? '' : 'encapsulatedRxtime',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(10, _omitFieldNames ? '' : 'chainCount',
+        fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StoreForwardPlusPlus clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StoreForwardPlusPlus copyWith(void Function(StoreForwardPlusPlus) updates) =>
+      super.copyWith((message) => updates(message as StoreForwardPlusPlus))
+          as StoreForwardPlusPlus;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use StoreForwardPlusPlus() / StoreForwardPlusPlus.new instead')
+  static StoreForwardPlusPlus create() => StoreForwardPlusPlus._();
+  static $pb.GeneratedMessage $_createMessage() => StoreForwardPlusPlus._();
+  @$core.override
+  StoreForwardPlusPlus createEmptyInstance() => StoreForwardPlusPlus._();
+  @$core.pragma('dart2js:noInline')
+  static StoreForwardPlusPlus getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<StoreForwardPlusPlus>(
+          StoreForwardPlusPlus.$_createMessage);
+  static StoreForwardPlusPlus? _defaultInstance;
+
+  ///
+  ///  Which message type is this
+  @$pb.TagNumber(1)
+  StoreForwardPlusPlus_SFPP_message_type get sfppMessageType => $_getN(0);
+  @$pb.TagNumber(1)
+  set sfppMessageType(StoreForwardPlusPlus_SFPP_message_type value) =>
+      $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSfppMessageType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSfppMessageType() => $_clearField(1);
+
+  ///
+  ///  The hash of the specific message
+  @$pb.TagNumber(2)
+  $core.List<$core.int> get messageHash => $_getN(1);
+  @$pb.TagNumber(2)
+  set messageHash($core.List<$core.int> value) => $_setBytes(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessageHash() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessageHash() => $_clearField(2);
+
+  ///
+  ///  The hash of a link on a chain
+  @$pb.TagNumber(3)
+  $core.List<$core.int> get commitHash => $_getN(2);
+  @$pb.TagNumber(3)
+  set commitHash($core.List<$core.int> value) => $_setBytes(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCommitHash() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCommitHash() => $_clearField(3);
+
+  ///
+  ///  the root hash of a chain
+  @$pb.TagNumber(4)
+  $core.List<$core.int> get rootHash => $_getN(3);
+  @$pb.TagNumber(4)
+  set rootHash($core.List<$core.int> value) => $_setBytes(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasRootHash() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRootHash() => $_clearField(4);
+
+  ///
+  ///  The encrypted bytes from a message
+  @$pb.TagNumber(5)
+  $core.List<$core.int> get message => $_getN(4);
+  @$pb.TagNumber(5)
+  set message($core.List<$core.int> value) => $_setBytes(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasMessage() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMessage() => $_clearField(5);
+
+  ///
+  ///  Message ID of the contained message
+  @$pb.TagNumber(6)
+  $core.int get encapsulatedId => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set encapsulatedId($core.int value) => $_setUnsignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasEncapsulatedId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearEncapsulatedId() => $_clearField(6);
+
+  ///
+  ///  Destination of the contained message
+  @$pb.TagNumber(7)
+  $core.int get encapsulatedTo => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set encapsulatedTo($core.int value) => $_setUnsignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasEncapsulatedTo() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearEncapsulatedTo() => $_clearField(7);
+
+  ///
+  ///  Sender of the contained message
+  @$pb.TagNumber(8)
+  $core.int get encapsulatedFrom => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set encapsulatedFrom($core.int value) => $_setUnsignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasEncapsulatedFrom() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearEncapsulatedFrom() => $_clearField(8);
+
+  ///
+  ///  The receive time of the message in question
+  @$pb.TagNumber(9)
+  $core.int get encapsulatedRxtime => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set encapsulatedRxtime($core.int value) => $_setUnsignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasEncapsulatedRxtime() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearEncapsulatedRxtime() => $_clearField(9);
+
+  ///
+  ///  Used in a LINK_REQUEST to specify the message X spots back from head
+  @$pb.TagNumber(10)
+  $core.int get chainCount => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set chainCount($core.int value) => $_setUnsignedInt32(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasChainCount() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearChainCount() => $_clearField(10);
+}
+
+///
+///  The actual over-the-mesh message doing RemoteShell
+class RemoteShell extends $pb.GeneratedMessage {
+  factory RemoteShell({
+    RemoteShell_OpCode? op,
+    $core.int? sessionId,
+    $core.int? seq,
+    $core.int? ackSeq,
+    $core.List<$core.int>? payload,
+    $core.int? cols,
+    $core.int? rows,
+    $core.int? flags,
+    $core.int? lastTxSeq,
+    $core.int? lastRxSeq,
+  }) {
+    final result = RemoteShell._();
+    if (op != null) result.op = op;
+    if (sessionId != null) result.sessionId = sessionId;
+    if (seq != null) result.seq = seq;
+    if (ackSeq != null) result.ackSeq = ackSeq;
+    if (payload != null) result.payload = payload;
+    if (cols != null) result.cols = cols;
+    if (rows != null) result.rows = rows;
+    if (flags != null) result.flags = flags;
+    if (lastTxSeq != null) result.lastTxSeq = lastTxSeq;
+    if (lastRxSeq != null) result.lastRxSeq = lastRxSeq;
+    return result;
+  }
+
+  RemoteShell._();
+
+  factory RemoteShell.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      RemoteShell()..mergeFromBuffer(data, registry);
+  factory RemoteShell.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      RemoteShell()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'RemoteShell',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: RemoteShell.$_createMessage)
+    ..aE<RemoteShell_OpCode>(1, _omitFieldNames ? '' : 'op',
+        enumValues: RemoteShell_OpCode.values)
+    ..aI(2, _omitFieldNames ? '' : 'sessionId', fieldType: $pb.PbFieldType.OU3)
+    ..aI(3, _omitFieldNames ? '' : 'seq', fieldType: $pb.PbFieldType.OU3)
+    ..aI(4, _omitFieldNames ? '' : 'ackSeq', fieldType: $pb.PbFieldType.OU3)
+    ..a<$core.List<$core.int>>(
+        5, _omitFieldNames ? '' : 'payload', $pb.PbFieldType.OY)
+    ..aI(6, _omitFieldNames ? '' : 'cols', fieldType: $pb.PbFieldType.OU3)
+    ..aI(7, _omitFieldNames ? '' : 'rows', fieldType: $pb.PbFieldType.OU3)
+    ..aI(8, _omitFieldNames ? '' : 'flags', fieldType: $pb.PbFieldType.OU3)
+    ..aI(9, _omitFieldNames ? '' : 'lastTxSeq', fieldType: $pb.PbFieldType.OU3)
+    ..aI(10, _omitFieldNames ? '' : 'lastRxSeq', fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RemoteShell clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  RemoteShell copyWith(void Function(RemoteShell) updates) =>
+      super.copyWith((message) => updates(message as RemoteShell))
+          as RemoteShell;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use RemoteShell() / RemoteShell.new instead')
+  static RemoteShell create() => RemoteShell._();
+  static $pb.GeneratedMessage $_createMessage() => RemoteShell._();
+  @$core.override
+  RemoteShell createEmptyInstance() => RemoteShell._();
+  @$core.pragma('dart2js:noInline')
+  static RemoteShell getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoteShell>(
+          RemoteShell.$_createMessage);
+  static RemoteShell? _defaultInstance;
+
+  ///
+  ///  Structured frame operation.
+  @$pb.TagNumber(1)
+  RemoteShell_OpCode get op => $_getN(0);
+  @$pb.TagNumber(1)
+  set op(RemoteShell_OpCode value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasOp() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOp() => $_clearField(1);
+
+  ///
+  ///  Logical PTY session identifier.
+  @$pb.TagNumber(2)
+  $core.int get sessionId => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set sessionId($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSessionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSessionId() => $_clearField(2);
+
+  ///
+  ///  Monotonic sequence number for this frame.
+  @$pb.TagNumber(3)
+  $core.int get seq => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set seq($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSeq() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSeq() => $_clearField(3);
+
+  ///
+  ///  Cumulative ack sequence number.
+  @$pb.TagNumber(4)
+  $core.int get ackSeq => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set ackSeq($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasAckSeq() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAckSeq() => $_clearField(4);
+
+  ///
+  ///  Opaque bytes payload for INPUT/OUTPUT/ERROR and other frame bodies.
+  @$pb.TagNumber(5)
+  $core.List<$core.int> get payload => $_getN(4);
+  @$pb.TagNumber(5)
+  set payload($core.List<$core.int> value) => $_setBytes(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasPayload() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPayload() => $_clearField(5);
+
+  ///
+  ///  Terminal size columns used for OPEN/RESIZE signaling.
+  @$pb.TagNumber(6)
+  $core.int get cols => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set cols($core.int value) => $_setUnsignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasCols() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCols() => $_clearField(6);
+
+  ///
+  ///  Terminal size rows used for OPEN/RESIZE signaling.
+  @$pb.TagNumber(7)
+  $core.int get rows => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set rows($core.int value) => $_setUnsignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasRows() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRows() => $_clearField(7);
+
+  ///
+  ///  Bit flags for protocol extensions.
+  @$pb.TagNumber(8)
+  $core.int get flags => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set flags($core.int value) => $_setUnsignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasFlags() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFlags() => $_clearField(8);
+
+  ///
+  ///  The last sequence number TX'd.
+  @$pb.TagNumber(9)
+  $core.int get lastTxSeq => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set lastTxSeq($core.int value) => $_setUnsignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasLastTxSeq() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearLastTxSeq() => $_clearField(9);
+
+  ///
+  ///  The last sequence number RX'd.
+  @$pb.TagNumber(10)
+  $core.int get lastRxSeq => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set lastRxSeq($core.int value) => $_setUnsignedInt32(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasLastRxSeq() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearLastRxSeq() => $_clearField(10);
+}
+
+///
+///  A rectangular, axis-aligned geographic bounding box.
+///  Used to define a rectangular geofence region for a Waypoint.
+///  Fields are ordered west, south, east, north to match the standard bounding box
+///  convention used by GeoJSON and PMTiles (min longitude, min latitude, max longitude, max latitude),
+///  so the box can drive an offline map extract directly.
+///  All coordinates are in degrees scaled by 1e-7 (same convention as Position and Waypoint).
+class BoundingBox extends $pb.GeneratedMessage {
+  factory BoundingBox({
+    $core.int? longitudeWestI,
+    $core.int? latitudeSouthI,
+    $core.int? longitudeEastI,
+    $core.int? latitudeNorthI,
+  }) {
+    final result = BoundingBox._();
+    if (longitudeWestI != null) result.longitudeWestI = longitudeWestI;
+    if (latitudeSouthI != null) result.latitudeSouthI = latitudeSouthI;
+    if (longitudeEastI != null) result.longitudeEastI = longitudeEastI;
+    if (latitudeNorthI != null) result.latitudeNorthI = latitudeNorthI;
+    return result;
+  }
+
+  BoundingBox._();
+
+  factory BoundingBox.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      BoundingBox()..mergeFromBuffer(data, registry);
+  factory BoundingBox.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      BoundingBox()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'BoundingBox',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: BoundingBox.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'longitudeWestI',
+        fieldType: $pb.PbFieldType.OSF3)
+    ..aI(2, _omitFieldNames ? '' : 'latitudeSouthI',
+        fieldType: $pb.PbFieldType.OSF3)
+    ..aI(3, _omitFieldNames ? '' : 'longitudeEastI',
+        fieldType: $pb.PbFieldType.OSF3)
+    ..aI(4, _omitFieldNames ? '' : 'latitudeNorthI',
+        fieldType: $pb.PbFieldType.OSF3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BoundingBox clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BoundingBox copyWith(void Function(BoundingBox) updates) =>
+      super.copyWith((message) => updates(message as BoundingBox))
+          as BoundingBox;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use BoundingBox() / BoundingBox.new instead')
+  static BoundingBox create() => BoundingBox._();
+  static $pb.GeneratedMessage $_createMessage() => BoundingBox._();
+  @$core.override
+  BoundingBox createEmptyInstance() => BoundingBox._();
+  @$core.pragma('dart2js:noInline')
+  static BoundingBox getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BoundingBox>(
+          BoundingBox.$_createMessage);
+  static BoundingBox? _defaultInstance;
+
+  ///
+  ///  Western edge of the box - minimum longitude (south-west corner)
+  @$pb.TagNumber(1)
+  $core.int get longitudeWestI => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set longitudeWestI($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLongitudeWestI() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLongitudeWestI() => $_clearField(1);
+
+  ///
+  ///  Southern edge of the box - minimum latitude (south-west corner)
+  @$pb.TagNumber(2)
+  $core.int get latitudeSouthI => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set latitudeSouthI($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLatitudeSouthI() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLatitudeSouthI() => $_clearField(2);
+
+  ///
+  ///  Eastern edge of the box - maximum longitude (north-east corner)
+  @$pb.TagNumber(3)
+  $core.int get longitudeEastI => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set longitudeEastI($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLongitudeEastI() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLongitudeEastI() => $_clearField(3);
+
+  ///
+  ///  Northern edge of the box - maximum latitude (north-east corner)
+  @$pb.TagNumber(4)
+  $core.int get latitudeNorthI => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set latitudeNorthI($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLatitudeNorthI() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLatitudeNorthI() => $_clearField(4);
+}
+
+///
+///  Waypoint message, used to share arbitrary locations across the mesh
+class Waypoint extends $pb.GeneratedMessage {
+  factory Waypoint({
+    $core.int? id,
+    $core.int? latitudeI,
+    $core.int? longitudeI,
+    $core.int? expire,
+    $core.int? lockedTo,
+    $core.String? name,
+    $core.String? description,
+    $core.int? icon,
+    $core.int? geofenceRadius,
+    BoundingBox? boundingBox,
+    $core.bool? notifyOnEnter,
+    $core.bool? notifyOnExit,
+    $core.bool? notifyFavoritesOnly,
+  }) {
+    final result = Waypoint._();
+    if (id != null) result.id = id;
+    if (latitudeI != null) result.latitudeI = latitudeI;
+    if (longitudeI != null) result.longitudeI = longitudeI;
+    if (expire != null) result.expire = expire;
+    if (lockedTo != null) result.lockedTo = lockedTo;
+    if (name != null) result.name = name;
+    if (description != null) result.description = description;
+    if (icon != null) result.icon = icon;
+    if (geofenceRadius != null) result.geofenceRadius = geofenceRadius;
+    if (boundingBox != null) result.boundingBox = boundingBox;
+    if (notifyOnEnter != null) result.notifyOnEnter = notifyOnEnter;
+    if (notifyOnExit != null) result.notifyOnExit = notifyOnExit;
+    if (notifyFavoritesOnly != null)
+      result.notifyFavoritesOnly = notifyFavoritesOnly;
+    return result;
+  }
+
+  Waypoint._();
+
+  factory Waypoint.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Waypoint()..mergeFromBuffer(data, registry);
+  factory Waypoint.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Waypoint()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Waypoint',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: Waypoint.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'id', fieldType: $pb.PbFieldType.OU3)
+    ..aI(2, _omitFieldNames ? '' : 'latitudeI', fieldType: $pb.PbFieldType.OSF3)
+    ..aI(3, _omitFieldNames ? '' : 'longitudeI',
+        fieldType: $pb.PbFieldType.OSF3)
+    ..aI(4, _omitFieldNames ? '' : 'expire', fieldType: $pb.PbFieldType.OU3)
+    ..aI(5, _omitFieldNames ? '' : 'lockedTo', fieldType: $pb.PbFieldType.OU3)
+    ..aOS(6, _omitFieldNames ? '' : 'name')
+    ..aOS(7, _omitFieldNames ? '' : 'description')
+    ..aI(8, _omitFieldNames ? '' : 'icon', fieldType: $pb.PbFieldType.OF3)
+    ..aI(9, _omitFieldNames ? '' : 'geofenceRadius',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aOM<BoundingBox>(10, _omitFieldNames ? '' : 'boundingBox',
+        subBuilder: BoundingBox.$_createMessage)
+    ..aOB(11, _omitFieldNames ? '' : 'notifyOnEnter')
+    ..aOB(12, _omitFieldNames ? '' : 'notifyOnExit')
+    ..aOB(13, _omitFieldNames ? '' : 'notifyFavoritesOnly')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Waypoint clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Waypoint copyWith(void Function(Waypoint) updates) =>
+      super.copyWith((message) => updates(message as Waypoint)) as Waypoint;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Waypoint() / Waypoint.new instead')
+  static Waypoint create() => Waypoint._();
+  static $pb.GeneratedMessage $_createMessage() => Waypoint._();
+  @$core.override
+  Waypoint createEmptyInstance() => Waypoint._();
+  @$core.pragma('dart2js:noInline')
+  static Waypoint getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Waypoint>(Waypoint.$_createMessage);
+  static Waypoint? _defaultInstance;
+
+  ///
+  ///  Id of the waypoint
+  @$pb.TagNumber(1)
+  $core.int get id => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set id($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  ///
+  ///  latitude_i
+  @$pb.TagNumber(2)
+  $core.int get latitudeI => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set latitudeI($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLatitudeI() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLatitudeI() => $_clearField(2);
+
+  ///
+  ///  longitude_i
+  @$pb.TagNumber(3)
+  $core.int get longitudeI => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set longitudeI($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLongitudeI() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLongitudeI() => $_clearField(3);
+
+  ///
+  ///  Time the waypoint is to expire (epoch)
+  @$pb.TagNumber(4)
+  $core.int get expire => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set expire($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasExpire() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearExpire() => $_clearField(4);
+
+  ///
+  ///  If greater than zero, treat the value as a nodenum only allowing them to update the waypoint.
+  ///  If zero, the waypoint is open to be edited by any member of the mesh.
+  @$pb.TagNumber(5)
+  $core.int get lockedTo => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set lockedTo($core.int value) => $_setUnsignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasLockedTo() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearLockedTo() => $_clearField(5);
+
+  ///
+  ///  Name of the waypoint - max 30 chars
+  @$pb.TagNumber(6)
+  $core.String get name => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set name($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearName() => $_clearField(6);
+
+  ///
+  ///  Description of the waypoint - max 100 chars
+  @$pb.TagNumber(7)
+  $core.String get description => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set description($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasDescription() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDescription() => $_clearField(7);
+
+  ///
+  ///  Designator icon for the waypoint in the form of a unicode emoji
+  @$pb.TagNumber(8)
+  $core.int get icon => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set icon($core.int value) => $_setUnsignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasIcon() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIcon() => $_clearField(8);
+
+  ///
+  ///  If greater than zero, defines a circular geofence centred on this waypoint's
+  ///  location (latitude_i / longitude_i) with this radius in meters.
+  ///  Zero means the waypoint has no circular geofence.
+  @$pb.TagNumber(9)
+  $core.int get geofenceRadius => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set geofenceRadius($core.int value) => $_setUnsignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasGeofenceRadius() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearGeofenceRadius() => $_clearField(9);
+
+  ///
+  ///  Optional rectangular geofence region for this waypoint.
+  ///  May be used instead of, or in addition to, geofence_radius.
+  @$pb.TagNumber(10)
+  BoundingBox get boundingBox => $_getN(9);
+  @$pb.TagNumber(10)
+  set boundingBox(BoundingBox value) => $_setField(10, value);
+  @$pb.TagNumber(10)
+  $core.bool hasBoundingBox() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearBoundingBox() => $_clearField(10);
+  @$pb.TagNumber(10)
+  BoundingBox ensureBoundingBox() => $_ensure(9);
+
+  ///
+  ///  If true, a notification should be raised when a tracked node enters this
+  ///  waypoint's geofence (the circular radius and/or the bounding box).
+  @$pb.TagNumber(11)
+  $core.bool get notifyOnEnter => $_getBF(10);
+  @$pb.TagNumber(11)
+  set notifyOnEnter($core.bool value) => $_setBool(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasNotifyOnEnter() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearNotifyOnEnter() => $_clearField(11);
+
+  ///
+  ///  If true, a notification should be raised when a tracked node exits this
+  ///  waypoint's geofence (the circular radius and/or the bounding box).
+  @$pb.TagNumber(12)
+  $core.bool get notifyOnExit => $_getBF(11);
+  @$pb.TagNumber(12)
+  set notifyOnExit($core.bool value) => $_setBool(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasNotifyOnExit() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearNotifyOnExit() => $_clearField(12);
+
+  ///
+  ///  If true, only raise geofence enter/exit notifications for nodes that are
+  ///  marked as favorites on the receiving device. Applies to both notify_on_enter
+  ///  and notify_on_exit. Favorite status is resolved locally per receiver, so the
+  ///  same waypoint alerts each node only for its own favorites.
+  @$pb.TagNumber(13)
+  $core.bool get notifyFavoritesOnly => $_getBF(12);
+  @$pb.TagNumber(13)
+  set notifyFavoritesOnly($core.bool value) => $_setBool(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasNotifyFavoritesOnly() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearNotifyFavoritesOnly() => $_clearField(13);
+}
+
+///
+///  Message for node status
+class StatusMessage extends $pb.GeneratedMessage {
+  factory StatusMessage({
+    $core.String? status,
+  }) {
+    final result = StatusMessage._();
+    if (status != null) result.status = status;
+    return result;
+  }
+
+  StatusMessage._();
+
+  factory StatusMessage.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      StatusMessage()..mergeFromBuffer(data, registry);
+  factory StatusMessage.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      StatusMessage()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'StatusMessage',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: StatusMessage.$_createMessage)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StatusMessage clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  StatusMessage copyWith(void Function(StatusMessage) updates) =>
+      super.copyWith((message) => updates(message as StatusMessage))
+          as StatusMessage;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use StatusMessage() / StatusMessage.new instead')
+  static StatusMessage create() => StatusMessage._();
+  static $pb.GeneratedMessage $_createMessage() => StatusMessage._();
+  @$core.override
+  StatusMessage createEmptyInstance() => StatusMessage._();
+  @$core.pragma('dart2js:noInline')
+  static StatusMessage getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<StatusMessage>(
+          StatusMessage.$_createMessage);
+  static StatusMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => $_clearField(1);
+}
+
+enum MqttClientProxyMessage_PayloadVariant { data, text, notSet }
+
+///
+///  This message will be proxied over the PhoneAPI for the client to deliver to the MQTT server
+class MqttClientProxyMessage extends $pb.GeneratedMessage {
+  factory MqttClientProxyMessage({
+    $core.String? topic,
+    $core.List<$core.int>? data,
+    $core.String? text,
+    $core.bool? retained,
+  }) {
+    final result = MqttClientProxyMessage._();
+    if (topic != null) result.topic = topic;
+    if (data != null) result.data = data;
+    if (text != null) result.text = text;
+    if (retained != null) result.retained = retained;
+    return result;
+  }
+
+  MqttClientProxyMessage._();
+
+  factory MqttClientProxyMessage.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      MqttClientProxyMessage()..mergeFromBuffer(data, registry);
+  factory MqttClientProxyMessage.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      MqttClientProxyMessage()..mergeFromJson(json, registry);
+
+  static const $core.Map<$core.int, MqttClientProxyMessage_PayloadVariant>
+      _MqttClientProxyMessage_PayloadVariantByTag = {
+    2: MqttClientProxyMessage_PayloadVariant.data,
+    3: MqttClientProxyMessage_PayloadVariant.text,
+    0: MqttClientProxyMessage_PayloadVariant.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MqttClientProxyMessage',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: MqttClientProxyMessage.$_createMessage)
+    ..oo(0, [2, 3])
+    ..aOS(1, _omitFieldNames ? '' : 'topic')
+    ..a<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'data', $pb.PbFieldType.OY)
+    ..aOS(3, _omitFieldNames ? '' : 'text')
+    ..aOB(4, _omitFieldNames ? '' : 'retained')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MqttClientProxyMessage clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MqttClientProxyMessage copyWith(
+          void Function(MqttClientProxyMessage) updates) =>
+      super.copyWith((message) => updates(message as MqttClientProxyMessage))
+          as MqttClientProxyMessage;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use MqttClientProxyMessage() / MqttClientProxyMessage.new instead')
+  static MqttClientProxyMessage create() => MqttClientProxyMessage._();
+  static $pb.GeneratedMessage $_createMessage() => MqttClientProxyMessage._();
+  @$core.override
+  MqttClientProxyMessage createEmptyInstance() => MqttClientProxyMessage._();
+  @$core.pragma('dart2js:noInline')
+  static MqttClientProxyMessage getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MqttClientProxyMessage>(
+          MqttClientProxyMessage.$_createMessage);
+  static MqttClientProxyMessage? _defaultInstance;
+
+  @$pb.TagNumber(2)
+  @$pb.TagNumber(3)
+  MqttClientProxyMessage_PayloadVariant whichPayloadVariant() =>
+      _MqttClientProxyMessage_PayloadVariantByTag[$_whichOneof(0)]!;
+  @$pb.TagNumber(2)
+  @$pb.TagNumber(3)
+  void clearPayloadVariant() => $_clearField($_whichOneof(0));
+
+  ///
+  ///  The MQTT topic this message will be sent /received on
+  @$pb.TagNumber(1)
+  $core.String get topic => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set topic($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasTopic() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTopic() => $_clearField(1);
+
+  ///
+  ///  Bytes
+  @$pb.TagNumber(2)
+  $core.List<$core.int> get data => $_getN(1);
+  @$pb.TagNumber(2)
+  set data($core.List<$core.int> value) => $_setBytes(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasData() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearData() => $_clearField(2);
+
+  ///
+  ///  Text
+  @$pb.TagNumber(3)
+  $core.String get text => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set text($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasText() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearText() => $_clearField(3);
+
+  ///
+  ///  Whether the message should be retained (or not)
+  @$pb.TagNumber(4)
+  $core.bool get retained => $_getBF(3);
+  @$pb.TagNumber(4)
+  set retained($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasRetained() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRetained() => $_clearField(4);
+}
+
+enum MeshPacket_PayloadVariant { decoded, encrypted, notSet }
+
+///
+///  A packet envelope sent/received over the mesh
+///  only payload_variant is sent in the payload portion of the LORA packet.
+///  The other fields are either not sent at all, or sent in the special 16 byte LORA header.
+class MeshPacket extends $pb.GeneratedMessage {
+  factory MeshPacket({
+    $core.int? from,
+    $core.int? to,
+    $core.int? channel,
+    Data? decoded,
+    $core.List<$core.int>? encrypted,
+    $core.int? id,
+    $core.int? rxTime,
+    $core.double? rxSnr,
+    $core.int? hopLimit,
+    $core.bool? wantAck,
+    MeshPacket_Priority? priority,
+    $core.int? rxRssi,
+    @$core.Deprecated('This field is deprecated.') MeshPacket_Delayed? delayed,
+    $core.bool? viaMqtt,
+    $core.int? hopStart,
+    $core.List<$core.int>? publicKey,
+    $core.bool? pkiEncrypted,
+    $core.int? nextHop,
+    $core.int? relayNode,
+    $core.int? txAfter,
+    MeshPacket_TransportMechanism? transportMechanism,
+    $core.bool? xeddsaSigned,
+    MeshPacket_AckProofStatus? ackProofStatus,
+    MeshPacket_SlotParity? slotParity,
+  }) {
+    final result = MeshPacket._();
+    if (from != null) result.from = from;
+    if (to != null) result.to = to;
+    if (channel != null) result.channel = channel;
+    if (decoded != null) result.decoded = decoded;
+    if (encrypted != null) result.encrypted = encrypted;
+    if (id != null) result.id = id;
+    if (rxTime != null) result.rxTime = rxTime;
+    if (rxSnr != null) result.rxSnr = rxSnr;
+    if (hopLimit != null) result.hopLimit = hopLimit;
+    if (wantAck != null) result.wantAck = wantAck;
+    if (priority != null) result.priority = priority;
+    if (rxRssi != null) result.rxRssi = rxRssi;
+    if (delayed != null) result.delayed = delayed;
+    if (viaMqtt != null) result.viaMqtt = viaMqtt;
+    if (hopStart != null) result.hopStart = hopStart;
+    if (publicKey != null) result.publicKey = publicKey;
+    if (pkiEncrypted != null) result.pkiEncrypted = pkiEncrypted;
+    if (nextHop != null) result.nextHop = nextHop;
+    if (relayNode != null) result.relayNode = relayNode;
+    if (txAfter != null) result.txAfter = txAfter;
+    if (transportMechanism != null)
+      result.transportMechanism = transportMechanism;
+    if (xeddsaSigned != null) result.xeddsaSigned = xeddsaSigned;
+    if (ackProofStatus != null) result.ackProofStatus = ackProofStatus;
+    if (slotParity != null) result.slotParity = slotParity;
+    return result;
+  }
+
+  MeshPacket._();
+
+  factory MeshPacket.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      MeshPacket()..mergeFromBuffer(data, registry);
+  factory MeshPacket.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      MeshPacket()..mergeFromJson(json, registry);
+
+  static const $core.Map<$core.int, MeshPacket_PayloadVariant>
+      _MeshPacket_PayloadVariantByTag = {
+    4: MeshPacket_PayloadVariant.decoded,
+    5: MeshPacket_PayloadVariant.encrypted,
+    0: MeshPacket_PayloadVariant.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MeshPacket',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: MeshPacket.$_createMessage)
+    ..oo(0, [4, 5])
+    ..aI(1, _omitFieldNames ? '' : 'from', fieldType: $pb.PbFieldType.OF3)
+    ..aI(2, _omitFieldNames ? '' : 'to', fieldType: $pb.PbFieldType.OF3)
+    ..aI(3, _omitFieldNames ? '' : 'channel', fieldType: $pb.PbFieldType.OU3)
+    ..aOM<Data>(4, _omitFieldNames ? '' : 'decoded',
+        subBuilder: Data.$_createMessage)
+    ..a<$core.List<$core.int>>(
+        5, _omitFieldNames ? '' : 'encrypted', $pb.PbFieldType.OY)
+    ..aI(6, _omitFieldNames ? '' : 'id', fieldType: $pb.PbFieldType.OF3)
+    ..aI(7, _omitFieldNames ? '' : 'rxTime', fieldType: $pb.PbFieldType.OF3)
+    ..aD(8, _omitFieldNames ? '' : 'rxSnr', fieldType: $pb.PbFieldType.OF)
+    ..aI(9, _omitFieldNames ? '' : 'hopLimit', fieldType: $pb.PbFieldType.OU3)
+    ..aOB(10, _omitFieldNames ? '' : 'wantAck')
+    ..aE<MeshPacket_Priority>(11, _omitFieldNames ? '' : 'priority',
+        enumValues: MeshPacket_Priority.values)
+    ..aI(12, _omitFieldNames ? '' : 'rxRssi')
+    ..aE<MeshPacket_Delayed>(13, _omitFieldNames ? '' : 'delayed',
+        enumValues: MeshPacket_Delayed.values)
+    ..aOB(14, _omitFieldNames ? '' : 'viaMqtt')
+    ..aI(15, _omitFieldNames ? '' : 'hopStart', fieldType: $pb.PbFieldType.OU3)
+    ..a<$core.List<$core.int>>(
+        16, _omitFieldNames ? '' : 'publicKey', $pb.PbFieldType.OY)
+    ..aOB(17, _omitFieldNames ? '' : 'pkiEncrypted')
+    ..aI(18, _omitFieldNames ? '' : 'nextHop', fieldType: $pb.PbFieldType.OU3)
+    ..aI(19, _omitFieldNames ? '' : 'relayNode', fieldType: $pb.PbFieldType.OU3)
+    ..aI(20, _omitFieldNames ? '' : 'txAfter', fieldType: $pb.PbFieldType.OU3)
+    ..aE<MeshPacket_TransportMechanism>(
+        21, _omitFieldNames ? '' : 'transportMechanism',
+        enumValues: MeshPacket_TransportMechanism.values)
+    ..aOB(22, _omitFieldNames ? '' : 'xeddsaSigned')
+    ..aE<MeshPacket_AckProofStatus>(23, _omitFieldNames ? '' : 'ackProofStatus',
+        enumValues: MeshPacket_AckProofStatus.values)
+    ..aE<MeshPacket_SlotParity>(24, _omitFieldNames ? '' : 'slotParity',
+        enumValues: MeshPacket_SlotParity.values)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MeshPacket clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MeshPacket copyWith(void Function(MeshPacket) updates) =>
+      super.copyWith((message) => updates(message as MeshPacket)) as MeshPacket;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MeshPacket() / MeshPacket.new instead')
+  static MeshPacket create() => MeshPacket._();
+  static $pb.GeneratedMessage $_createMessage() => MeshPacket._();
+  @$core.override
+  MeshPacket createEmptyInstance() => MeshPacket._();
+  @$core.pragma('dart2js:noInline')
+  static MeshPacket getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MeshPacket>(MeshPacket.$_createMessage);
+  static MeshPacket? _defaultInstance;
+
+  @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
+  MeshPacket_PayloadVariant whichPayloadVariant() =>
+      _MeshPacket_PayloadVariantByTag[$_whichOneof(0)]!;
+  @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
+  void clearPayloadVariant() => $_clearField($_whichOneof(0));
+
+  ///
+  ///  The sending node number.
+  ///  Note: Our crypto implementation uses this field as well.
+  ///  See [crypto](/docs/overview/encryption) for details.
+  @$pb.TagNumber(1)
+  $core.int get from => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set from($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFrom() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFrom() => $_clearField(1);
+
+  ///
+  ///  The (immediate) destination for this packet
+  ///  If the value is 4,294,967,295 (maximum value of an unsigned 32bit integer), this indicates that the packet was
+  ///  not destined for a specific node, but for a channel as indicated by the value of `channel` below.
+  ///  If the value is another, this indicates that the packet was destined for a specific
+  ///  node (i.e. a kind of "Direct Message" to this node) and not broadcast on a channel.
+  @$pb.TagNumber(2)
+  $core.int get to => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set to($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTo() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTo() => $_clearField(2);
+
+  ///
+  ///  (Usually) If set, this indicates the index in the secondary_channels table that this packet was sent/received on.
+  ///  If unset, packet was on the primary channel.
+  ///  A particular node might know only a subset of channels in use on the mesh.
+  ///  Therefore channel_index is inherently a local concept and meaningless to send between nodes.
+  ///  Very briefly, while sending and receiving deep inside the device Router code, this field instead
+  ///  contains the 'channel hash' instead of the index.
+  ///  This 'trick' is only used while the payload_variant is an 'encrypted'.
+  @$pb.TagNumber(3)
+  $core.int get channel => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set channel($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasChannel() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearChannel() => $_clearField(3);
+
+  ///
+  ///  TODO: REPLACE
+  @$pb.TagNumber(4)
+  Data get decoded => $_getN(3);
+  @$pb.TagNumber(4)
+  set decoded(Data value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDecoded() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDecoded() => $_clearField(4);
+  @$pb.TagNumber(4)
+  Data ensureDecoded() => $_ensure(3);
+
+  ///
+  ///  TODO: REPLACE
+  @$pb.TagNumber(5)
+  $core.List<$core.int> get encrypted => $_getN(4);
+  @$pb.TagNumber(5)
+  set encrypted($core.List<$core.int> value) => $_setBytes(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasEncrypted() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEncrypted() => $_clearField(5);
+
+  ///
+  ///  A unique ID for this packet.
+  ///  Always 0 for no-ack packets or non broadcast packets (and therefore take zero bytes of space).
+  ///  Otherwise a unique ID for this packet, useful for flooding algorithms.
+  ///  ID only needs to be unique on a _per sender_ basis, and it only
+  ///  needs to be unique for a few minutes (long enough to last for the length of
+  ///  any ACK or the completion of a mesh broadcast flood).
+  ///  Note: Our crypto implementation uses this id as well.
+  ///  See [crypto](/docs/overview/encryption) for details.
+  @$pb.TagNumber(6)
+  $core.int get id => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set id($core.int value) => $_setUnsignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearId() => $_clearField(6);
+
+  ///
+  ///  The time this message was received by the esp32 (secs since 1970).
+  ///  Note: this field is _never_ sent on the radio link itself (to save space) Times
+  ///  are typically not sent over the mesh, but they will be added to any Packet
+  ///  (chain of SubPacket) sent to the phone (so the phone can know exact time of reception)
+  ///  Explicit presence: firmware cannot always attach a trustworthy wall-clock timestamp at the
+  ///  moment of reception - a node with no GPS and no phone connected yet has no time source at
+  ///  all. has_rx_time disambiguates that state from a genuine (if coincidental) 1970-01-01
+  ///  reading. A packet delivered with this field absent may still be re-timestamped once a valid
+  ///  clock becomes available, before the phone ever sees it - "absent" is not guaranteed
+  ///  permanent, only "not yet known at last observation".
+  @$pb.TagNumber(7)
+  $core.int get rxTime => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set rxTime($core.int value) => $_setUnsignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasRxTime() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRxTime() => $_clearField(7);
+
+  ///
+  ///  *Never* sent over the radio links.
+  ///  Set during reception to indicate the SNR of this packet.
+  ///  Used to collect statistics on current link quality.
+  @$pb.TagNumber(8)
+  $core.double get rxSnr => $_getN(7);
+  @$pb.TagNumber(8)
+  set rxSnr($core.double value) => $_setFloat(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasRxSnr() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearRxSnr() => $_clearField(8);
+
+  ///
+  ///  If unset treated as zero (no forwarding, send to direct neighbor nodes only)
+  ///  if 1, allow hopping through one node, etc...
+  ///  For our usecase real world topologies probably have a max of about 3.
+  ///  This field is normally placed into a few of bits in the header.
+  @$pb.TagNumber(9)
+  $core.int get hopLimit => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set hopLimit($core.int value) => $_setUnsignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasHopLimit() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearHopLimit() => $_clearField(9);
+
+  ///
+  ///  This packet is being sent as a reliable message, we would prefer it to arrive at the destination.
+  ///  We would like to receive a ack packet in response.
+  ///  Broadcasts messages treat this flag specially: Since acks for broadcasts would
+  ///  rapidly flood the channel, the normal ack behavior is suppressed.
+  ///  Instead, the original sender listens to see if at least one node is rebroadcasting this packet (because naive flooding algorithm).
+  ///  If it hears that the odds (given typical LoRa topologies) the odds are very high that every node should eventually receive the message.
+  ///  So FloodingRouter.cpp generates an implicit ack which is delivered to the original sender.
+  ///  If after some time we don't hear anyone rebroadcast our packet, we will timeout and retransmit, using the regular resend logic.
+  ///  Note: This flag is normally sent in a flag bit in the header when sent over the wire
+  @$pb.TagNumber(10)
+  $core.bool get wantAck => $_getBF(9);
+  @$pb.TagNumber(10)
+  set wantAck($core.bool value) => $_setBool(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasWantAck() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearWantAck() => $_clearField(10);
+
+  ///
+  ///  The priority of this message for sending.
+  ///  See MeshPacket.Priority description for more details.
+  @$pb.TagNumber(11)
+  MeshPacket_Priority get priority => $_getN(10);
+  @$pb.TagNumber(11)
+  set priority(MeshPacket_Priority value) => $_setField(11, value);
+  @$pb.TagNumber(11)
+  $core.bool hasPriority() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearPriority() => $_clearField(11);
+
+  ///
+  ///  rssi of received packet. Only sent to phone for dispay purposes.
+  ///  Explicit presence: rssi 0 is a legitimate reading on some radios (SX126x can report exactly
+  ///  0 dBm; SX127x's formula can even go positive). has_rx_rssi disambiguates; a replayed packet
+  ///  built from history should leave this field absent rather than emitting 0.
+  @$pb.TagNumber(12)
+  $core.int get rxRssi => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set rxRssi($core.int value) => $_setSignedInt32(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasRxRssi() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearRxRssi() => $_clearField(12);
+
+  ///
+  ///  Describe if this message is delayed
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(13)
+  MeshPacket_Delayed get delayed => $_getN(12);
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(13)
+  set delayed(MeshPacket_Delayed value) => $_setField(13, value);
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(13)
+  $core.bool hasDelayed() => $_has(12);
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(13)
+  void clearDelayed() => $_clearField(13);
+
+  ///
+  ///  Describes whether this packet passed via MQTT somewhere along the path it currently took.
+  @$pb.TagNumber(14)
+  $core.bool get viaMqtt => $_getBF(13);
+  @$pb.TagNumber(14)
+  set viaMqtt($core.bool value) => $_setBool(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasViaMqtt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearViaMqtt() => $_clearField(14);
+
+  ///
+  ///  Hop limit with which the original packet started. Sent via LoRa using three bits in the unencrypted header.
+  ///  When receiving a packet, the difference between hop_start and hop_limit gives how many hops it traveled.
+  ///  hop_start == 0 does not necessarily mean a direct (0-hop) neighbor: firmware prior to 2.3.0
+  ///  never populated this field, so a receiver can only trust hop_start == 0 as genuine once it has
+  ///  decoded the packet and confirmed the sender's bitfield is present (added in 2.5.0). Until then,
+  ///  or for a sender that never sets that bitfield, treat hop_start == 0 as unknown, not direct.
+  @$pb.TagNumber(15)
+  $core.int get hopStart => $_getIZ(14);
+  @$pb.TagNumber(15)
+  set hopStart($core.int value) => $_setUnsignedInt32(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasHopStart() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearHopStart() => $_clearField(15);
+
+  ///
+  ///  Records the public key the packet was encrypted with, if applicable.
+  @$pb.TagNumber(16)
+  $core.List<$core.int> get publicKey => $_getN(15);
+  @$pb.TagNumber(16)
+  set publicKey($core.List<$core.int> value) => $_setBytes(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasPublicKey() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearPublicKey() => $_clearField(16);
+
+  ///
+  ///  Indicates whether the packet was en/decrypted using PKI
+  @$pb.TagNumber(17)
+  $core.bool get pkiEncrypted => $_getBF(16);
+  @$pb.TagNumber(17)
+  set pkiEncrypted($core.bool value) => $_setBool(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasPkiEncrypted() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearPkiEncrypted() => $_clearField(17);
+
+  ///
+  ///  Last byte of the node number of the node that should be used as the next hop in routing.
+  ///  Set by the firmware internally, clients are not supposed to set this.
+  @$pb.TagNumber(18)
+  $core.int get nextHop => $_getIZ(17);
+  @$pb.TagNumber(18)
+  set nextHop($core.int value) => $_setUnsignedInt32(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasNextHop() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearNextHop() => $_clearField(18);
+
+  ///
+  ///  Last byte of the node number of the node that will relay/relayed this packet.
+  ///  Set by the firmware internally, clients are not supposed to set this.
+  @$pb.TagNumber(19)
+  $core.int get relayNode => $_getIZ(18);
+  @$pb.TagNumber(19)
+  set relayNode($core.int value) => $_setUnsignedInt32(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasRelayNode() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearRelayNode() => $_clearField(19);
+
+  ///
+  ///  *Never* sent over the radio links.
+  ///  Timestamp after which this packet may be sent.
+  ///  Set by the firmware internally, clients are not supposed to set this.
+  @$pb.TagNumber(20)
+  $core.int get txAfter => $_getIZ(19);
+  @$pb.TagNumber(20)
+  set txAfter($core.int value) => $_setUnsignedInt32(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasTxAfter() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearTxAfter() => $_clearField(20);
+
+  ///
+  ///  Indicates which transport mechanism this packet arrived over
+  @$pb.TagNumber(21)
+  MeshPacket_TransportMechanism get transportMechanism => $_getN(20);
+  @$pb.TagNumber(21)
+  set transportMechanism(MeshPacket_TransportMechanism value) =>
+      $_setField(21, value);
+  @$pb.TagNumber(21)
+  $core.bool hasTransportMechanism() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearTransportMechanism() => $_clearField(21);
+
+  ///
+  ///  Indicates whether the packet has a valid signature
+  @$pb.TagNumber(22)
+  $core.bool get xeddsaSigned => $_getBF(21);
+  @$pb.TagNumber(22)
+  set xeddsaSigned($core.bool value) => $_setBool(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasXeddsaSigned() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearXeddsaSigned() => $_clearField(22);
+
+  ///
+  ///  *Never* sent over the radio links.
+  ///  Set by the firmware on a received ack or nak, reporting whether its Routing.ack_proof proved
+  ///  that the node we addressed is the one acknowledging. Clients are not supposed to set this, and
+  ///  the firmware clears whatever arrives here before evaluating a packet - an inbound value is
+  ///  attacker-controlled, since MQTT and the client API both carry whole MeshPacket protobufs.
+  ///
+  ///  Distinct from xeddsa_signed, which is an identity signature any holder of the sender's public
+  ///  key can check. This is a pairwise MAC that only the original sender can check, and it attests
+  ///  to delivery rather than to authorship.
+  @$pb.TagNumber(23)
+  MeshPacket_AckProofStatus get ackProofStatus => $_getN(22);
+  @$pb.TagNumber(23)
+  set ackProofStatus(MeshPacket_AckProofStatus value) => $_setField(23, value);
+  @$pb.TagNumber(23)
+  $core.bool hasAckProofStatus() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearAckProofStatus() => $_clearField(23);
+
+  ///
+  ///  Never sent over the radio links.
+  ///  Which parity of the CSMA backoff slot grid this packet may be sent in; see SlotParity.
+  ///  Set by whoever queues the packet, and read by the radio driver when it draws the backoff.
+  @$pb.TagNumber(24)
+  MeshPacket_SlotParity get slotParity => $_getN(23);
+  @$pb.TagNumber(24)
+  set slotParity(MeshPacket_SlotParity value) => $_setField(24, value);
+  @$pb.TagNumber(24)
+  $core.bool hasSlotParity() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearSlotParity() => $_clearField(24);
+}
+
+///
+///  The bluetooth to device link:
+///  Old BTLE protocol docs from TODO, merge in above and make real docs...
+///  use protocol buffers, and NanoPB
+///  messages from device to phone:
+///  POSITION_UPDATE (..., time)
+///  TEXT_RECEIVED(from, text, time)
+///  OPAQUE_RECEIVED(from, payload, time) (for signal messages or other applications)
+///  messages from phone to device:
+///  SET_MYID(id, human readable long, human readable short) (send down the unique ID
+///  string used for this node, a human readable string shown for that id, and a very
+///  short human readable string suitable for oled screen) SEND_OPAQUE(dest, payload)
+///  (for signal messages or other applications) SEND_TEXT(dest, text) Get all
+///  nodes() (returns list of nodes, with full info, last time seen, loc, battery
+///  level etc) SET_CONFIG (switches device to a new set of radio params and
+///  preshared key, drops all existing nodes, force our node to rejoin this new group)
+///  Full information about a node on the mesh
+class NodeInfo extends $pb.GeneratedMessage {
+  factory NodeInfo({
+    $core.int? num,
+    User? user,
+    Position? position,
+    $core.double? snr,
+    $core.int? lastHeard,
+    $0.DeviceMetrics? deviceMetrics,
+    $core.int? channel,
+    $core.bool? viaMqtt,
+    $core.int? hopsAway,
+    $core.bool? isFavorite,
+    $core.bool? isIgnored,
+    $core.bool? isKeyManuallyVerified,
+    $core.bool? isMuted,
+    $core.bool? hasXeddsaSigned,
+    $core.bool? heardOnCurrentLora,
+  }) {
+    final result = NodeInfo._();
+    if (num != null) result.num = num;
+    if (user != null) result.user = user;
+    if (position != null) result.position = position;
+    if (snr != null) result.snr = snr;
+    if (lastHeard != null) result.lastHeard = lastHeard;
+    if (deviceMetrics != null) result.deviceMetrics = deviceMetrics;
+    if (channel != null) result.channel = channel;
+    if (viaMqtt != null) result.viaMqtt = viaMqtt;
+    if (hopsAway != null) result.hopsAway = hopsAway;
+    if (isFavorite != null) result.isFavorite = isFavorite;
+    if (isIgnored != null) result.isIgnored = isIgnored;
+    if (isKeyManuallyVerified != null)
+      result.isKeyManuallyVerified = isKeyManuallyVerified;
+    if (isMuted != null) result.isMuted = isMuted;
+    if (hasXeddsaSigned != null) result.hasXeddsaSigned = hasXeddsaSigned;
+    if (heardOnCurrentLora != null)
+      result.heardOnCurrentLora = heardOnCurrentLora;
+    return result;
+  }
+
+  NodeInfo._();
+
+  factory NodeInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      NodeInfo()..mergeFromBuffer(data, registry);
+  factory NodeInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      NodeInfo()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'NodeInfo',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: NodeInfo.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'num', fieldType: $pb.PbFieldType.OU3)
+    ..aOM<User>(2, _omitFieldNames ? '' : 'user',
+        subBuilder: User.$_createMessage)
+    ..aOM<Position>(3, _omitFieldNames ? '' : 'position',
+        subBuilder: Position.$_createMessage)
+    ..aD(4, _omitFieldNames ? '' : 'snr', fieldType: $pb.PbFieldType.OF)
+    ..aI(5, _omitFieldNames ? '' : 'lastHeard', fieldType: $pb.PbFieldType.OF3)
+    ..aOM<$0.DeviceMetrics>(6, _omitFieldNames ? '' : 'deviceMetrics',
+        subBuilder: $0.DeviceMetrics.$_createMessage)
+    ..aI(7, _omitFieldNames ? '' : 'channel', fieldType: $pb.PbFieldType.OU3)
+    ..aOB(8, _omitFieldNames ? '' : 'viaMqtt')
+    ..aI(9, _omitFieldNames ? '' : 'hopsAway', fieldType: $pb.PbFieldType.OU3)
+    ..aOB(10, _omitFieldNames ? '' : 'isFavorite')
+    ..aOB(11, _omitFieldNames ? '' : 'isIgnored')
+    ..aOB(12, _omitFieldNames ? '' : 'isKeyManuallyVerified')
+    ..aOB(13, _omitFieldNames ? '' : 'isMuted')
+    ..aOB(14, _omitFieldNames ? '' : 'hasXeddsaSigned')
+    ..aOB(15, _omitFieldNames ? '' : 'heardOnCurrentLora')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  NodeInfo clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  NodeInfo copyWith(void Function(NodeInfo) updates) =>
+      super.copyWith((message) => updates(message as NodeInfo)) as NodeInfo;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use NodeInfo() / NodeInfo.new instead')
+  static NodeInfo create() => NodeInfo._();
+  static $pb.GeneratedMessage $_createMessage() => NodeInfo._();
+  @$core.override
+  NodeInfo createEmptyInstance() => NodeInfo._();
+  @$core.pragma('dart2js:noInline')
+  static NodeInfo getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<NodeInfo>(NodeInfo.$_createMessage);
+  static NodeInfo? _defaultInstance;
+
+  ///
+  ///  The node number
+  @$pb.TagNumber(1)
+  $core.int get num => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set num($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNum() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNum() => $_clearField(1);
+
+  ///
+  ///  The user info for this node
+  @$pb.TagNumber(2)
+  User get user => $_getN(1);
+  @$pb.TagNumber(2)
+  set user(User value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasUser() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUser() => $_clearField(2);
+  @$pb.TagNumber(2)
+  User ensureUser() => $_ensure(1);
+
+  ///
+  ///  This position data. Note: before 1.2.14 we would also store the last time we've heard from this node in position.time, that is no longer true.
+  ///  Position.time now indicates the last time we received a POSITION from that node.
+  @$pb.TagNumber(3)
+  Position get position => $_getN(2);
+  @$pb.TagNumber(3)
+  set position(Position value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPosition() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPosition() => $_clearField(3);
+  @$pb.TagNumber(3)
+  Position ensurePosition() => $_ensure(2);
+
+  ///
+  ///  Returns the Signal-to-noise ratio (SNR) of the last received message,
+  ///  as measured by the receiver. Return SNR of the last received message in dB
+  @$pb.TagNumber(4)
+  $core.double get snr => $_getN(3);
+  @$pb.TagNumber(4)
+  set snr($core.double value) => $_setFloat(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasSnr() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSnr() => $_clearField(4);
+
+  ///
+  ///  Set to indicate the last time we received a packet from this node
+  @$pb.TagNumber(5)
+  $core.int get lastHeard => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set lastHeard($core.int value) => $_setUnsignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasLastHeard() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearLastHeard() => $_clearField(5);
+
+  ///
+  ///  The latest device metrics for the node.
+  @$pb.TagNumber(6)
+  $0.DeviceMetrics get deviceMetrics => $_getN(5);
+  @$pb.TagNumber(6)
+  set deviceMetrics($0.DeviceMetrics value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasDeviceMetrics() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDeviceMetrics() => $_clearField(6);
+  @$pb.TagNumber(6)
+  $0.DeviceMetrics ensureDeviceMetrics() => $_ensure(5);
+
+  ///
+  ///  local channel index we heard that node on. Only populated if its not the default channel.
+  @$pb.TagNumber(7)
+  $core.int get channel => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set channel($core.int value) => $_setUnsignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasChannel() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearChannel() => $_clearField(7);
+
+  ///
+  ///  True if we witnessed the node over MQTT instead of LoRA transport
+  @$pb.TagNumber(8)
+  $core.bool get viaMqtt => $_getBF(7);
+  @$pb.TagNumber(8)
+  set viaMqtt($core.bool value) => $_setBool(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasViaMqtt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearViaMqtt() => $_clearField(8);
+
+  ///
+  ///  Number of hops away from us this node is (0 if direct neighbor)
+  @$pb.TagNumber(9)
+  $core.int get hopsAway => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set hopsAway($core.int value) => $_setUnsignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasHopsAway() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearHopsAway() => $_clearField(9);
+
+  ///
+  ///  True if node is in our favorites list
+  ///  Persists between NodeDB internal clean ups
+  @$pb.TagNumber(10)
+  $core.bool get isFavorite => $_getBF(9);
+  @$pb.TagNumber(10)
+  set isFavorite($core.bool value) => $_setBool(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasIsFavorite() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearIsFavorite() => $_clearField(10);
+
+  ///
+  ///  True if node is in our ignored list
+  ///  Persists between NodeDB internal clean ups
+  @$pb.TagNumber(11)
+  $core.bool get isIgnored => $_getBF(10);
+  @$pb.TagNumber(11)
+  set isIgnored($core.bool value) => $_setBool(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasIsIgnored() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearIsIgnored() => $_clearField(11);
+
+  ///
+  ///  True if node public key has been verified.
+  ///  Persists between NodeDB internal clean ups
+  ///  LSB 0 of the bitfield
+  @$pb.TagNumber(12)
+  $core.bool get isKeyManuallyVerified => $_getBF(11);
+  @$pb.TagNumber(12)
+  set isKeyManuallyVerified($core.bool value) => $_setBool(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasIsKeyManuallyVerified() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearIsKeyManuallyVerified() => $_clearField(12);
+
+  ///
+  ///  True if node has been muted
+  ///  Persistes between NodeDB internal clean ups
+  @$pb.TagNumber(13)
+  $core.bool get isMuted => $_getBF(12);
+  @$pb.TagNumber(13)
+  set isMuted($core.bool value) => $_setBool(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasIsMuted() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearIsMuted() => $_clearField(13);
+
+  ///
+  ///  True if node is signing its packets via XEdDSA
+  ///  Persists between NodeDB internal clean ups
+  ///  LSB 1 of the bitfield
+  @$pb.TagNumber(14)
+  $core.bool get hasXeddsaSigned => $_getBF(13);
+  @$pb.TagNumber(14)
+  set hasXeddsaSigned($core.bool value) => $_setBool(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasHasXeddsaSigned() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearHasXeddsaSigned() => $_clearField(14);
+
+  ///
+  ///  True if we have heard this node over RF on the LoRa configuration the
+  ///  radio is using right now. Derived on the device rather than stored: each
+  ///  node records the frequency slot it was last heard on, and this reports
+  ///  whether that slot matches the one the radio is currently committed to.
+  ///  The slot covers the region, modem preset (or the custom bandwidth/spread
+  ///  factor/coding rate when use_preset is false), override_frequency,
+  ///  channel_num and the primary channel name.
+  ///  Because it is derived, leaving a configuration and returning to it
+  ///  restores the previous answers, so a client sweeping through presets to
+  ///  listen for traffic does not disturb them.
+  ///  Not set for nodes heard only over MQTT, which reach us over the internet
+  ///  rather than over our own radio - see via_mqtt - nor for nodes added as a
+  ///  shared contact, which have never been heard over RF at all.
+  ///  Derived from LSB 11 and bits 12..23 of NodeInfoLite.bitfield.
+  @$pb.TagNumber(15)
+  $core.bool get heardOnCurrentLora => $_getBF(14);
+  @$pb.TagNumber(15)
+  set heardOnCurrentLora($core.bool value) => $_setBool(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasHeardOnCurrentLora() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearHeardOnCurrentLora() => $_clearField(15);
+}
+
+///
+///  Unique local debugging info for this node
+///  Note: we don't include position or the user info, because that will come in the
+///  Sent to the phone in response to WantNodes.
+class MyNodeInfo extends $pb.GeneratedMessage {
+  factory MyNodeInfo({
+    $core.int? myNodeNum,
+    $core.int? rebootCount,
+    $core.int? minAppVersion,
+    $core.List<$core.int>? deviceId,
+    $core.String? pioEnv,
+    FirmwareEdition? firmwareEdition,
+    $core.int? nodedbCount,
+  }) {
+    final result = MyNodeInfo._();
+    if (myNodeNum != null) result.myNodeNum = myNodeNum;
+    if (rebootCount != null) result.rebootCount = rebootCount;
+    if (minAppVersion != null) result.minAppVersion = minAppVersion;
+    if (deviceId != null) result.deviceId = deviceId;
+    if (pioEnv != null) result.pioEnv = pioEnv;
+    if (firmwareEdition != null) result.firmwareEdition = firmwareEdition;
+    if (nodedbCount != null) result.nodedbCount = nodedbCount;
+    return result;
+  }
+
+  MyNodeInfo._();
+
+  factory MyNodeInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      MyNodeInfo()..mergeFromBuffer(data, registry);
+  factory MyNodeInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      MyNodeInfo()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MyNodeInfo',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: MyNodeInfo.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'myNodeNum', fieldType: $pb.PbFieldType.OU3)
+    ..aI(8, _omitFieldNames ? '' : 'rebootCount',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(11, _omitFieldNames ? '' : 'minAppVersion',
+        fieldType: $pb.PbFieldType.OU3)
+    ..a<$core.List<$core.int>>(
+        12, _omitFieldNames ? '' : 'deviceId', $pb.PbFieldType.OY)
+    ..aOS(13, _omitFieldNames ? '' : 'pioEnv')
+    ..aE<FirmwareEdition>(14, _omitFieldNames ? '' : 'firmwareEdition',
+        enumValues: FirmwareEdition.values)
+    ..aI(15, _omitFieldNames ? '' : 'nodedbCount',
+        fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MyNodeInfo clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MyNodeInfo copyWith(void Function(MyNodeInfo) updates) =>
+      super.copyWith((message) => updates(message as MyNodeInfo)) as MyNodeInfo;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MyNodeInfo() / MyNodeInfo.new instead')
+  static MyNodeInfo create() => MyNodeInfo._();
+  static $pb.GeneratedMessage $_createMessage() => MyNodeInfo._();
+  @$core.override
+  MyNodeInfo createEmptyInstance() => MyNodeInfo._();
+  @$core.pragma('dart2js:noInline')
+  static MyNodeInfo getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MyNodeInfo>(MyNodeInfo.$_createMessage);
+  static MyNodeInfo? _defaultInstance;
+
+  ///
+  ///  Tells the phone what our node number is, default starting value is
+  ///  lowbyte of macaddr, but it will be fixed if that is already in use
+  @$pb.TagNumber(1)
+  $core.int get myNodeNum => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set myNodeNum($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMyNodeNum() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMyNodeNum() => $_clearField(1);
+
+  ///
+  ///  The total number of reboots this node has ever encountered
+  ///  (well - since the last time we discarded preferences)
+  @$pb.TagNumber(8)
+  $core.int get rebootCount => $_getIZ(1);
+  @$pb.TagNumber(8)
+  set rebootCount($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(8)
+  $core.bool hasRebootCount() => $_has(1);
+  @$pb.TagNumber(8)
+  void clearRebootCount() => $_clearField(8);
+
+  ///
+  ///  The minimum app version that can talk to this device.
+  ///  Phone/PC apps should compare this to their build number and if too low tell the user they must update their app
+  @$pb.TagNumber(11)
+  $core.int get minAppVersion => $_getIZ(2);
+  @$pb.TagNumber(11)
+  set minAppVersion($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(11)
+  $core.bool hasMinAppVersion() => $_has(2);
+  @$pb.TagNumber(11)
+  void clearMinAppVersion() => $_clearField(11);
+
+  ///
+  ///  Unique hardware identifier for this device
+  @$pb.TagNumber(12)
+  $core.List<$core.int> get deviceId => $_getN(3);
+  @$pb.TagNumber(12)
+  set deviceId($core.List<$core.int> value) => $_setBytes(3, value);
+  @$pb.TagNumber(12)
+  $core.bool hasDeviceId() => $_has(3);
+  @$pb.TagNumber(12)
+  void clearDeviceId() => $_clearField(12);
+
+  ///
+  ///  The PlatformIO environment used to build this firmware
+  @$pb.TagNumber(13)
+  $core.String get pioEnv => $_getSZ(4);
+  @$pb.TagNumber(13)
+  set pioEnv($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(13)
+  $core.bool hasPioEnv() => $_has(4);
+  @$pb.TagNumber(13)
+  void clearPioEnv() => $_clearField(13);
+
+  ///
+  ///  The indicator for whether this device is running event firmware and which
+  @$pb.TagNumber(14)
+  FirmwareEdition get firmwareEdition => $_getN(5);
+  @$pb.TagNumber(14)
+  set firmwareEdition(FirmwareEdition value) => $_setField(14, value);
+  @$pb.TagNumber(14)
+  $core.bool hasFirmwareEdition() => $_has(5);
+  @$pb.TagNumber(14)
+  void clearFirmwareEdition() => $_clearField(14);
+
+  ///
+  ///  The number of nodes in the nodedb.
+  ///  This is used by the phone to know how many NodeInfo packets to expect on want_config
+  @$pb.TagNumber(15)
+  $core.int get nodedbCount => $_getIZ(6);
+  @$pb.TagNumber(15)
+  set nodedbCount($core.int value) => $_setUnsignedInt32(6, value);
+  @$pb.TagNumber(15)
+  $core.bool hasNodedbCount() => $_has(6);
+  @$pb.TagNumber(15)
+  void clearNodedbCount() => $_clearField(15);
+}
+
+///
+///  Debug output from the device.
+///  To minimize the size of records inside the device code, if a time/source/level is not set
+///  on the message it is assumed to be a continuation of the previously sent message.
+///  This allows the device code to use fixed maxlen 64 byte strings for messages,
+///  and then extend as needed by emitting multiple records.
+class LogRecord extends $pb.GeneratedMessage {
+  factory LogRecord({
+    $core.String? message,
+    $core.int? time,
+    $core.String? source,
+    LogRecord_Level? level,
+  }) {
+    final result = LogRecord._();
+    if (message != null) result.message = message;
+    if (time != null) result.time = time;
+    if (source != null) result.source = source;
+    if (level != null) result.level = level;
+    return result;
+  }
+
+  LogRecord._();
+
+  factory LogRecord.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LogRecord()..mergeFromBuffer(data, registry);
+  factory LogRecord.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LogRecord()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LogRecord',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: LogRecord.$_createMessage)
+    ..aOS(1, _omitFieldNames ? '' : 'message')
+    ..aI(2, _omitFieldNames ? '' : 'time', fieldType: $pb.PbFieldType.OF3)
+    ..aOS(3, _omitFieldNames ? '' : 'source')
+    ..aE<LogRecord_Level>(4, _omitFieldNames ? '' : 'level',
+        enumValues: LogRecord_Level.values)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LogRecord clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LogRecord copyWith(void Function(LogRecord) updates) =>
+      super.copyWith((message) => updates(message as LogRecord)) as LogRecord;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LogRecord() / LogRecord.new instead')
+  static LogRecord create() => LogRecord._();
+  static $pb.GeneratedMessage $_createMessage() => LogRecord._();
+  @$core.override
+  LogRecord createEmptyInstance() => LogRecord._();
+  @$core.pragma('dart2js:noInline')
+  static LogRecord getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<LogRecord>(LogRecord.$_createMessage);
+  static LogRecord? _defaultInstance;
+
+  ///
+  ///  Log levels, chosen to match python logging conventions.
+  @$pb.TagNumber(1)
+  $core.String get message => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set message($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMessage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMessage() => $_clearField(1);
+
+  ///
+  ///  Seconds since 1970 - or 0 for unknown/unset
+  @$pb.TagNumber(2)
+  $core.int get time => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set time($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTime() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTime() => $_clearField(2);
+
+  ///
+  ///  Usually based on thread name - if known
+  @$pb.TagNumber(3)
+  $core.String get source => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set source($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSource() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSource() => $_clearField(3);
+
+  ///
+  ///  Not yet set
+  @$pb.TagNumber(4)
+  LogRecord_Level get level => $_getN(3);
+  @$pb.TagNumber(4)
+  set level(LogRecord_Level value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLevel() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLevel() => $_clearField(4);
+}
+
+class QueueStatus extends $pb.GeneratedMessage {
+  factory QueueStatus({
+    $core.int? res,
+    $core.int? free,
+    $core.int? maxlen,
+    $core.int? meshPacketId,
+  }) {
+    final result = QueueStatus._();
+    if (res != null) result.res = res;
+    if (free != null) result.free = free;
+    if (maxlen != null) result.maxlen = maxlen;
+    if (meshPacketId != null) result.meshPacketId = meshPacketId;
+    return result;
+  }
+
+  QueueStatus._();
+
+  factory QueueStatus.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      QueueStatus()..mergeFromBuffer(data, registry);
+  factory QueueStatus.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      QueueStatus()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'QueueStatus',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: QueueStatus.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'res')
+    ..aI(2, _omitFieldNames ? '' : 'free', fieldType: $pb.PbFieldType.OU3)
+    ..aI(3, _omitFieldNames ? '' : 'maxlen', fieldType: $pb.PbFieldType.OU3)
+    ..aI(4, _omitFieldNames ? '' : 'meshPacketId',
+        fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  QueueStatus clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  QueueStatus copyWith(void Function(QueueStatus) updates) =>
+      super.copyWith((message) => updates(message as QueueStatus))
+          as QueueStatus;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use QueueStatus() / QueueStatus.new instead')
+  static QueueStatus create() => QueueStatus._();
+  static $pb.GeneratedMessage $_createMessage() => QueueStatus._();
+  @$core.override
+  QueueStatus createEmptyInstance() => QueueStatus._();
+  @$core.pragma('dart2js:noInline')
+  static QueueStatus getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<QueueStatus>(
+          QueueStatus.$_createMessage);
+  static QueueStatus? _defaultInstance;
+
+  /// Last attempt to queue status, ErrorCode
+  @$pb.TagNumber(1)
+  $core.int get res => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set res($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasRes() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRes() => $_clearField(1);
+
+  /// Free entries in the outgoing queue
+  @$pb.TagNumber(2)
+  $core.int get free => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set free($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFree() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFree() => $_clearField(2);
+
+  /// Maximum entries in the outgoing queue
+  @$pb.TagNumber(3)
+  $core.int get maxlen => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set maxlen($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMaxlen() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMaxlen() => $_clearField(3);
+
+  /// What was mesh packet id that generated this response?
+  @$pb.TagNumber(4)
+  $core.int get meshPacketId => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set meshPacketId($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMeshPacketId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMeshPacketId() => $_clearField(4);
+}
+
+enum FromRadio_PayloadVariant {
+  packet,
+  myInfo,
+  nodeInfo,
+  config,
+  logRecord,
+  configCompleteId,
+  rebooted,
+  moduleConfig,
+  channel,
+  queueStatus,
+  xmodemPacket,
+  metadata,
+  mqttClientProxyMessage,
+  fileInfo,
+  clientNotification,
+  deviceuiConfig,
+  lockdownStatus,
+  regionPresets,
+  notSet
+}
+
+///
+///  Packets from the radio to the phone will appear on the fromRadio characteristic.
+///  It will support READ and NOTIFY. When a new packet arrives the device will BLE notify?
+///  It will sit in that descriptor until consumed by the phone,
+///  at which point the next item in the FIFO will be populated.
+class FromRadio extends $pb.GeneratedMessage {
+  factory FromRadio({
+    $core.int? id,
+    MeshPacket? packet,
+    MyNodeInfo? myInfo,
+    NodeInfo? nodeInfo,
+    $1.Config? config,
+    LogRecord? logRecord,
+    $core.int? configCompleteId,
+    $core.bool? rebooted,
+    $2.ModuleConfig? moduleConfig,
+    $3.Channel? channel,
+    QueueStatus? queueStatus,
+    $4.XModem? xmodemPacket,
+    DeviceMetadata? metadata,
+    MqttClientProxyMessage? mqttClientProxyMessage,
+    FileInfo? fileInfo,
+    ClientNotification? clientNotification,
+    $5.DeviceUIConfig? deviceuiConfig,
+    LockdownStatus? lockdownStatus,
+    LoRaRegionPresetMap? regionPresets,
+  }) {
+    final result = FromRadio._();
+    if (id != null) result.id = id;
+    if (packet != null) result.packet = packet;
+    if (myInfo != null) result.myInfo = myInfo;
+    if (nodeInfo != null) result.nodeInfo = nodeInfo;
+    if (config != null) result.config = config;
+    if (logRecord != null) result.logRecord = logRecord;
+    if (configCompleteId != null) result.configCompleteId = configCompleteId;
+    if (rebooted != null) result.rebooted = rebooted;
+    if (moduleConfig != null) result.moduleConfig = moduleConfig;
+    if (channel != null) result.channel = channel;
+    if (queueStatus != null) result.queueStatus = queueStatus;
+    if (xmodemPacket != null) result.xmodemPacket = xmodemPacket;
+    if (metadata != null) result.metadata = metadata;
+    if (mqttClientProxyMessage != null)
+      result.mqttClientProxyMessage = mqttClientProxyMessage;
+    if (fileInfo != null) result.fileInfo = fileInfo;
+    if (clientNotification != null)
+      result.clientNotification = clientNotification;
+    if (deviceuiConfig != null) result.deviceuiConfig = deviceuiConfig;
+    if (lockdownStatus != null) result.lockdownStatus = lockdownStatus;
+    if (regionPresets != null) result.regionPresets = regionPresets;
+    return result;
+  }
+
+  FromRadio._();
+
+  factory FromRadio.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FromRadio()..mergeFromBuffer(data, registry);
+  factory FromRadio.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FromRadio()..mergeFromJson(json, registry);
+
+  static const $core.Map<$core.int, FromRadio_PayloadVariant>
+      _FromRadio_PayloadVariantByTag = {
+    2: FromRadio_PayloadVariant.packet,
+    3: FromRadio_PayloadVariant.myInfo,
+    4: FromRadio_PayloadVariant.nodeInfo,
+    5: FromRadio_PayloadVariant.config,
+    6: FromRadio_PayloadVariant.logRecord,
+    7: FromRadio_PayloadVariant.configCompleteId,
+    8: FromRadio_PayloadVariant.rebooted,
+    9: FromRadio_PayloadVariant.moduleConfig,
+    10: FromRadio_PayloadVariant.channel,
+    11: FromRadio_PayloadVariant.queueStatus,
+    12: FromRadio_PayloadVariant.xmodemPacket,
+    13: FromRadio_PayloadVariant.metadata,
+    14: FromRadio_PayloadVariant.mqttClientProxyMessage,
+    15: FromRadio_PayloadVariant.fileInfo,
+    16: FromRadio_PayloadVariant.clientNotification,
+    17: FromRadio_PayloadVariant.deviceuiConfig,
+    18: FromRadio_PayloadVariant.lockdownStatus,
+    19: FromRadio_PayloadVariant.regionPresets,
+    0: FromRadio_PayloadVariant.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FromRadio',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: FromRadio.$_createMessage)
+    ..oo(0, [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
+    ..aI(1, _omitFieldNames ? '' : 'id', fieldType: $pb.PbFieldType.OU3)
+    ..aOM<MeshPacket>(2, _omitFieldNames ? '' : 'packet',
+        subBuilder: MeshPacket.$_createMessage)
+    ..aOM<MyNodeInfo>(3, _omitFieldNames ? '' : 'myInfo',
+        subBuilder: MyNodeInfo.$_createMessage)
+    ..aOM<NodeInfo>(4, _omitFieldNames ? '' : 'nodeInfo',
+        subBuilder: NodeInfo.$_createMessage)
+    ..aOM<$1.Config>(5, _omitFieldNames ? '' : 'config',
+        subBuilder: $1.Config.$_createMessage)
+    ..aOM<LogRecord>(6, _omitFieldNames ? '' : 'logRecord',
+        subBuilder: LogRecord.$_createMessage)
+    ..aI(7, _omitFieldNames ? '' : 'configCompleteId',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aOB(8, _omitFieldNames ? '' : 'rebooted')
+    ..aOM<$2.ModuleConfig>(9, _omitFieldNames ? '' : 'moduleConfig',
+        protoName: 'moduleConfig', subBuilder: $2.ModuleConfig.$_createMessage)
+    ..aOM<$3.Channel>(10, _omitFieldNames ? '' : 'channel',
+        subBuilder: $3.Channel.$_createMessage)
+    ..aOM<QueueStatus>(11, _omitFieldNames ? '' : 'queueStatus',
+        protoName: 'queueStatus', subBuilder: QueueStatus.$_createMessage)
+    ..aOM<$4.XModem>(12, _omitFieldNames ? '' : 'xmodemPacket',
+        protoName: 'xmodemPacket', subBuilder: $4.XModem.$_createMessage)
+    ..aOM<DeviceMetadata>(13, _omitFieldNames ? '' : 'metadata',
+        subBuilder: DeviceMetadata.$_createMessage)
+    ..aOM<MqttClientProxyMessage>(
+        14, _omitFieldNames ? '' : 'mqttClientProxyMessage',
+        protoName: 'mqttClientProxyMessage',
+        subBuilder: MqttClientProxyMessage.$_createMessage)
+    ..aOM<FileInfo>(15, _omitFieldNames ? '' : 'fileInfo',
+        protoName: 'fileInfo', subBuilder: FileInfo.$_createMessage)
+    ..aOM<ClientNotification>(16, _omitFieldNames ? '' : 'clientNotification',
+        protoName: 'clientNotification',
+        subBuilder: ClientNotification.$_createMessage)
+    ..aOM<$5.DeviceUIConfig>(17, _omitFieldNames ? '' : 'deviceuiConfig',
+        protoName: 'deviceuiConfig',
+        subBuilder: $5.DeviceUIConfig.$_createMessage)
+    ..aOM<LockdownStatus>(18, _omitFieldNames ? '' : 'lockdownStatus',
+        subBuilder: LockdownStatus.$_createMessage)
+    ..aOM<LoRaRegionPresetMap>(19, _omitFieldNames ? '' : 'regionPresets',
+        subBuilder: LoRaRegionPresetMap.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FromRadio clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FromRadio copyWith(void Function(FromRadio) updates) =>
+      super.copyWith((message) => updates(message as FromRadio)) as FromRadio;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use FromRadio() / FromRadio.new instead')
+  static FromRadio create() => FromRadio._();
+  static $pb.GeneratedMessage $_createMessage() => FromRadio._();
+  @$core.override
+  FromRadio createEmptyInstance() => FromRadio._();
+  @$core.pragma('dart2js:noInline')
+  static FromRadio getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FromRadio>(FromRadio.$_createMessage);
+  static FromRadio? _defaultInstance;
+
+  @$pb.TagNumber(2)
+  @$pb.TagNumber(3)
+  @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
+  @$pb.TagNumber(6)
+  @$pb.TagNumber(7)
+  @$pb.TagNumber(8)
+  @$pb.TagNumber(9)
+  @$pb.TagNumber(10)
+  @$pb.TagNumber(11)
+  @$pb.TagNumber(12)
+  @$pb.TagNumber(13)
+  @$pb.TagNumber(14)
+  @$pb.TagNumber(15)
+  @$pb.TagNumber(16)
+  @$pb.TagNumber(17)
+  @$pb.TagNumber(18)
+  @$pb.TagNumber(19)
+  FromRadio_PayloadVariant whichPayloadVariant() =>
+      _FromRadio_PayloadVariantByTag[$_whichOneof(0)]!;
+  @$pb.TagNumber(2)
+  @$pb.TagNumber(3)
+  @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
+  @$pb.TagNumber(6)
+  @$pb.TagNumber(7)
+  @$pb.TagNumber(8)
+  @$pb.TagNumber(9)
+  @$pb.TagNumber(10)
+  @$pb.TagNumber(11)
+  @$pb.TagNumber(12)
+  @$pb.TagNumber(13)
+  @$pb.TagNumber(14)
+  @$pb.TagNumber(15)
+  @$pb.TagNumber(16)
+  @$pb.TagNumber(17)
+  @$pb.TagNumber(18)
+  @$pb.TagNumber(19)
+  void clearPayloadVariant() => $_clearField($_whichOneof(0));
+
+  ///
+  ///  The packet id, used to allow the phone to request missing read packets from the FIFO,
+  ///  see our bluetooth docs
+  @$pb.TagNumber(1)
+  $core.int get id => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set id($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  ///
+  ///  Log levels, chosen to match python logging conventions.
+  @$pb.TagNumber(2)
+  MeshPacket get packet => $_getN(1);
+  @$pb.TagNumber(2)
+  set packet(MeshPacket value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPacket() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPacket() => $_clearField(2);
+  @$pb.TagNumber(2)
+  MeshPacket ensurePacket() => $_ensure(1);
+
+  ///
+  ///  Tells the phone what our node number is, can be -1 if we've not yet joined a mesh.
+  ///  NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
+  @$pb.TagNumber(3)
+  MyNodeInfo get myInfo => $_getN(2);
+  @$pb.TagNumber(3)
+  set myInfo(MyNodeInfo value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMyInfo() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMyInfo() => $_clearField(3);
+  @$pb.TagNumber(3)
+  MyNodeInfo ensureMyInfo() => $_ensure(2);
+
+  ///
+  ///  One packet is sent for each node in the on radio DB
+  ///  starts over with the first node in our DB
+  @$pb.TagNumber(4)
+  NodeInfo get nodeInfo => $_getN(3);
+  @$pb.TagNumber(4)
+  set nodeInfo(NodeInfo value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNodeInfo() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNodeInfo() => $_clearField(4);
+  @$pb.TagNumber(4)
+  NodeInfo ensureNodeInfo() => $_ensure(3);
+
+  ///
+  ///  Include a part of the config (was: RadioConfig radio)
+  @$pb.TagNumber(5)
+  $1.Config get config => $_getN(4);
+  @$pb.TagNumber(5)
+  set config($1.Config value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasConfig() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearConfig() => $_clearField(5);
+  @$pb.TagNumber(5)
+  $1.Config ensureConfig() => $_ensure(4);
+
+  ///
+  ///  Set to send debug console output over our protobuf stream
+  @$pb.TagNumber(6)
+  LogRecord get logRecord => $_getN(5);
+  @$pb.TagNumber(6)
+  set logRecord(LogRecord value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasLogRecord() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLogRecord() => $_clearField(6);
+  @$pb.TagNumber(6)
+  LogRecord ensureLogRecord() => $_ensure(5);
+
+  ///
+  ///  Sent as true once the device has finished sending all of the responses to want_config
+  ///  recipient should check if this ID matches our original request nonce, if
+  ///  not, it means your config responses haven't started yet.
+  ///  NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
+  @$pb.TagNumber(7)
+  $core.int get configCompleteId => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set configCompleteId($core.int value) => $_setUnsignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasConfigCompleteId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearConfigCompleteId() => $_clearField(7);
+
+  ///
+  ///  Sent to tell clients the radio has just rebooted.
+  ///  Set to true if present.
+  ///  Not used on all transports, currently just used for the serial console.
+  ///  NOTE: This ID must not change - to keep (minimal) compatibility with <1.2 version of android apps.
+  @$pb.TagNumber(8)
+  $core.bool get rebooted => $_getBF(7);
+  @$pb.TagNumber(8)
+  set rebooted($core.bool value) => $_setBool(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasRebooted() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearRebooted() => $_clearField(8);
+
+  ///
+  ///  Include module config
+  @$pb.TagNumber(9)
+  $2.ModuleConfig get moduleConfig => $_getN(8);
+  @$pb.TagNumber(9)
+  set moduleConfig($2.ModuleConfig value) => $_setField(9, value);
+  @$pb.TagNumber(9)
+  $core.bool hasModuleConfig() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearModuleConfig() => $_clearField(9);
+  @$pb.TagNumber(9)
+  $2.ModuleConfig ensureModuleConfig() => $_ensure(8);
+
+  ///
+  ///  One packet is sent for each channel
+  @$pb.TagNumber(10)
+  $3.Channel get channel => $_getN(9);
+  @$pb.TagNumber(10)
+  set channel($3.Channel value) => $_setField(10, value);
+  @$pb.TagNumber(10)
+  $core.bool hasChannel() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearChannel() => $_clearField(10);
+  @$pb.TagNumber(10)
+  $3.Channel ensureChannel() => $_ensure(9);
+
+  ///
+  ///  Queue status info
+  @$pb.TagNumber(11)
+  QueueStatus get queueStatus => $_getN(10);
+  @$pb.TagNumber(11)
+  set queueStatus(QueueStatus value) => $_setField(11, value);
+  @$pb.TagNumber(11)
+  $core.bool hasQueueStatus() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearQueueStatus() => $_clearField(11);
+  @$pb.TagNumber(11)
+  QueueStatus ensureQueueStatus() => $_ensure(10);
+
+  ///
+  ///  File Transfer Chunk
+  @$pb.TagNumber(12)
+  $4.XModem get xmodemPacket => $_getN(11);
+  @$pb.TagNumber(12)
+  set xmodemPacket($4.XModem value) => $_setField(12, value);
+  @$pb.TagNumber(12)
+  $core.bool hasXmodemPacket() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearXmodemPacket() => $_clearField(12);
+  @$pb.TagNumber(12)
+  $4.XModem ensureXmodemPacket() => $_ensure(11);
+
+  ///
+  ///  Device metadata message
+  @$pb.TagNumber(13)
+  DeviceMetadata get metadata => $_getN(12);
+  @$pb.TagNumber(13)
+  set metadata(DeviceMetadata value) => $_setField(13, value);
+  @$pb.TagNumber(13)
+  $core.bool hasMetadata() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearMetadata() => $_clearField(13);
+  @$pb.TagNumber(13)
+  DeviceMetadata ensureMetadata() => $_ensure(12);
+
+  ///
+  ///  MQTT Client Proxy Message (device sending to client / phone for publishing to MQTT)
+  @$pb.TagNumber(14)
+  MqttClientProxyMessage get mqttClientProxyMessage => $_getN(13);
+  @$pb.TagNumber(14)
+  set mqttClientProxyMessage(MqttClientProxyMessage value) =>
+      $_setField(14, value);
+  @$pb.TagNumber(14)
+  $core.bool hasMqttClientProxyMessage() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearMqttClientProxyMessage() => $_clearField(14);
+  @$pb.TagNumber(14)
+  MqttClientProxyMessage ensureMqttClientProxyMessage() => $_ensure(13);
+
+  ///
+  ///  File system manifest messages
+  @$pb.TagNumber(15)
+  FileInfo get fileInfo => $_getN(14);
+  @$pb.TagNumber(15)
+  set fileInfo(FileInfo value) => $_setField(15, value);
+  @$pb.TagNumber(15)
+  $core.bool hasFileInfo() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearFileInfo() => $_clearField(15);
+  @$pb.TagNumber(15)
+  FileInfo ensureFileInfo() => $_ensure(14);
+
+  ///
+  ///  Notification message to the client
+  @$pb.TagNumber(16)
+  ClientNotification get clientNotification => $_getN(15);
+  @$pb.TagNumber(16)
+  set clientNotification(ClientNotification value) => $_setField(16, value);
+  @$pb.TagNumber(16)
+  $core.bool hasClientNotification() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearClientNotification() => $_clearField(16);
+  @$pb.TagNumber(16)
+  ClientNotification ensureClientNotification() => $_ensure(15);
+
+  ///
+  ///  Persistent data for device-ui
+  @$pb.TagNumber(17)
+  $5.DeviceUIConfig get deviceuiConfig => $_getN(16);
+  @$pb.TagNumber(17)
+  set deviceuiConfig($5.DeviceUIConfig value) => $_setField(17, value);
+  @$pb.TagNumber(17)
+  $core.bool hasDeviceuiConfig() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearDeviceuiConfig() => $_clearField(17);
+  @$pb.TagNumber(17)
+  $5.DeviceUIConfig ensureDeviceuiConfig() => $_ensure(16);
+
+  ///
+  ///  Lockdown state notification for hardened firmware builds.
+  ///  Sent post-config (so unauthorized clients learn they must
+  ///  provision/unlock) and after each LockdownAuth admin command
+  ///  to report success or failure. Replaces the earlier scheme of
+  ///  encoding state as magic-string prefixes inside ClientNotification.
+  @$pb.TagNumber(18)
+  LockdownStatus get lockdownStatus => $_getN(17);
+  @$pb.TagNumber(18)
+  set lockdownStatus(LockdownStatus value) => $_setField(18, value);
+  @$pb.TagNumber(18)
+  $core.bool hasLockdownStatus() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearLockdownStatus() => $_clearField(18);
+  @$pb.TagNumber(18)
+  LockdownStatus ensureLockdownStatus() => $_ensure(17);
+
+  ///
+  ///  Map of which modem presets are legal in each LoRa region. Sent once
+  ///  during the want_config handshake (right after `metadata`, before the
+  ///  first `channel`) so client UIs can prevent the user from selecting an
+  ///  illegal region+preset combination. A region that does not appear in
+  ///  any group carries no constraint info and should not be restricted.
+  @$pb.TagNumber(19)
+  LoRaRegionPresetMap get regionPresets => $_getN(18);
+  @$pb.TagNumber(19)
+  set regionPresets(LoRaRegionPresetMap value) => $_setField(19, value);
+  @$pb.TagNumber(19)
+  $core.bool hasRegionPresets() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearRegionPresets() => $_clearField(19);
+  @$pb.TagNumber(19)
+  LoRaRegionPresetMap ensureRegionPresets() => $_ensure(18);
+}
+
+///
+///  Lockdown state report from firmware to client (for hardened builds
+///  with MESHTASTIC_LOCKDOWN). Sent immediately after config_complete_id
+///  to inform a freshly-connected unauthorized client what it must do,
+///  and again in response to each LockdownAuth admin command.
+class LockdownStatus extends $pb.GeneratedMessage {
+  factory LockdownStatus({
+    LockdownStatus_State? state,
+    $core.String? lockReason,
+    $core.int? bootsRemaining,
+    $core.int? validUntilEpoch,
+    $core.int? backoffSeconds,
+  }) {
+    final result = LockdownStatus._();
+    if (state != null) result.state = state;
+    if (lockReason != null) result.lockReason = lockReason;
+    if (bootsRemaining != null) result.bootsRemaining = bootsRemaining;
+    if (validUntilEpoch != null) result.validUntilEpoch = validUntilEpoch;
+    if (backoffSeconds != null) result.backoffSeconds = backoffSeconds;
+    return result;
+  }
+
+  LockdownStatus._();
+
+  factory LockdownStatus.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LockdownStatus()..mergeFromBuffer(data, registry);
+  factory LockdownStatus.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LockdownStatus()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LockdownStatus',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: LockdownStatus.$_createMessage)
+    ..aE<LockdownStatus_State>(1, _omitFieldNames ? '' : 'state',
+        enumValues: LockdownStatus_State.values)
+    ..aOS(2, _omitFieldNames ? '' : 'lockReason')
+    ..aI(3, _omitFieldNames ? '' : 'bootsRemaining',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(4, _omitFieldNames ? '' : 'validUntilEpoch',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(5, _omitFieldNames ? '' : 'backoffSeconds',
+        fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LockdownStatus clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LockdownStatus copyWith(void Function(LockdownStatus) updates) =>
+      super.copyWith((message) => updates(message as LockdownStatus))
+          as LockdownStatus;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LockdownStatus() / LockdownStatus.new instead')
+  static LockdownStatus create() => LockdownStatus._();
+  static $pb.GeneratedMessage $_createMessage() => LockdownStatus._();
+  @$core.override
+  LockdownStatus createEmptyInstance() => LockdownStatus._();
+  @$core.pragma('dart2js:noInline')
+  static LockdownStatus getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LockdownStatus>(
+          LockdownStatus.$_createMessage);
+  static LockdownStatus? _defaultInstance;
+
+  /// Current lockdown state being reported.
+  @$pb.TagNumber(1)
+  LockdownStatus_State get state => $_getN(0);
+  @$pb.TagNumber(1)
+  set state(LockdownStatus_State value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasState() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearState() => $_clearField(1);
+
+  ///
+  ///  For LOCKED: machine-readable reason. Known values:
+  ///    "needs_auth"        - storage already unlocked, client must auth
+  ///    "token_missing"     - no boot token on flash
+  ///    "token_expired"     - boot token wall-clock TTL elapsed
+  ///    "token_boots_zero"  - boot token boot-count TTL exhausted
+  ///    "token_hmac_fail"   - token tampered or wrong device
+  ///    "token_dek_fail"    - token DEK decrypt failed
+  ///    "token_wrong_size"  - token file corrupted
+  ///    "token_bad_magic"   - token file corrupted
+  ///    "not_provisioned"   - should generally use NEEDS_PROVISION state instead
+  ///  Other values may be added; clients should treat unknown values as
+  ///  "locked, ask for passphrase".
+  @$pb.TagNumber(2)
+  $core.String get lockReason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set lockReason($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLockReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLockReason() => $_clearField(2);
+
+  ///
+  ///  For UNLOCKED: remaining boots on the issued session token.
+  ///  Decrements by 1 on each subsequent boot.
+  @$pb.TagNumber(3)
+  $core.int get bootsRemaining => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set bootsRemaining($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasBootsRemaining() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBootsRemaining() => $_clearField(3);
+
+  ///
+  ///  For UNLOCKED: wall-clock expiry of the issued session token,
+  ///  absolute Unix-epoch seconds. 0 = no time limit.
+  @$pb.TagNumber(4)
+  $core.int get validUntilEpoch => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set validUntilEpoch($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasValidUntilEpoch() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearValidUntilEpoch() => $_clearField(4);
+
+  ///
+  ///  For UNLOCK_FAILED: seconds the client must wait before another
+  ///  passphrase attempt will be accepted. 0 = wrong passphrase, no
+  ///  backoff (immediate retry allowed but advisable to prompt user).
+  @$pb.TagNumber(5)
+  $core.int get backoffSeconds => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set backoffSeconds($core.int value) => $_setUnsignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasBackoffSeconds() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearBackoffSeconds() => $_clearField(5);
+}
+
+enum ClientNotification_PayloadVariant {
+  keyVerificationNumberInform,
+  keyVerificationNumberRequest,
+  keyVerificationFinal,
+  duplicatedPublicKey,
+  lowEntropyKey,
+  notSet
+}
+
+///
+///  A notification message from the device to the client
+///  To be used for important messages that should to be displayed to the user
+///  in the form of push notifications or validation messages when saving
+///  invalid configuration.
+class ClientNotification extends $pb.GeneratedMessage {
+  factory ClientNotification({
+    $core.int? replyId,
+    $core.int? time,
+    LogRecord_Level? level,
+    $core.String? message,
+    KeyVerificationNumberInform? keyVerificationNumberInform,
+    KeyVerificationNumberRequest? keyVerificationNumberRequest,
+    KeyVerificationFinal? keyVerificationFinal,
+    DuplicatedPublicKey? duplicatedPublicKey,
+    LowEntropyKey? lowEntropyKey,
+  }) {
+    final result = ClientNotification._();
+    if (replyId != null) result.replyId = replyId;
+    if (time != null) result.time = time;
+    if (level != null) result.level = level;
+    if (message != null) result.message = message;
+    if (keyVerificationNumberInform != null)
+      result.keyVerificationNumberInform = keyVerificationNumberInform;
+    if (keyVerificationNumberRequest != null)
+      result.keyVerificationNumberRequest = keyVerificationNumberRequest;
+    if (keyVerificationFinal != null)
+      result.keyVerificationFinal = keyVerificationFinal;
+    if (duplicatedPublicKey != null)
+      result.duplicatedPublicKey = duplicatedPublicKey;
+    if (lowEntropyKey != null) result.lowEntropyKey = lowEntropyKey;
+    return result;
+  }
+
+  ClientNotification._();
+
+  factory ClientNotification.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ClientNotification()..mergeFromBuffer(data, registry);
+  factory ClientNotification.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ClientNotification()..mergeFromJson(json, registry);
+
+  static const $core.Map<$core.int, ClientNotification_PayloadVariant>
+      _ClientNotification_PayloadVariantByTag = {
+    11: ClientNotification_PayloadVariant.keyVerificationNumberInform,
+    12: ClientNotification_PayloadVariant.keyVerificationNumberRequest,
+    13: ClientNotification_PayloadVariant.keyVerificationFinal,
+    14: ClientNotification_PayloadVariant.duplicatedPublicKey,
+    15: ClientNotification_PayloadVariant.lowEntropyKey,
+    0: ClientNotification_PayloadVariant.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ClientNotification',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: ClientNotification.$_createMessage)
+    ..oo(0, [11, 12, 13, 14, 15])
+    ..aI(1, _omitFieldNames ? '' : 'replyId', fieldType: $pb.PbFieldType.OU3)
+    ..aI(2, _omitFieldNames ? '' : 'time', fieldType: $pb.PbFieldType.OF3)
+    ..aE<LogRecord_Level>(3, _omitFieldNames ? '' : 'level',
+        enumValues: LogRecord_Level.values)
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..aOM<KeyVerificationNumberInform>(
+        11, _omitFieldNames ? '' : 'keyVerificationNumberInform',
+        subBuilder: KeyVerificationNumberInform.$_createMessage)
+    ..aOM<KeyVerificationNumberRequest>(
+        12, _omitFieldNames ? '' : 'keyVerificationNumberRequest',
+        subBuilder: KeyVerificationNumberRequest.$_createMessage)
+    ..aOM<KeyVerificationFinal>(
+        13, _omitFieldNames ? '' : 'keyVerificationFinal',
+        subBuilder: KeyVerificationFinal.$_createMessage)
+    ..aOM<DuplicatedPublicKey>(14, _omitFieldNames ? '' : 'duplicatedPublicKey',
+        subBuilder: DuplicatedPublicKey.$_createMessage)
+    ..aOM<LowEntropyKey>(15, _omitFieldNames ? '' : 'lowEntropyKey',
+        subBuilder: LowEntropyKey.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ClientNotification clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ClientNotification copyWith(void Function(ClientNotification) updates) =>
+      super.copyWith((message) => updates(message as ClientNotification))
+          as ClientNotification;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ClientNotification() / ClientNotification.new instead')
+  static ClientNotification create() => ClientNotification._();
+  static $pb.GeneratedMessage $_createMessage() => ClientNotification._();
+  @$core.override
+  ClientNotification createEmptyInstance() => ClientNotification._();
+  @$core.pragma('dart2js:noInline')
+  static ClientNotification getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ClientNotification>(
+          ClientNotification.$_createMessage);
+  static ClientNotification? _defaultInstance;
+
+  @$pb.TagNumber(11)
+  @$pb.TagNumber(12)
+  @$pb.TagNumber(13)
+  @$pb.TagNumber(14)
+  @$pb.TagNumber(15)
+  ClientNotification_PayloadVariant whichPayloadVariant() =>
+      _ClientNotification_PayloadVariantByTag[$_whichOneof(0)]!;
+  @$pb.TagNumber(11)
+  @$pb.TagNumber(12)
+  @$pb.TagNumber(13)
+  @$pb.TagNumber(14)
+  @$pb.TagNumber(15)
+  void clearPayloadVariant() => $_clearField($_whichOneof(0));
+
+  ///
+  ///  The id of the packet we're notifying in response to
+  @$pb.TagNumber(1)
+  $core.int get replyId => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set replyId($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReplyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReplyId() => $_clearField(1);
+
+  ///
+  ///  Seconds since 1970 - or 0 for unknown/unset
+  @$pb.TagNumber(2)
+  $core.int get time => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set time($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTime() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTime() => $_clearField(2);
+
+  ///
+  ///  The level type of notification
+  @$pb.TagNumber(3)
+  LogRecord_Level get level => $_getN(2);
+  @$pb.TagNumber(3)
+  set level(LogRecord_Level value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLevel() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLevel() => $_clearField(3);
+
+  ///
+  ///  The message body of the notification
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => $_clearField(4);
+
+  @$pb.TagNumber(11)
+  KeyVerificationNumberInform get keyVerificationNumberInform => $_getN(4);
+  @$pb.TagNumber(11)
+  set keyVerificationNumberInform(KeyVerificationNumberInform value) =>
+      $_setField(11, value);
+  @$pb.TagNumber(11)
+  $core.bool hasKeyVerificationNumberInform() => $_has(4);
+  @$pb.TagNumber(11)
+  void clearKeyVerificationNumberInform() => $_clearField(11);
+  @$pb.TagNumber(11)
+  KeyVerificationNumberInform ensureKeyVerificationNumberInform() =>
+      $_ensure(4);
+
+  @$pb.TagNumber(12)
+  KeyVerificationNumberRequest get keyVerificationNumberRequest => $_getN(5);
+  @$pb.TagNumber(12)
+  set keyVerificationNumberRequest(KeyVerificationNumberRequest value) =>
+      $_setField(12, value);
+  @$pb.TagNumber(12)
+  $core.bool hasKeyVerificationNumberRequest() => $_has(5);
+  @$pb.TagNumber(12)
+  void clearKeyVerificationNumberRequest() => $_clearField(12);
+  @$pb.TagNumber(12)
+  KeyVerificationNumberRequest ensureKeyVerificationNumberRequest() =>
+      $_ensure(5);
+
+  @$pb.TagNumber(13)
+  KeyVerificationFinal get keyVerificationFinal => $_getN(6);
+  @$pb.TagNumber(13)
+  set keyVerificationFinal(KeyVerificationFinal value) => $_setField(13, value);
+  @$pb.TagNumber(13)
+  $core.bool hasKeyVerificationFinal() => $_has(6);
+  @$pb.TagNumber(13)
+  void clearKeyVerificationFinal() => $_clearField(13);
+  @$pb.TagNumber(13)
+  KeyVerificationFinal ensureKeyVerificationFinal() => $_ensure(6);
+
+  @$pb.TagNumber(14)
+  DuplicatedPublicKey get duplicatedPublicKey => $_getN(7);
+  @$pb.TagNumber(14)
+  set duplicatedPublicKey(DuplicatedPublicKey value) => $_setField(14, value);
+  @$pb.TagNumber(14)
+  $core.bool hasDuplicatedPublicKey() => $_has(7);
+  @$pb.TagNumber(14)
+  void clearDuplicatedPublicKey() => $_clearField(14);
+  @$pb.TagNumber(14)
+  DuplicatedPublicKey ensureDuplicatedPublicKey() => $_ensure(7);
+
+  @$pb.TagNumber(15)
+  LowEntropyKey get lowEntropyKey => $_getN(8);
+  @$pb.TagNumber(15)
+  set lowEntropyKey(LowEntropyKey value) => $_setField(15, value);
+  @$pb.TagNumber(15)
+  $core.bool hasLowEntropyKey() => $_has(8);
+  @$pb.TagNumber(15)
+  void clearLowEntropyKey() => $_clearField(15);
+  @$pb.TagNumber(15)
+  LowEntropyKey ensureLowEntropyKey() => $_ensure(8);
+}
+
+class KeyVerificationNumberInform extends $pb.GeneratedMessage {
+  factory KeyVerificationNumberInform({
+    $fixnum.Int64? nonce,
+    $core.String? remoteLongname,
+    $core.int? securityNumber,
+  }) {
+    final result = KeyVerificationNumberInform._();
+    if (nonce != null) result.nonce = nonce;
+    if (remoteLongname != null) result.remoteLongname = remoteLongname;
+    if (securityNumber != null) result.securityNumber = securityNumber;
+    return result;
+  }
+
+  KeyVerificationNumberInform._();
+
+  factory KeyVerificationNumberInform.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      KeyVerificationNumberInform()..mergeFromBuffer(data, registry);
+  factory KeyVerificationNumberInform.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      KeyVerificationNumberInform()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'KeyVerificationNumberInform',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: KeyVerificationNumberInform.$_createMessage)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'nonce', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'remoteLongname')
+    ..aI(3, _omitFieldNames ? '' : 'securityNumber',
+        fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  KeyVerificationNumberInform clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  KeyVerificationNumberInform copyWith(
+          void Function(KeyVerificationNumberInform) updates) =>
+      super.copyWith(
+              (message) => updates(message as KeyVerificationNumberInform))
+          as KeyVerificationNumberInform;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use KeyVerificationNumberInform() / KeyVerificationNumberInform.new instead')
+  static KeyVerificationNumberInform create() =>
+      KeyVerificationNumberInform._();
+  static $pb.GeneratedMessage $_createMessage() =>
+      KeyVerificationNumberInform._();
+  @$core.override
+  KeyVerificationNumberInform createEmptyInstance() =>
+      KeyVerificationNumberInform._();
+  @$core.pragma('dart2js:noInline')
+  static KeyVerificationNumberInform getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<KeyVerificationNumberInform>(
+          KeyVerificationNumberInform.$_createMessage);
+  static KeyVerificationNumberInform? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get nonce => $_getI64(0);
+  @$pb.TagNumber(1)
+  set nonce($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNonce() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNonce() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get remoteLongname => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set remoteLongname($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRemoteLongname() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRemoteLongname() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get securityNumber => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set securityNumber($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSecurityNumber() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSecurityNumber() => $_clearField(3);
+}
+
+class KeyVerificationNumberRequest extends $pb.GeneratedMessage {
+  factory KeyVerificationNumberRequest({
+    $fixnum.Int64? nonce,
+    $core.String? remoteLongname,
+  }) {
+    final result = KeyVerificationNumberRequest._();
+    if (nonce != null) result.nonce = nonce;
+    if (remoteLongname != null) result.remoteLongname = remoteLongname;
+    return result;
+  }
+
+  KeyVerificationNumberRequest._();
+
+  factory KeyVerificationNumberRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      KeyVerificationNumberRequest()..mergeFromBuffer(data, registry);
+  factory KeyVerificationNumberRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      KeyVerificationNumberRequest()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'KeyVerificationNumberRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: KeyVerificationNumberRequest.$_createMessage)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'nonce', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'remoteLongname')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  KeyVerificationNumberRequest clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  KeyVerificationNumberRequest copyWith(
+          void Function(KeyVerificationNumberRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as KeyVerificationNumberRequest))
+          as KeyVerificationNumberRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use KeyVerificationNumberRequest() / KeyVerificationNumberRequest.new instead')
+  static KeyVerificationNumberRequest create() =>
+      KeyVerificationNumberRequest._();
+  static $pb.GeneratedMessage $_createMessage() =>
+      KeyVerificationNumberRequest._();
+  @$core.override
+  KeyVerificationNumberRequest createEmptyInstance() =>
+      KeyVerificationNumberRequest._();
+  @$core.pragma('dart2js:noInline')
+  static KeyVerificationNumberRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<KeyVerificationNumberRequest>(
+          KeyVerificationNumberRequest.$_createMessage);
+  static KeyVerificationNumberRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get nonce => $_getI64(0);
+  @$pb.TagNumber(1)
+  set nonce($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNonce() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNonce() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get remoteLongname => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set remoteLongname($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRemoteLongname() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRemoteLongname() => $_clearField(2);
+}
+
+class KeyVerificationFinal extends $pb.GeneratedMessage {
+  factory KeyVerificationFinal({
+    $fixnum.Int64? nonce,
+    $core.String? remoteLongname,
+    $core.bool? isSender,
+    $core.String? verificationCharacters,
+  }) {
+    final result = KeyVerificationFinal._();
+    if (nonce != null) result.nonce = nonce;
+    if (remoteLongname != null) result.remoteLongname = remoteLongname;
+    if (isSender != null) result.isSender = isSender;
+    if (verificationCharacters != null)
+      result.verificationCharacters = verificationCharacters;
+    return result;
+  }
+
+  KeyVerificationFinal._();
+
+  factory KeyVerificationFinal.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      KeyVerificationFinal()..mergeFromBuffer(data, registry);
+  factory KeyVerificationFinal.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      KeyVerificationFinal()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'KeyVerificationFinal',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: KeyVerificationFinal.$_createMessage)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'nonce', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'remoteLongname')
+    ..aOB(3, _omitFieldNames ? '' : 'isSender', protoName: 'isSender')
+    ..aOS(4, _omitFieldNames ? '' : 'verificationCharacters')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  KeyVerificationFinal clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  KeyVerificationFinal copyWith(void Function(KeyVerificationFinal) updates) =>
+      super.copyWith((message) => updates(message as KeyVerificationFinal))
+          as KeyVerificationFinal;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use KeyVerificationFinal() / KeyVerificationFinal.new instead')
+  static KeyVerificationFinal create() => KeyVerificationFinal._();
+  static $pb.GeneratedMessage $_createMessage() => KeyVerificationFinal._();
+  @$core.override
+  KeyVerificationFinal createEmptyInstance() => KeyVerificationFinal._();
+  @$core.pragma('dart2js:noInline')
+  static KeyVerificationFinal getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<KeyVerificationFinal>(
+          KeyVerificationFinal.$_createMessage);
+  static KeyVerificationFinal? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get nonce => $_getI64(0);
+  @$pb.TagNumber(1)
+  set nonce($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNonce() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNonce() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get remoteLongname => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set remoteLongname($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRemoteLongname() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRemoteLongname() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get isSender => $_getBF(2);
+  @$pb.TagNumber(3)
+  set isSender($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasIsSender() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIsSender() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get verificationCharacters => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set verificationCharacters($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasVerificationCharacters() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearVerificationCharacters() => $_clearField(4);
+}
+
+class DuplicatedPublicKey extends $pb.GeneratedMessage {
+  factory DuplicatedPublicKey() => DuplicatedPublicKey._();
+
+  DuplicatedPublicKey._();
+
+  factory DuplicatedPublicKey.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      DuplicatedPublicKey()..mergeFromBuffer(data, registry);
+  factory DuplicatedPublicKey.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      DuplicatedPublicKey()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DuplicatedPublicKey',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: DuplicatedPublicKey.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DuplicatedPublicKey clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DuplicatedPublicKey copyWith(void Function(DuplicatedPublicKey) updates) =>
+      super.copyWith((message) => updates(message as DuplicatedPublicKey))
+          as DuplicatedPublicKey;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core
+      .Deprecated('Use DuplicatedPublicKey() / DuplicatedPublicKey.new instead')
+  static DuplicatedPublicKey create() => DuplicatedPublicKey._();
+  static $pb.GeneratedMessage $_createMessage() => DuplicatedPublicKey._();
+  @$core.override
+  DuplicatedPublicKey createEmptyInstance() => DuplicatedPublicKey._();
+  @$core.pragma('dart2js:noInline')
+  static DuplicatedPublicKey getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DuplicatedPublicKey>(
+          DuplicatedPublicKey.$_createMessage);
+  static DuplicatedPublicKey? _defaultInstance;
+}
+
+class LowEntropyKey extends $pb.GeneratedMessage {
+  factory LowEntropyKey() => LowEntropyKey._();
+
+  LowEntropyKey._();
+
+  factory LowEntropyKey.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LowEntropyKey()..mergeFromBuffer(data, registry);
+  factory LowEntropyKey.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LowEntropyKey()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LowEntropyKey',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: LowEntropyKey.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LowEntropyKey clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LowEntropyKey copyWith(void Function(LowEntropyKey) updates) =>
+      super.copyWith((message) => updates(message as LowEntropyKey))
+          as LowEntropyKey;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LowEntropyKey() / LowEntropyKey.new instead')
+  static LowEntropyKey create() => LowEntropyKey._();
+  static $pb.GeneratedMessage $_createMessage() => LowEntropyKey._();
+  @$core.override
+  LowEntropyKey createEmptyInstance() => LowEntropyKey._();
+  @$core.pragma('dart2js:noInline')
+  static LowEntropyKey getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LowEntropyKey>(
+          LowEntropyKey.$_createMessage);
+  static LowEntropyKey? _defaultInstance;
+}
+
+///
+///  Individual File info for the device
+class FileInfo extends $pb.GeneratedMessage {
+  factory FileInfo({
+    $core.String? fileName,
+    $core.int? sizeBytes,
+  }) {
+    final result = FileInfo._();
+    if (fileName != null) result.fileName = fileName;
+    if (sizeBytes != null) result.sizeBytes = sizeBytes;
+    return result;
+  }
+
+  FileInfo._();
+
+  factory FileInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FileInfo()..mergeFromBuffer(data, registry);
+  factory FileInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FileInfo()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FileInfo',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: FileInfo.$_createMessage)
+    ..aOS(1, _omitFieldNames ? '' : 'fileName')
+    ..aI(2, _omitFieldNames ? '' : 'sizeBytes', fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FileInfo clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FileInfo copyWith(void Function(FileInfo) updates) =>
+      super.copyWith((message) => updates(message as FileInfo)) as FileInfo;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use FileInfo() / FileInfo.new instead')
+  static FileInfo create() => FileInfo._();
+  static $pb.GeneratedMessage $_createMessage() => FileInfo._();
+  @$core.override
+  FileInfo createEmptyInstance() => FileInfo._();
+  @$core.pragma('dart2js:noInline')
+  static FileInfo getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FileInfo>(FileInfo.$_createMessage);
+  static FileInfo? _defaultInstance;
+
+  ///
+  ///  The fully qualified path of the file
+  @$pb.TagNumber(1)
+  $core.String get fileName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set fileName($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFileName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFileName() => $_clearField(1);
+
+  ///
+  ///  The size of the file in bytes
+  @$pb.TagNumber(2)
+  $core.int get sizeBytes => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set sizeBytes($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSizeBytes() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSizeBytes() => $_clearField(2);
+}
+
+enum ToRadio_PayloadVariant {
+  packet,
+  wantConfigId,
+  disconnect,
+  xmodemPacket,
+  mqttClientProxyMessage,
+  heartbeat,
+  notSet
+}
+
+///
+///  Packets/commands to the radio will be written (reliably) to the toRadio characteristic.
+///  Once the write completes the phone can assume it is handled.
+class ToRadio extends $pb.GeneratedMessage {
+  factory ToRadio({
+    MeshPacket? packet,
+    $core.int? wantConfigId,
+    $core.bool? disconnect,
+    $4.XModem? xmodemPacket,
+    MqttClientProxyMessage? mqttClientProxyMessage,
+    Heartbeat? heartbeat,
+  }) {
+    final result = ToRadio._();
+    if (packet != null) result.packet = packet;
+    if (wantConfigId != null) result.wantConfigId = wantConfigId;
+    if (disconnect != null) result.disconnect = disconnect;
+    if (xmodemPacket != null) result.xmodemPacket = xmodemPacket;
+    if (mqttClientProxyMessage != null)
+      result.mqttClientProxyMessage = mqttClientProxyMessage;
+    if (heartbeat != null) result.heartbeat = heartbeat;
+    return result;
+  }
+
+  ToRadio._();
+
+  factory ToRadio.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ToRadio()..mergeFromBuffer(data, registry);
+  factory ToRadio.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ToRadio()..mergeFromJson(json, registry);
+
+  static const $core.Map<$core.int, ToRadio_PayloadVariant>
+      _ToRadio_PayloadVariantByTag = {
+    1: ToRadio_PayloadVariant.packet,
+    3: ToRadio_PayloadVariant.wantConfigId,
+    4: ToRadio_PayloadVariant.disconnect,
+    5: ToRadio_PayloadVariant.xmodemPacket,
+    6: ToRadio_PayloadVariant.mqttClientProxyMessage,
+    7: ToRadio_PayloadVariant.heartbeat,
+    0: ToRadio_PayloadVariant.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ToRadio',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: ToRadio.$_createMessage)
+    ..oo(0, [1, 3, 4, 5, 6, 7])
+    ..aOM<MeshPacket>(1, _omitFieldNames ? '' : 'packet',
+        subBuilder: MeshPacket.$_createMessage)
+    ..aI(3, _omitFieldNames ? '' : 'wantConfigId',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aOB(4, _omitFieldNames ? '' : 'disconnect')
+    ..aOM<$4.XModem>(5, _omitFieldNames ? '' : 'xmodemPacket',
+        protoName: 'xmodemPacket', subBuilder: $4.XModem.$_createMessage)
+    ..aOM<MqttClientProxyMessage>(
+        6, _omitFieldNames ? '' : 'mqttClientProxyMessage',
+        protoName: 'mqttClientProxyMessage',
+        subBuilder: MqttClientProxyMessage.$_createMessage)
+    ..aOM<Heartbeat>(7, _omitFieldNames ? '' : 'heartbeat',
+        subBuilder: Heartbeat.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ToRadio clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ToRadio copyWith(void Function(ToRadio) updates) =>
+      super.copyWith((message) => updates(message as ToRadio)) as ToRadio;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ToRadio() / ToRadio.new instead')
+  static ToRadio create() => ToRadio._();
+  static $pb.GeneratedMessage $_createMessage() => ToRadio._();
+  @$core.override
+  ToRadio createEmptyInstance() => ToRadio._();
+  @$core.pragma('dart2js:noInline')
+  static ToRadio getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ToRadio>(ToRadio.$_createMessage);
+  static ToRadio? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  @$pb.TagNumber(3)
+  @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
+  @$pb.TagNumber(6)
+  @$pb.TagNumber(7)
+  ToRadio_PayloadVariant whichPayloadVariant() =>
+      _ToRadio_PayloadVariantByTag[$_whichOneof(0)]!;
+  @$pb.TagNumber(1)
+  @$pb.TagNumber(3)
+  @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
+  @$pb.TagNumber(6)
+  @$pb.TagNumber(7)
+  void clearPayloadVariant() => $_clearField($_whichOneof(0));
+
+  ///
+  ///  Send this packet on the mesh
+  @$pb.TagNumber(1)
+  MeshPacket get packet => $_getN(0);
+  @$pb.TagNumber(1)
+  set packet(MeshPacket value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPacket() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPacket() => $_clearField(1);
+  @$pb.TagNumber(1)
+  MeshPacket ensurePacket() => $_ensure(0);
+
+  ///
+  ///  Phone wants radio to send full node db to the phone, This is
+  ///  typically the first packet sent to the radio when the phone gets a
+  ///  bluetooth connection. The radio will respond by sending back a
+  ///  MyNodeInfo, a owner, a radio config and a series of
+  ///  FromRadio.node_infos, and config_complete
+  ///  the integer you write into this field will be reported back in the
+  ///  config_complete_id response this allows clients to never be confused by
+  ///  a stale old partially sent config.
+  @$pb.TagNumber(3)
+  $core.int get wantConfigId => $_getIZ(1);
+  @$pb.TagNumber(3)
+  set wantConfigId($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(3)
+  $core.bool hasWantConfigId() => $_has(1);
+  @$pb.TagNumber(3)
+  void clearWantConfigId() => $_clearField(3);
+
+  ///
+  ///  Tell API server we are disconnecting now.
+  ///  This is useful for serial links where there is no hardware/protocol based notification that the client has dropped the link.
+  ///  (Sending this message is optional for clients)
+  @$pb.TagNumber(4)
+  $core.bool get disconnect => $_getBF(2);
+  @$pb.TagNumber(4)
+  set disconnect($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDisconnect() => $_has(2);
+  @$pb.TagNumber(4)
+  void clearDisconnect() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $4.XModem get xmodemPacket => $_getN(3);
+  @$pb.TagNumber(5)
+  set xmodemPacket($4.XModem value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasXmodemPacket() => $_has(3);
+  @$pb.TagNumber(5)
+  void clearXmodemPacket() => $_clearField(5);
+  @$pb.TagNumber(5)
+  $4.XModem ensureXmodemPacket() => $_ensure(3);
+
+  ///
+  ///  MQTT Client Proxy Message (for client / phone subscribed to MQTT sending to device)
+  @$pb.TagNumber(6)
+  MqttClientProxyMessage get mqttClientProxyMessage => $_getN(4);
+  @$pb.TagNumber(6)
+  set mqttClientProxyMessage(MqttClientProxyMessage value) =>
+      $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasMqttClientProxyMessage() => $_has(4);
+  @$pb.TagNumber(6)
+  void clearMqttClientProxyMessage() => $_clearField(6);
+  @$pb.TagNumber(6)
+  MqttClientProxyMessage ensureMqttClientProxyMessage() => $_ensure(4);
+
+  ///
+  ///  Heartbeat message (used to keep the device connection awake on serial)
+  @$pb.TagNumber(7)
+  Heartbeat get heartbeat => $_getN(5);
+  @$pb.TagNumber(7)
+  set heartbeat(Heartbeat value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasHeartbeat() => $_has(5);
+  @$pb.TagNumber(7)
+  void clearHeartbeat() => $_clearField(7);
+  @$pb.TagNumber(7)
+  Heartbeat ensureHeartbeat() => $_ensure(5);
+}
+
+///
+///  Compressed message payload
+class Compressed extends $pb.GeneratedMessage {
+  factory Compressed({
+    $6.PortNum? portnum,
+    $core.List<$core.int>? data,
+  }) {
+    final result = Compressed._();
+    if (portnum != null) result.portnum = portnum;
+    if (data != null) result.data = data;
+    return result;
+  }
+
+  Compressed._();
+
+  factory Compressed.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Compressed()..mergeFromBuffer(data, registry);
+  factory Compressed.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Compressed()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Compressed',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: Compressed.$_createMessage)
+    ..aE<$6.PortNum>(1, _omitFieldNames ? '' : 'portnum',
+        enumValues: $6.PortNum.values)
+    ..a<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'data', $pb.PbFieldType.OY)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Compressed clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Compressed copyWith(void Function(Compressed) updates) =>
+      super.copyWith((message) => updates(message as Compressed)) as Compressed;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Compressed() / Compressed.new instead')
+  static Compressed create() => Compressed._();
+  static $pb.GeneratedMessage $_createMessage() => Compressed._();
+  @$core.override
+  Compressed createEmptyInstance() => Compressed._();
+  @$core.pragma('dart2js:noInline')
+  static Compressed getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Compressed>(Compressed.$_createMessage);
+  static Compressed? _defaultInstance;
+
+  ///
+  ///  PortNum to determine the how to handle the compressed payload.
+  @$pb.TagNumber(1)
+  $6.PortNum get portnum => $_getN(0);
+  @$pb.TagNumber(1)
+  set portnum($6.PortNum value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPortnum() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPortnum() => $_clearField(1);
+
+  ///
+  ///  Compressed data.
+  @$pb.TagNumber(2)
+  $core.List<$core.int> get data => $_getN(1);
+  @$pb.TagNumber(2)
+  set data($core.List<$core.int> value) => $_setBytes(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasData() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearData() => $_clearField(2);
+}
+
+///
+///  Full info on edges for a single node
+class NeighborInfo extends $pb.GeneratedMessage {
+  factory NeighborInfo({
+    $core.int? nodeId,
+    $core.int? lastSentById,
+    $core.int? nodeBroadcastIntervalSecs,
+    $core.Iterable<Neighbor>? neighbors,
+  }) {
+    final result = NeighborInfo._();
+    if (nodeId != null) result.nodeId = nodeId;
+    if (lastSentById != null) result.lastSentById = lastSentById;
+    if (nodeBroadcastIntervalSecs != null)
+      result.nodeBroadcastIntervalSecs = nodeBroadcastIntervalSecs;
+    if (neighbors != null) result.neighbors.addAll(neighbors);
+    return result;
+  }
+
+  NeighborInfo._();
+
+  factory NeighborInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      NeighborInfo()..mergeFromBuffer(data, registry);
+  factory NeighborInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      NeighborInfo()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'NeighborInfo',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: NeighborInfo.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'nodeId', fieldType: $pb.PbFieldType.OU3)
+    ..aI(2, _omitFieldNames ? '' : 'lastSentById',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(3, _omitFieldNames ? '' : 'nodeBroadcastIntervalSecs',
+        fieldType: $pb.PbFieldType.OU3)
+    ..pPM<Neighbor>(4, _omitFieldNames ? '' : 'neighbors',
+        subBuilder: Neighbor.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  NeighborInfo clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  NeighborInfo copyWith(void Function(NeighborInfo) updates) =>
+      super.copyWith((message) => updates(message as NeighborInfo))
+          as NeighborInfo;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use NeighborInfo() / NeighborInfo.new instead')
+  static NeighborInfo create() => NeighborInfo._();
+  static $pb.GeneratedMessage $_createMessage() => NeighborInfo._();
+  @$core.override
+  NeighborInfo createEmptyInstance() => NeighborInfo._();
+  @$core.pragma('dart2js:noInline')
+  static NeighborInfo getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NeighborInfo>(
+          NeighborInfo.$_createMessage);
+  static NeighborInfo? _defaultInstance;
+
+  ///
+  ///  The node ID of the node sending info on its neighbors
+  @$pb.TagNumber(1)
+  $core.int get nodeId => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set nodeId($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNodeId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNodeId() => $_clearField(1);
+
+  ///
+  ///  Field to pass neighbor info for the next sending cycle
+  @$pb.TagNumber(2)
+  $core.int get lastSentById => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set lastSentById($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLastSentById() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLastSentById() => $_clearField(2);
+
+  ///
+  ///  Broadcast interval of the represented node (in seconds)
+  @$pb.TagNumber(3)
+  $core.int get nodeBroadcastIntervalSecs => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set nodeBroadcastIntervalSecs($core.int value) =>
+      $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasNodeBroadcastIntervalSecs() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearNodeBroadcastIntervalSecs() => $_clearField(3);
+
+  ///
+  ///  The list of out edges from this node
+  @$pb.TagNumber(4)
+  $pb.PbList<Neighbor> get neighbors => $_getList(3);
+}
+
+///
+///  A single edge in the mesh
+class Neighbor extends $pb.GeneratedMessage {
+  factory Neighbor({
+    $core.int? nodeId,
+    $core.double? snr,
+    $core.int? lastRxTime,
+    $core.int? nodeBroadcastIntervalSecs,
+  }) {
+    final result = Neighbor._();
+    if (nodeId != null) result.nodeId = nodeId;
+    if (snr != null) result.snr = snr;
+    if (lastRxTime != null) result.lastRxTime = lastRxTime;
+    if (nodeBroadcastIntervalSecs != null)
+      result.nodeBroadcastIntervalSecs = nodeBroadcastIntervalSecs;
+    return result;
+  }
+
+  Neighbor._();
+
+  factory Neighbor.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Neighbor()..mergeFromBuffer(data, registry);
+  factory Neighbor.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Neighbor()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Neighbor',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: Neighbor.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'nodeId', fieldType: $pb.PbFieldType.OU3)
+    ..aD(2, _omitFieldNames ? '' : 'snr', fieldType: $pb.PbFieldType.OF)
+    ..aI(3, _omitFieldNames ? '' : 'lastRxTime', fieldType: $pb.PbFieldType.OF3)
+    ..aI(4, _omitFieldNames ? '' : 'nodeBroadcastIntervalSecs',
+        fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Neighbor clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Neighbor copyWith(void Function(Neighbor) updates) =>
+      super.copyWith((message) => updates(message as Neighbor)) as Neighbor;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Neighbor() / Neighbor.new instead')
+  static Neighbor create() => Neighbor._();
+  static $pb.GeneratedMessage $_createMessage() => Neighbor._();
+  @$core.override
+  Neighbor createEmptyInstance() => Neighbor._();
+  @$core.pragma('dart2js:noInline')
+  static Neighbor getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Neighbor>(Neighbor.$_createMessage);
+  static Neighbor? _defaultInstance;
+
+  ///
+  ///  Node ID of neighbor
+  @$pb.TagNumber(1)
+  $core.int get nodeId => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set nodeId($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNodeId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNodeId() => $_clearField(1);
+
+  ///
+  ///  SNR of last heard message
+  @$pb.TagNumber(2)
+  $core.double get snr => $_getN(1);
+  @$pb.TagNumber(2)
+  set snr($core.double value) => $_setFloat(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSnr() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSnr() => $_clearField(2);
+
+  ///
+  ///  Reception time (in secs since 1970) of last message that was last sent by this ID.
+  ///  Note: this is for local storage only and will not be sent out over the mesh.
+  @$pb.TagNumber(3)
+  $core.int get lastRxTime => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set lastRxTime($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLastRxTime() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLastRxTime() => $_clearField(3);
+
+  ///
+  ///  Broadcast interval of this neighbor (in seconds).
+  ///  Note: this is for local storage only and will not be sent out over the mesh.
+  @$pb.TagNumber(4)
+  $core.int get nodeBroadcastIntervalSecs => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set nodeBroadcastIntervalSecs($core.int value) =>
+      $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNodeBroadcastIntervalSecs() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNodeBroadcastIntervalSecs() => $_clearField(4);
+}
+
+///
+///  Device metadata response
+class DeviceMetadata extends $pb.GeneratedMessage {
+  factory DeviceMetadata({
+    $core.String? firmwareVersion,
+    $core.int? deviceStateVersion,
+    $core.bool? canShutdown,
+    $core.bool? hasWifi,
+    $core.bool? hasBluetooth,
+    $core.bool? hasEthernet,
+    $1.Config_DeviceConfig_Role? role,
+    $core.int? positionFlags,
+    HardwareModel? hwModel,
+    $core.bool? hasRemoteHardware,
+    $core.bool? hasPKC,
+    $core.int? excludedModules,
+    $core.bool? hasXeddsa,
+  }) {
+    final result = DeviceMetadata._();
+    if (firmwareVersion != null) result.firmwareVersion = firmwareVersion;
+    if (deviceStateVersion != null)
+      result.deviceStateVersion = deviceStateVersion;
+    if (canShutdown != null) result.canShutdown = canShutdown;
+    if (hasWifi != null) result.hasWifi = hasWifi;
+    if (hasBluetooth != null) result.hasBluetooth = hasBluetooth;
+    if (hasEthernet != null) result.hasEthernet = hasEthernet;
+    if (role != null) result.role = role;
+    if (positionFlags != null) result.positionFlags = positionFlags;
+    if (hwModel != null) result.hwModel = hwModel;
+    if (hasRemoteHardware != null) result.hasRemoteHardware = hasRemoteHardware;
+    if (hasPKC != null) result.hasPKC = hasPKC;
+    if (excludedModules != null) result.excludedModules = excludedModules;
+    if (hasXeddsa != null) result.hasXeddsa = hasXeddsa;
+    return result;
+  }
+
+  DeviceMetadata._();
+
+  factory DeviceMetadata.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      DeviceMetadata()..mergeFromBuffer(data, registry);
+  factory DeviceMetadata.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      DeviceMetadata()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'DeviceMetadata',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: DeviceMetadata.$_createMessage)
+    ..aOS(1, _omitFieldNames ? '' : 'firmwareVersion')
+    ..aI(2, _omitFieldNames ? '' : 'deviceStateVersion',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aOB(3, _omitFieldNames ? '' : 'canShutdown', protoName: 'canShutdown')
+    ..aOB(4, _omitFieldNames ? '' : 'hasWifi', protoName: 'hasWifi')
+    ..aOB(5, _omitFieldNames ? '' : 'hasBluetooth', protoName: 'hasBluetooth')
+    ..aOB(6, _omitFieldNames ? '' : 'hasEthernet', protoName: 'hasEthernet')
+    ..aE<$1.Config_DeviceConfig_Role>(7, _omitFieldNames ? '' : 'role',
+        enumValues: $1.Config_DeviceConfig_Role.values)
+    ..aI(8, _omitFieldNames ? '' : 'positionFlags',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aE<HardwareModel>(9, _omitFieldNames ? '' : 'hwModel',
+        enumValues: HardwareModel.values)
+    ..aOB(10, _omitFieldNames ? '' : 'hasRemoteHardware',
+        protoName: 'hasRemoteHardware')
+    ..aOB(11, _omitFieldNames ? '' : 'hasPKC', protoName: 'hasPKC')
+    ..aI(12, _omitFieldNames ? '' : 'excludedModules',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aOB(14, _omitFieldNames ? '' : 'hasXeddsa')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeviceMetadata clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  DeviceMetadata copyWith(void Function(DeviceMetadata) updates) =>
+      super.copyWith((message) => updates(message as DeviceMetadata))
+          as DeviceMetadata;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use DeviceMetadata() / DeviceMetadata.new instead')
+  static DeviceMetadata create() => DeviceMetadata._();
+  static $pb.GeneratedMessage $_createMessage() => DeviceMetadata._();
+  @$core.override
+  DeviceMetadata createEmptyInstance() => DeviceMetadata._();
+  @$core.pragma('dart2js:noInline')
+  static DeviceMetadata getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeviceMetadata>(
+          DeviceMetadata.$_createMessage);
+  static DeviceMetadata? _defaultInstance;
+
+  ///
+  ///  Device firmware version string
+  @$pb.TagNumber(1)
+  $core.String get firmwareVersion => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set firmwareVersion($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasFirmwareVersion() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFirmwareVersion() => $_clearField(1);
+
+  ///
+  ///  Device state version
+  @$pb.TagNumber(2)
+  $core.int get deviceStateVersion => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set deviceStateVersion($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasDeviceStateVersion() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDeviceStateVersion() => $_clearField(2);
+
+  ///
+  ///  Indicates whether the device can shutdown CPU natively or via power management chip
+  @$pb.TagNumber(3)
+  $core.bool get canShutdown => $_getBF(2);
+  @$pb.TagNumber(3)
+  set canShutdown($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCanShutdown() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCanShutdown() => $_clearField(3);
+
+  ///
+  ///  Indicates that the device has native wifi capability
+  @$pb.TagNumber(4)
+  $core.bool get hasWifi => $_getBF(3);
+  @$pb.TagNumber(4)
+  set hasWifi($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasHasWifi() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearHasWifi() => $_clearField(4);
+
+  ///
+  ///  Indicates that the device has native bluetooth capability
+  @$pb.TagNumber(5)
+  $core.bool get hasBluetooth => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasBluetooth($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasHasBluetooth() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasBluetooth() => $_clearField(5);
+
+  ///
+  ///  Indicates that the device has an ethernet peripheral
+  @$pb.TagNumber(6)
+  $core.bool get hasEthernet => $_getBF(5);
+  @$pb.TagNumber(6)
+  set hasEthernet($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasHasEthernet() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearHasEthernet() => $_clearField(6);
+
+  ///
+  ///  Indicates that the device's role in the mesh
+  @$pb.TagNumber(7)
+  $1.Config_DeviceConfig_Role get role => $_getN(6);
+  @$pb.TagNumber(7)
+  set role($1.Config_DeviceConfig_Role value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasRole() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRole() => $_clearField(7);
+
+  ///
+  ///  Indicates the device's current enabled position flags
+  @$pb.TagNumber(8)
+  $core.int get positionFlags => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set positionFlags($core.int value) => $_setUnsignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasPositionFlags() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPositionFlags() => $_clearField(8);
+
+  ///
+  ///  Device hardware model
+  @$pb.TagNumber(9)
+  HardwareModel get hwModel => $_getN(8);
+  @$pb.TagNumber(9)
+  set hwModel(HardwareModel value) => $_setField(9, value);
+  @$pb.TagNumber(9)
+  $core.bool hasHwModel() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearHwModel() => $_clearField(9);
+
+  ///
+  ///  Has Remote Hardware enabled
+  @$pb.TagNumber(10)
+  $core.bool get hasRemoteHardware => $_getBF(9);
+  @$pb.TagNumber(10)
+  set hasRemoteHardware($core.bool value) => $_setBool(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasHasRemoteHardware() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearHasRemoteHardware() => $_clearField(10);
+
+  ///
+  ///  Has PKC capabilities
+  @$pb.TagNumber(11)
+  $core.bool get hasPKC => $_getBF(10);
+  @$pb.TagNumber(11)
+  set hasPKC($core.bool value) => $_setBool(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasHasPKC() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearHasPKC() => $_clearField(11);
+
+  ///
+  ///  Bit field of boolean for excluded modules
+  ///  (bitwise OR of ExcludedModules)
+  @$pb.TagNumber(12)
+  $core.int get excludedModules => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set excludedModules($core.int value) => $_setUnsignedInt32(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasExcludedModules() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearExcludedModules() => $_clearField(12);
+
+  ///
+  ///  Indicates whether this firmware build includes XEdDSA packet signature verification.
+  ///  This is a read-only capability and must be false when XEdDSA is not compiled in.
+  @$pb.TagNumber(14)
+  $core.bool get hasXeddsa => $_getBF(12);
+  @$pb.TagNumber(14)
+  set hasXeddsa($core.bool value) => $_setBool(12, value);
+  @$pb.TagNumber(14)
+  $core.bool hasHasXeddsa() => $_has(12);
+  @$pb.TagNumber(14)
+  void clearHasXeddsa() => $_clearField(14);
+}
+
+///
+///  A distinct set of legal modem presets shared by one or more LoRa regions.
+///  Regions that have an identical preset list / default / licensing reference
+///  the same group (by index) via LoRaRegionPresetMap.region_groups. This keeps
+///  the whole map small enough to fit in a single FromRadio packet, since most
+///  regions share the one standard preset list.
+class LoRaPresetGroup extends $pb.GeneratedMessage {
+  factory LoRaPresetGroup({
+    $core.Iterable<$1.Config_LoRaConfig_ModemPreset>? presets,
+    $1.Config_LoRaConfig_ModemPreset? defaultPreset,
+    $core.bool? licensedOnly,
+  }) {
+    final result = LoRaPresetGroup._();
+    if (presets != null) result.presets.addAll(presets);
+    if (defaultPreset != null) result.defaultPreset = defaultPreset;
+    if (licensedOnly != null) result.licensedOnly = licensedOnly;
+    return result;
+  }
+
+  LoRaPresetGroup._();
+
+  factory LoRaPresetGroup.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LoRaPresetGroup()..mergeFromBuffer(data, registry);
+  factory LoRaPresetGroup.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LoRaPresetGroup()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LoRaPresetGroup',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: LoRaPresetGroup.$_createMessage)
+    ..pc<$1.Config_LoRaConfig_ModemPreset>(
+        1, _omitFieldNames ? '' : 'presets', $pb.PbFieldType.KE,
+        valueOf: $1.Config_LoRaConfig_ModemPreset.valueOf,
+        enumValues: $1.Config_LoRaConfig_ModemPreset.values,
+        defaultEnumValue: $1.Config_LoRaConfig_ModemPreset.LONG_FAST)
+    ..aE<$1.Config_LoRaConfig_ModemPreset>(
+        2, _omitFieldNames ? '' : 'defaultPreset',
+        enumValues: $1.Config_LoRaConfig_ModemPreset.values)
+    ..aOB(3, _omitFieldNames ? '' : 'licensedOnly')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LoRaPresetGroup clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LoRaPresetGroup copyWith(void Function(LoRaPresetGroup) updates) =>
+      super.copyWith((message) => updates(message as LoRaPresetGroup))
+          as LoRaPresetGroup;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LoRaPresetGroup() / LoRaPresetGroup.new instead')
+  static LoRaPresetGroup create() => LoRaPresetGroup._();
+  static $pb.GeneratedMessage $_createMessage() => LoRaPresetGroup._();
+  @$core.override
+  LoRaPresetGroup createEmptyInstance() => LoRaPresetGroup._();
+  @$core.pragma('dart2js:noInline')
+  static LoRaPresetGroup getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LoRaPresetGroup>(
+          LoRaPresetGroup.$_createMessage);
+  static LoRaPresetGroup? _defaultInstance;
+
+  ///
+  ///  The modem presets that are legal for every region referencing this group.
+  @$pb.TagNumber(1)
+  $pb.PbList<$1.Config_LoRaConfig_ModemPreset> get presets => $_getList(0);
+
+  ///
+  ///  The firmware's default modem preset for regions in this group.
+  ///  Always one of `presets`. Clients should select this when switching to one
+  ///  of these regions, or when the current preset is not legal in the new region.
+  @$pb.TagNumber(2)
+  $1.Config_LoRaConfig_ModemPreset get defaultPreset => $_getN(1);
+  @$pb.TagNumber(2)
+  set defaultPreset($1.Config_LoRaConfig_ModemPreset value) =>
+      $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasDefaultPreset() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDefaultPreset() => $_clearField(2);
+
+  ///
+  ///  True if regions referencing this group are for licensed operators only
+  ///  (e.g. amateur / ham radio bands). Clients should warn or gate accordingly.
+  @$pb.TagNumber(3)
+  $core.bool get licensedOnly => $_getBF(2);
+  @$pb.TagNumber(3)
+  set licensedOnly($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLicensedOnly() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLicensedOnly() => $_clearField(3);
+}
+
+///
+///  Associates a single LoRa region with its preset group.
+class LoRaRegionPresets extends $pb.GeneratedMessage {
+  factory LoRaRegionPresets({
+    $1.Config_LoRaConfig_RegionCode? region,
+    $core.int? groupIndex,
+  }) {
+    final result = LoRaRegionPresets._();
+    if (region != null) result.region = region;
+    if (groupIndex != null) result.groupIndex = groupIndex;
+    return result;
+  }
+
+  LoRaRegionPresets._();
+
+  factory LoRaRegionPresets.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LoRaRegionPresets()..mergeFromBuffer(data, registry);
+  factory LoRaRegionPresets.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LoRaRegionPresets()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LoRaRegionPresets',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: LoRaRegionPresets.$_createMessage)
+    ..aE<$1.Config_LoRaConfig_RegionCode>(1, _omitFieldNames ? '' : 'region',
+        enumValues: $1.Config_LoRaConfig_RegionCode.values)
+    ..aI(2, _omitFieldNames ? '' : 'groupIndex', fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LoRaRegionPresets clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LoRaRegionPresets copyWith(void Function(LoRaRegionPresets) updates) =>
+      super.copyWith((message) => updates(message as LoRaRegionPresets))
+          as LoRaRegionPresets;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LoRaRegionPresets() / LoRaRegionPresets.new instead')
+  static LoRaRegionPresets create() => LoRaRegionPresets._();
+  static $pb.GeneratedMessage $_createMessage() => LoRaRegionPresets._();
+  @$core.override
+  LoRaRegionPresets createEmptyInstance() => LoRaRegionPresets._();
+  @$core.pragma('dart2js:noInline')
+  static LoRaRegionPresets getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LoRaRegionPresets>(
+          LoRaRegionPresets.$_createMessage);
+  static LoRaRegionPresets? _defaultInstance;
+
+  ///
+  ///  The LoRa region this entry describes.
+  @$pb.TagNumber(1)
+  $1.Config_LoRaConfig_RegionCode get region => $_getN(0);
+  @$pb.TagNumber(1)
+  set region($1.Config_LoRaConfig_RegionCode value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasRegion() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRegion() => $_clearField(1);
+
+  ///
+  ///  Index into LoRaRegionPresetMap.groups for the preset list that is legal
+  ///  in `region`.
+  @$pb.TagNumber(2)
+  $core.int get groupIndex => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set groupIndex($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasGroupIndex() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearGroupIndex() => $_clearField(2);
+}
+
+///
+///  Map describing which modem presets are valid for each LoRa region. Sent by
+///  the firmware during the want_config handshake (as FromRadio.region_presets)
+///  so that client UIs can prevent illegal region+preset selections.
+///
+///  Delivery is grouped to save space: `groups` holds each distinct preset list,
+///  and `region_groups` maps every known region to one of those groups by index.
+///  A region that does NOT appear in `region_groups` carries no constraint
+///  information and should not be restricted by the client (e.g. firmware that
+///  predates this message, or a region with no firmware table entry). Clients
+///  must also tolerate this whole message being absent.
+class LoRaRegionPresetMap extends $pb.GeneratedMessage {
+  factory LoRaRegionPresetMap({
+    $core.Iterable<LoRaPresetGroup>? groups,
+    $core.Iterable<LoRaRegionPresets>? regionGroups,
+  }) {
+    final result = LoRaRegionPresetMap._();
+    if (groups != null) result.groups.addAll(groups);
+    if (regionGroups != null) result.regionGroups.addAll(regionGroups);
+    return result;
+  }
+
+  LoRaRegionPresetMap._();
+
+  factory LoRaRegionPresetMap.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LoRaRegionPresetMap()..mergeFromBuffer(data, registry);
+  factory LoRaRegionPresetMap.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      LoRaRegionPresetMap()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LoRaRegionPresetMap',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: LoRaRegionPresetMap.$_createMessage)
+    ..pPM<LoRaPresetGroup>(1, _omitFieldNames ? '' : 'groups',
+        subBuilder: LoRaPresetGroup.$_createMessage)
+    ..pPM<LoRaRegionPresets>(2, _omitFieldNames ? '' : 'regionGroups',
+        subBuilder: LoRaRegionPresets.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LoRaRegionPresetMap clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LoRaRegionPresetMap copyWith(void Function(LoRaRegionPresetMap) updates) =>
+      super.copyWith((message) => updates(message as LoRaRegionPresetMap))
+          as LoRaRegionPresetMap;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core
+      .Deprecated('Use LoRaRegionPresetMap() / LoRaRegionPresetMap.new instead')
+  static LoRaRegionPresetMap create() => LoRaRegionPresetMap._();
+  static $pb.GeneratedMessage $_createMessage() => LoRaRegionPresetMap._();
+  @$core.override
+  LoRaRegionPresetMap createEmptyInstance() => LoRaRegionPresetMap._();
+  @$core.pragma('dart2js:noInline')
+  static LoRaRegionPresetMap getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<LoRaRegionPresetMap>(
+          LoRaRegionPresetMap.$_createMessage);
+  static LoRaRegionPresetMap? _defaultInstance;
+
+  ///
+  ///  One entry per distinct (preset-list, default, licensing) combination.
+  ///  Referenced by index from `region_groups`.
+  @$pb.TagNumber(1)
+  $pb.PbList<LoRaPresetGroup> get groups => $_getList(0);
+
+  ///
+  ///  One entry per known LoRa region, pointing at its preset group.
+  @$pb.TagNumber(2)
+  $pb.PbList<LoRaRegionPresets> get regionGroups => $_getList(1);
+}
+
+///
+///  A heartbeat message is sent to the node from the client to keep the connection alive.
+///  This is currently only needed to keep serial connections alive, but can be used by any PhoneAPI.
+class Heartbeat extends $pb.GeneratedMessage {
+  factory Heartbeat({
+    $core.int? nonce,
+  }) {
+    final result = Heartbeat._();
+    if (nonce != null) result.nonce = nonce;
+    return result;
+  }
+
+  Heartbeat._();
+
+  factory Heartbeat.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Heartbeat()..mergeFromBuffer(data, registry);
+  factory Heartbeat.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      Heartbeat()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Heartbeat',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: Heartbeat.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'nonce', fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Heartbeat clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Heartbeat copyWith(void Function(Heartbeat) updates) =>
+      super.copyWith((message) => updates(message as Heartbeat)) as Heartbeat;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Heartbeat() / Heartbeat.new instead')
+  static Heartbeat create() => Heartbeat._();
+  static $pb.GeneratedMessage $_createMessage() => Heartbeat._();
+  @$core.override
+  Heartbeat createEmptyInstance() => Heartbeat._();
+  @$core.pragma('dart2js:noInline')
+  static Heartbeat getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Heartbeat>(Heartbeat.$_createMessage);
+  static Heartbeat? _defaultInstance;
+
+  ///
+  ///  The nonce of the heartbeat message
+  @$pb.TagNumber(1)
+  $core.int get nonce => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set nonce($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNonce() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNonce() => $_clearField(1);
+}
+
+///
+///  RemoteHardwarePins associated with a node
+class NodeRemoteHardwarePin extends $pb.GeneratedMessage {
+  factory NodeRemoteHardwarePin({
+    $core.int? nodeNum,
+    $2.RemoteHardwarePin? pin,
+  }) {
+    final result = NodeRemoteHardwarePin._();
+    if (nodeNum != null) result.nodeNum = nodeNum;
+    if (pin != null) result.pin = pin;
+    return result;
+  }
+
+  NodeRemoteHardwarePin._();
+
+  factory NodeRemoteHardwarePin.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      NodeRemoteHardwarePin()..mergeFromBuffer(data, registry);
+  factory NodeRemoteHardwarePin.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      NodeRemoteHardwarePin()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'NodeRemoteHardwarePin',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: NodeRemoteHardwarePin.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'nodeNum', fieldType: $pb.PbFieldType.OU3)
+    ..aOM<$2.RemoteHardwarePin>(2, _omitFieldNames ? '' : 'pin',
+        subBuilder: $2.RemoteHardwarePin.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  NodeRemoteHardwarePin clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  NodeRemoteHardwarePin copyWith(
+          void Function(NodeRemoteHardwarePin) updates) =>
+      super.copyWith((message) => updates(message as NodeRemoteHardwarePin))
+          as NodeRemoteHardwarePin;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use NodeRemoteHardwarePin() / NodeRemoteHardwarePin.new instead')
+  static NodeRemoteHardwarePin create() => NodeRemoteHardwarePin._();
+  static $pb.GeneratedMessage $_createMessage() => NodeRemoteHardwarePin._();
+  @$core.override
+  NodeRemoteHardwarePin createEmptyInstance() => NodeRemoteHardwarePin._();
+  @$core.pragma('dart2js:noInline')
+  static NodeRemoteHardwarePin getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<NodeRemoteHardwarePin>(
+          NodeRemoteHardwarePin.$_createMessage);
+  static NodeRemoteHardwarePin? _defaultInstance;
+
+  ///
+  ///  The node_num exposing the available gpio pin
+  @$pb.TagNumber(1)
+  $core.int get nodeNum => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set nodeNum($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNodeNum() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNodeNum() => $_clearField(1);
+
+  ///
+  ///  The the available gpio pin for usage with RemoteHardware module
+  @$pb.TagNumber(2)
+  $2.RemoteHardwarePin get pin => $_getN(1);
+  @$pb.TagNumber(2)
+  set pin($2.RemoteHardwarePin value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPin() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPin() => $_clearField(2);
+  @$pb.TagNumber(2)
+  $2.RemoteHardwarePin ensurePin() => $_ensure(1);
+}
+
+class ChunkedPayload extends $pb.GeneratedMessage {
+  factory ChunkedPayload({
+    $core.int? payloadId,
+    $core.int? chunkCount,
+    $core.int? chunkIndex,
+    $core.List<$core.int>? payloadChunk,
+  }) {
+    final result = ChunkedPayload._();
+    if (payloadId != null) result.payloadId = payloadId;
+    if (chunkCount != null) result.chunkCount = chunkCount;
+    if (chunkIndex != null) result.chunkIndex = chunkIndex;
+    if (payloadChunk != null) result.payloadChunk = payloadChunk;
+    return result;
+  }
+
+  ChunkedPayload._();
+
+  factory ChunkedPayload.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ChunkedPayload()..mergeFromBuffer(data, registry);
+  factory ChunkedPayload.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ChunkedPayload()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ChunkedPayload',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: ChunkedPayload.$_createMessage)
+    ..aI(1, _omitFieldNames ? '' : 'payloadId', fieldType: $pb.PbFieldType.OU3)
+    ..aI(2, _omitFieldNames ? '' : 'chunkCount', fieldType: $pb.PbFieldType.OU3)
+    ..aI(3, _omitFieldNames ? '' : 'chunkIndex', fieldType: $pb.PbFieldType.OU3)
+    ..a<$core.List<$core.int>>(
+        4, _omitFieldNames ? '' : 'payloadChunk', $pb.PbFieldType.OY)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ChunkedPayload clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ChunkedPayload copyWith(void Function(ChunkedPayload) updates) =>
+      super.copyWith((message) => updates(message as ChunkedPayload))
+          as ChunkedPayload;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ChunkedPayload() / ChunkedPayload.new instead')
+  static ChunkedPayload create() => ChunkedPayload._();
+  static $pb.GeneratedMessage $_createMessage() => ChunkedPayload._();
+  @$core.override
+  ChunkedPayload createEmptyInstance() => ChunkedPayload._();
+  @$core.pragma('dart2js:noInline')
+  static ChunkedPayload getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ChunkedPayload>(
+          ChunkedPayload.$_createMessage);
+  static ChunkedPayload? _defaultInstance;
+
+  ///
+  ///  The ID of the entire payload
+  @$pb.TagNumber(1)
+  $core.int get payloadId => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set payloadId($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPayloadId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPayloadId() => $_clearField(1);
+
+  ///
+  ///  The total number of chunks in the payload
+  @$pb.TagNumber(2)
+  $core.int get chunkCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set chunkCount($core.int value) => $_setUnsignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasChunkCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChunkCount() => $_clearField(2);
+
+  ///
+  ///  The current chunk index in the total
+  @$pb.TagNumber(3)
+  $core.int get chunkIndex => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set chunkIndex($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasChunkIndex() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearChunkIndex() => $_clearField(3);
+
+  ///
+  ///  The binary data of the current chunk
+  @$pb.TagNumber(4)
+  $core.List<$core.int> get payloadChunk => $_getN(3);
+  @$pb.TagNumber(4)
+  set payloadChunk($core.List<$core.int> value) => $_setBytes(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPayloadChunk() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPayloadChunk() => $_clearField(4);
+}
+
+///
+///  Wrapper message for broken repeated oneof support
+class resend_chunks extends $pb.GeneratedMessage {
+  factory resend_chunks({
+    $core.Iterable<$core.int>? chunks,
+  }) {
+    final result = resend_chunks._();
+    if (chunks != null) result.chunks.addAll(chunks);
+    return result;
+  }
+
+  resend_chunks._();
+
+  factory resend_chunks.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      resend_chunks()..mergeFromBuffer(data, registry);
+  factory resend_chunks.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      resend_chunks()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'resend_chunks',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: resend_chunks.$_createMessage)
+    ..p<$core.int>(1, _omitFieldNames ? '' : 'chunks', $pb.PbFieldType.KU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  resend_chunks clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  resend_chunks copyWith(void Function(resend_chunks) updates) =>
+      super.copyWith((message) => updates(message as resend_chunks))
+          as resend_chunks;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use resend_chunks() / resend_chunks.new instead')
+  static resend_chunks create() => resend_chunks._();
+  static $pb.GeneratedMessage $_createMessage() => resend_chunks._();
+  @$core.override
+  resend_chunks createEmptyInstance() => resend_chunks._();
+  @$core.pragma('dart2js:noInline')
+  static resend_chunks getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<resend_chunks>(
+          resend_chunks.$_createMessage);
+  static resend_chunks? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<$core.int> get chunks => $_getList(0);
+}
+
+enum ChunkedPayloadResponse_PayloadVariant {
+  requestTransfer,
+  acceptTransfer,
+  resendChunks,
+  notSet
+}
+
+///
+///  Responses to a ChunkedPayload request
+class ChunkedPayloadResponse extends $pb.GeneratedMessage {
+  factory ChunkedPayloadResponse({
+    $core.int? payloadId,
+    $core.bool? requestTransfer,
+    $core.bool? acceptTransfer,
+    resend_chunks? resendChunks,
+  }) {
+    final result = ChunkedPayloadResponse._();
+    if (payloadId != null) result.payloadId = payloadId;
+    if (requestTransfer != null) result.requestTransfer = requestTransfer;
+    if (acceptTransfer != null) result.acceptTransfer = acceptTransfer;
+    if (resendChunks != null) result.resendChunks = resendChunks;
+    return result;
+  }
+
+  ChunkedPayloadResponse._();
+
+  factory ChunkedPayloadResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ChunkedPayloadResponse()..mergeFromBuffer(data, registry);
+  factory ChunkedPayloadResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ChunkedPayloadResponse()..mergeFromJson(json, registry);
+
+  static const $core.Map<$core.int, ChunkedPayloadResponse_PayloadVariant>
+      _ChunkedPayloadResponse_PayloadVariantByTag = {
+    2: ChunkedPayloadResponse_PayloadVariant.requestTransfer,
+    3: ChunkedPayloadResponse_PayloadVariant.acceptTransfer,
+    4: ChunkedPayloadResponse_PayloadVariant.resendChunks,
+    0: ChunkedPayloadResponse_PayloadVariant.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ChunkedPayloadResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'meshtastic'),
+      createEmptyInstance: ChunkedPayloadResponse.$_createMessage)
+    ..oo(0, [2, 3, 4])
+    ..aI(1, _omitFieldNames ? '' : 'payloadId', fieldType: $pb.PbFieldType.OU3)
+    ..aOB(2, _omitFieldNames ? '' : 'requestTransfer')
+    ..aOB(3, _omitFieldNames ? '' : 'acceptTransfer')
+    ..aOM<resend_chunks>(4, _omitFieldNames ? '' : 'resendChunks',
+        subBuilder: resend_chunks.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ChunkedPayloadResponse clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ChunkedPayloadResponse copyWith(
+          void Function(ChunkedPayloadResponse) updates) =>
+      super.copyWith((message) => updates(message as ChunkedPayloadResponse))
+          as ChunkedPayloadResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use ChunkedPayloadResponse() / ChunkedPayloadResponse.new instead')
+  static ChunkedPayloadResponse create() => ChunkedPayloadResponse._();
+  static $pb.GeneratedMessage $_createMessage() => ChunkedPayloadResponse._();
+  @$core.override
+  ChunkedPayloadResponse createEmptyInstance() => ChunkedPayloadResponse._();
+  @$core.pragma('dart2js:noInline')
+  static ChunkedPayloadResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ChunkedPayloadResponse>(
+          ChunkedPayloadResponse.$_createMessage);
+  static ChunkedPayloadResponse? _defaultInstance;
+
+  @$pb.TagNumber(2)
+  @$pb.TagNumber(3)
+  @$pb.TagNumber(4)
+  ChunkedPayloadResponse_PayloadVariant whichPayloadVariant() =>
+      _ChunkedPayloadResponse_PayloadVariantByTag[$_whichOneof(0)]!;
+  @$pb.TagNumber(2)
+  @$pb.TagNumber(3)
+  @$pb.TagNumber(4)
+  void clearPayloadVariant() => $_clearField($_whichOneof(0));
+
+  ///
+  ///  The ID of the entire payload
+  @$pb.TagNumber(1)
+  $core.int get payloadId => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set payloadId($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPayloadId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPayloadId() => $_clearField(1);
+
+  ///
+  ///  Request to transfer chunked payload
+  @$pb.TagNumber(2)
+  $core.bool get requestTransfer => $_getBF(1);
+  @$pb.TagNumber(2)
+  set requestTransfer($core.bool value) => $_setBool(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRequestTransfer() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRequestTransfer() => $_clearField(2);
+
+  ///
+  ///  Accept the transfer chunked payload
+  @$pb.TagNumber(3)
+  $core.bool get acceptTransfer => $_getBF(2);
+  @$pb.TagNumber(3)
+  set acceptTransfer($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasAcceptTransfer() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAcceptTransfer() => $_clearField(3);
+
+  ///
+  ///  Request missing indexes in the chunked payload
+  @$pb.TagNumber(4)
+  resend_chunks get resendChunks => $_getN(3);
+  @$pb.TagNumber(4)
+  set resendChunks(resend_chunks value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasResendChunks() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearResendChunks() => $_clearField(4);
+  @$pb.TagNumber(4)
+  resend_chunks ensureResendChunks() => $_ensure(3);
+}
+
+const $core.bool _omitFieldNames =
+    $core.bool.fromEnvironment('protobuf.omit_field_names');
+const $core.bool _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');
