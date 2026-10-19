@@ -15,6 +15,7 @@ import '../core/transport/serial_transport.dart';
 import '../core/update/update_checker.dart';
 import '../data/database.dart';
 import '../data/message_sender.dart';
+import '../data/map_points.dart';
 import '../data/node_actions.dart';
 import '../data/node_filter.dart';
 import '../data/mirror_ingest.dart';
@@ -138,6 +139,13 @@ final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {
   final f = ref.watch(nodeFilterProvider);
   final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
   return ref.watch(nodesProvider).whenData((l) => f.apply(l, me: me));
+});
+
+/// Ноды на карте: тот же фильтр, что и у списка.
+final mapPointsProvider = Provider<List<MapPoint>>((ref) {
+  final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
+  final nodes = ref.watch(filteredNodesProvider).value ?? const [];
+  return mapPoints(nodes, me: me);
 });
 
 final channelsProvider = StreamProvider<List<MeshChannel>>(

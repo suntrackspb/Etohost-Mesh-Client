@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../features/chat/chat_page.dart';
 import '../features/connection/connection_page.dart';
 import '../features/journal/journal_page.dart';
+import '../features/map/map_page.dart';
 import '../features/nodes/node_detail_page.dart';
 import '../features/nodes/nodes_page.dart';
 import '../features/settings/mirror_settings_page.dart';
@@ -44,6 +45,9 @@ final appRouter = GoRouter(
               ],
             ),
           ],
+        ),
+        StatefulShellBranch(
+          routes: [GoRoute(path: '/map', builder: (_, _) => const MapPage())],
         ),
         StatefulShellBranch(
           routes: [
@@ -97,6 +101,7 @@ class AppTab {
 const appTabs = [
   AppTab('Чат', Icons.chat_bubble_outline, Icons.chat_bubble),
   AppTab('Ноды', Icons.hub_outlined, Icons.hub),
+  AppTab('Карта', Icons.map_outlined, Icons.map),
   AppTab('Подключение', Icons.link, Icons.link),
   AppTab('Настройки', Icons.settings_outlined, Icons.settings),
 ];

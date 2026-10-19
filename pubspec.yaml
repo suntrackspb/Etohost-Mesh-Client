@@ -13,9 +13,12 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_libserialport: ^0.6.0
+  flutter_map: ^8.3.2
+  flutter_map_marker_cluster: ^8.2.2
   flutter_riverpod: ^3.4.3
   go_router: ^18.1.0
   http: ^1.6.0
+  latlong2: ^0.9.1
   package_info_plus: ^10.2.2
   path_provider: ^2.1.6
   protobuf: ^6.1.0
