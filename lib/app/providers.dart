@@ -16,6 +16,7 @@ import '../core/update/update_checker.dart';
 import '../data/database.dart';
 import '../data/message_sender.dart';
 import '../data/node_actions.dart';
+import '../data/node_filter.dart';
 import '../data/mirror_ingest.dart';
 import '../data/packet_router.dart';
 import '../mirror/mirror_api.dart';
@@ -126,6 +127,18 @@ final nodesProvider = StreamProvider<List<Node>>(
       .watch(databaseProvider)
       .watchNodes(includeMirror: ref.watch(mirrorActiveProvider)),
 );
+
+/// Текущий фильтр списка нод (в памяти, на время сессии).
+final nodeFilterProvider = StateProvider<NodeFilter>(
+  (ref) => const NodeFilter(),
+);
+
+/// Список нод после фильтра и сортировки.
+final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {
+  final f = ref.watch(nodeFilterProvider);
+  final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
+  return ref.watch(nodesProvider).whenData((l) => f.apply(l, me: me));
+});
 
 final channelsProvider = StreamProvider<List<MeshChannel>>(
   (ref) => ref.watch(databaseProvider).watchChannels(),

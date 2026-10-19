@@ -7,6 +7,7 @@ import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
 import '../../ui/kit/kit.dart';
 import 'node_detail_page.dart';
+import 'node_filter_sheet.dart';
 
 /// Список нод; на широком экране справа — карточка выбранной.
 class NodesPage extends ConsumerStatefulWidget {
@@ -19,16 +20,33 @@ class NodesPage extends ConsumerStatefulWidget {
 }
 
 class _NodesPageState extends ConsumerState<NodesPage> {
-  String _query = '';
-
   @override
   Widget build(BuildContext context) {
-    final nodes = ref.watch(nodesProvider);
+    final nodes = ref.watch(filteredNodesProvider);
+    final total = ref.watch(nodesProvider).value?.length;
+    final filter = ref.watch(nodeFilterProvider);
     final wide = SplitView.isWide(context);
 
     final list = Scaffold(
       appBar: AppBar(
-        title: Text('Ноды${nodes.hasValue ? ' (${nodes.value!.length})' : ''}'),
+        title: Text(
+          'Ноды${!nodes.hasValue
+              ? ''
+              : nodes.value!.length == total
+              ? ' ($total)'
+              : ' (${nodes.value!.length} из $total)'}',
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Фильтры и сортировка',
+            icon: Badge(
+              isLabelVisible: filter.active,
+              smallSize: 8,
+              child: const Icon(Icons.filter_list),
+            ),
+            onPressed: () => NodeFilterSheet.show(context),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
@@ -38,12 +56,14 @@ class _NodesPageState extends ConsumerState<NodesPage> {
               Tokens.s16,
               Tokens.s8,
             ),
-            child: TextField(
+            child: TextFormField(
+              initialValue: filter.query,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.search),
                 hintText: 'Имя или !id',
               ),
-              onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
+              onChanged: (v) => ref.read(nodeFilterProvider.notifier).state =
+                  ref.read(nodeFilterProvider).copyWith(query: v),
             ),
           ),
         ),
@@ -51,12 +71,17 @@ class _NodesPageState extends ConsumerState<NodesPage> {
       body: nodes.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => EmptyState(icon: Icons.error_outline, text: '$e'),
-        data: (all) {
-          final items = _query.isEmpty ? all : all.where(_matches).toList();
-          if (all.isEmpty) {
+        data: (items) {
+          if (total == 0) {
             return const EmptyState(
               icon: Icons.hub_outlined,
               text: 'Нод пока нет.\nПодключитесь к своей ноде.',
+            );
+          }
+          if (items.isEmpty) {
+            return const EmptyState(
+              icon: Icons.filter_list_off,
+              text: 'Под фильтр ничего не подходит',
             );
           }
           return ListView.builder(
@@ -84,11 +109,6 @@ class _NodesPageState extends ConsumerState<NodesPage> {
       ),
     );
   }
-
-  bool _matches(Node n) =>
-      n.longName.toLowerCase().contains(_query) ||
-      n.shortName.toLowerCase().contains(_query) ||
-      nodeIdString(n.num).contains(_query);
 }
 
 class _NodeTile extends StatelessWidget {
@@ -123,7 +143,22 @@ class _NodeTile extends StatelessWidget {
           maxLines: 1,
         ),
       ),
-      trailing: node.isFavorite ? const Icon(Icons.star, size: 18) : null,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!node.onRadio)
+            const Tooltip(
+              message: 'Только из зеркала',
+              child: Icon(Icons.cloud_outlined, size: 18),
+            ),
+          if (node.isIgnored)
+            const Tooltip(
+              message: 'Игнорируется',
+              child: Icon(Icons.block, size: 18),
+            ),
+          if (node.isFavorite) const Icon(Icons.star, size: 18),
+        ],
+      ),
       onTap: onTap,
     );
   }
