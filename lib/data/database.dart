@@ -8,6 +8,12 @@ abstract final class AppSettingKeys {
   /// 'true'/'false'; по умолчанию включено.
   static const autoConnect = 'connection.autoConnect';
 
+  /// Проверять новую версию на GitHub при запуске (по умолчанию — да).
+  static const updateAutoCheck = 'update.autoCheck';
+
+  /// Версия, про которую попросили больше не напоминать.
+  static const updateDismissed = 'update.dismissed';
+
   /// Зеркало: 'true'/'false', по умолчанию выключено.
   static const mirrorEnabled = 'mirror.enabled';
 

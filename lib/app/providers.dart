@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:universal_ble/universal_ble.dart';
 
 import '../core/proto/channel_names.dart';
@@ -10,6 +11,7 @@ import '../core/radio/endpoint.dart';
 import '../core/radio/journal.dart';
 import '../core/radio/radio_session.dart';
 import '../core/transport/serial_transport.dart';
+import '../core/update/update_checker.dart';
 import '../data/database.dart';
 import '../data/message_sender.dart';
 import '../data/mirror_ingest.dart';
@@ -363,3 +365,46 @@ final startupConnectProvider = FutureProvider<void>((ref) async {
   ref.read(journalProvider).add(JournalKind.app, 'Автоподключение: ${e.title}');
   await radio.connect(e.toTarget());
 });
+
+/// Установленная версия приложения (1.2.3).
+final appVersionProvider = FutureProvider<String>(
+  (ref) async => (await PackageInfo.fromPlatform()).version,
+);
+
+/// Автопроверка обновлений включена.
+final updateAutoCheckProvider = StreamProvider<bool>(
+  (ref) => ref
+      .watch(databaseProvider)
+      .watchSetting(AppSettingKeys.updateAutoCheck)
+      .map((v) => v != 'false'),
+);
+
+/// Последний релиз, если он новее установленного; null — обновлений нет.
+/// Ошибки сети не показываем (проверка фоновая); ручная — через [checkForUpdate].
+final latestReleaseProvider = FutureProvider<AppRelease?>((ref) async {
+  final auto = await ref.watch(updateAutoCheckProvider.future);
+  if (!auto) return null;
+  try {
+    return await checkForUpdate(await ref.watch(appVersionProvider.future));
+  } catch (_) {
+    return null;
+  }
+});
+
+/// Свежий релиз новее установленного (ошибки — наружу).
+Future<AppRelease?> checkForUpdate(String current) async {
+  final r = await fetchLatestRelease();
+  return r != null && isNewerVersion(r.version, current) ? r : null;
+}
+
+/// Обновление, о котором стоит напомнить (не отклонено пользователем).
+final updateBadgeProvider = Provider<AppRelease?>((ref) {
+  final r = ref.watch(latestReleaseProvider).value;
+  final skip = ref.watch(_updateDismissedProvider).value;
+  return r == null || r.version == skip ? null : r;
+});
+
+final _updateDismissedProvider = StreamProvider<String?>(
+  (ref) =>
+      ref.watch(databaseProvider).watchSetting(AppSettingKeys.updateDismissed),
+);

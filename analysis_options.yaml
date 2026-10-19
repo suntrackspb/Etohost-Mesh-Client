@@ -15,6 +15,7 @@ analyzer:
     - macos/**
     - lib/core/proto/generated/**
     - "**/*.g.dart"
+    - ios/**
 
 linter:
   # The lint rules applied to this project can be customized in the

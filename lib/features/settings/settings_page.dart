@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
-
 import '../../ui/kit/kit.dart';
+import 'about_section.dart';
 
 /// Заготовка: структура разделов как в официальном клиенте. Наполнение — этапы 3 и 6.
 class SettingsPage extends ConsumerWidget {
@@ -23,6 +23,7 @@ class SettingsPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [
+          const UpdateBanner(),
           SectionCard(
             children: [
               soon('Приложение', Icons.tune),
@@ -53,6 +54,7 @@ class SettingsPage extends ConsumerWidget {
               soon('Устройство', Icons.memory),
             ],
           ),
+          const AboutSection(),
         ],
       ),
     );

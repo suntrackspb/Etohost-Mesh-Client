@@ -21,10 +21,16 @@ class AdaptiveShell extends ConsumerWidget {
     final wide = MediaQuery.sizeOf(context).width >= Tokens.wideBreakpoint;
     final radio = ref.watch(radioProvider);
     final unread = ref.watch(totalUnreadProvider);
-    // Бейдж непрочитанного — на вкладке «Чат» (первая).
-    Widget icon(int i, IconData data) => i == 0 && unread > 0
-        ? Badge(label: Text(unread > 99 ? '99+' : '$unread'), child: Icon(data))
-        : Icon(data);
+    final update = ref.watch(updateBadgeProvider) != null;
+    // Непрочитанное — на «Чате» (первая вкладка), новая версия — точка на «Настройках».
+    Widget icon(int i, IconData data) => switch (i) {
+      0 when unread > 0 => Badge(
+        label: Text(unread > 99 ? '99+' : '$unread'),
+        child: Icon(data),
+      ),
+      _ when i == appTabs.length - 1 && update => Badge(child: Icon(data)),
+      _ => Icon(data),
+    };
 
     if (!wide) {
       return Scaffold(
