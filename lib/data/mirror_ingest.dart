@@ -88,31 +88,31 @@ class MirrorIngest {
       )..where((r) => r.num.equals(num))).getSingleOrNull();
       final hasPos = n.lastLat != null && n.lastLon != null;
       final seen = n.lastSeenAt;
-      // Зеркало обновляет только то, что знает; ключ — только если своего нет,
-      // «последний раз» — только если свежее известного.
+      // Данные радио приоритетнее: у ноды, услышанной через свою ноду, зеркало
+      // только заполняет пустое. Ключ — только если своего нет, «последний раз» —
+      // самый свежий из обоих источников.
+      final radio = old?.onRadio == true;
+      Value<T> fill<T>(T? mirror, Object? current) =>
+          mirror != null && (!radio || current == null || current == '')
+          ? Value(mirror)
+          : const Value.absent();
       await db
           .into(db.nodes)
           .insertOnConflictUpdate(
             NodesCompanion(
               num: Value(num),
-              userId: Value(n.nodeId),
-              longName: n.longName != null
-                  ? Value(n.longName!)
+              userId: fill(n.nodeId, old?.userId),
+              longName: fill(n.longName, old?.longName),
+              shortName: fill(n.shortName, old?.shortName),
+              hwModel: fill(n.hwModel, old?.hwModel == 0 ? null : old?.hwModel),
+              latitude: hasPos
+                  ? fill(n.lastLat, old?.latitude)
                   : const Value.absent(),
-              shortName: n.shortName != null
-                  ? Value(n.shortName!)
+              longitude: hasPos
+                  ? fill(n.lastLon, old?.longitude)
                   : const Value.absent(),
-              hwModel: n.hwModel != null
-                  ? Value(n.hwModel!)
-                  : const Value.absent(),
-              latitude: hasPos ? Value(n.lastLat) : const Value.absent(),
-              longitude: hasPos ? Value(n.lastLon) : const Value.absent(),
-              batteryLevel: n.batteryLevel != null
-                  ? Value(n.batteryLevel)
-                  : const Value.absent(),
-              snr: old?.onRadio != true && n.lastSnr != null
-                  ? Value(n.lastSnr)
-                  : const Value.absent(),
+              batteryLevel: fill(n.batteryLevel, old?.batteryLevel),
+              snr: fill(n.lastSnr, old?.snr),
               publicKey: old?.publicKey == null && n.publicKeyBytes != null
                   ? Value(n.publicKeyBytes)
                   : const Value.absent(),

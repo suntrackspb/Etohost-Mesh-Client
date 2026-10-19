@@ -235,8 +235,10 @@ void main() {
       final n = (await db.watchNodes().first).single;
       expect(n.publicKey, mine);
       expect(n.lastHeard!.isAfter(old), isTrue);
-      expect(n.longName, 'Mirror');
+      // Имя из эфира приоритетнее, координат в эфире нет — берём с зеркала.
+      expect(n.longName, 'Radio');
       expect(n.latitude, 59.9);
+      expect(n.longitude, 30.3);
       expect(n.onRadio && n.onMirror, isTrue);
     });
 

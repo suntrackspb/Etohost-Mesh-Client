@@ -8,6 +8,7 @@ import '../../data/database.dart';
 import '../../data/message_sender.dart';
 import '../chat/chat_page.dart';
 import '../../ui/kit/kit.dart';
+import 'node_actions_ui.dart';
 import 'nodes_page.dart';
 
 final _nodeProvider = StreamProvider.family<Node?, int>((ref, id) {
@@ -17,7 +18,7 @@ final _nodeProvider = StreamProvider.family<Node?, int>((ref, id) {
   )..where((n) => n.num.equals(id))).watchSingleOrNull();
 });
 
-/// Карточка ноды: данные из БД и «Написать» (остальные действия — этап 5).
+/// Карточка ноды: данные из БД, «Написать» и действия с нодой.
 class NodeDetailPage extends ConsumerWidget {
   const NodeDetailPage({super.key, required this.num, this.standalone = false});
 
@@ -52,6 +53,8 @@ class NodeDetailPage extends ConsumerWidget {
                   ? () => context.go(ChatPage.location(DirectTarget(num).id))
                   : null,
             ),
+          if (node.value != null && num != me)
+            ...nodeActionButtons(context, ref, node.value!),
         ],
       ),
       body: node.when(
@@ -80,6 +83,7 @@ class NodeDetailPage extends ConsumerWidget {
                         Config_DeviceConfig_Role.valueOf(n.role)?.name ??
                             '${n.role}',
                       ),
+                      _row('Источник', nodeSourceText(n)),
                       _row(
                         'Публичный ключ',
                         n.publicKey == null ? 'нет' : 'есть',
@@ -121,6 +125,7 @@ class NodeDetailPage extends ConsumerWidget {
                           ),
                       ],
                     ),
+                  TracerouteSection(n.num),
                 ],
               ),
       ),

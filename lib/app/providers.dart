@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -14,6 +15,7 @@ import '../core/transport/serial_transport.dart';
 import '../core/update/update_checker.dart';
 import '../data/database.dart';
 import '../data/message_sender.dart';
+import '../data/node_actions.dart';
 import '../data/mirror_ingest.dart';
 import '../data/packet_router.dart';
 import '../mirror/mirror_api.dart';
@@ -319,6 +321,29 @@ final messageSenderProvider = Provider<MessageSender>((ref) {
     radio.queue.nextId,
   );
 });
+
+final nodeActionsProvider = Provider<NodeActions>((ref) {
+  final radio = ref.read(radioProvider);
+  return NodeActions(
+    ref.read(databaseProvider),
+    radio.sendPacket,
+    () => radio.state == RadioState.ready ? radio.myNodeNum : null,
+    radio.queue.nextId,
+  );
+});
+
+/// История трассировок до ноды, новые сверху.
+final tracerouteHistoryProvider =
+    StreamProvider.family<List<TracerouteResult>, int>((ref, target) {
+      final db = ref.watch(databaseProvider);
+      final me = ref.watch(radioProvider.select((r) => r.myNodeNum)) ?? 0;
+      return (db.select(db.traceroutes)
+            ..where((t) => t.targetNum.equals(target))
+            ..orderBy([(t) => OrderingTerm.desc(t.time)])
+            ..limit(20))
+          .watch()
+          .map((l) => [for (final r in l) TracerouteResult.parse(r, me)]);
+    });
 
 /// Можно ли сейчас отправлять (нода подключена и конфиг загружен).
 final canSendProvider = Provider<bool>(
