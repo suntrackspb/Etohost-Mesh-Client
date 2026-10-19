@@ -41,6 +41,13 @@ class RadioSession extends ChangeNotifier {
   static const configNonce = 69420;
   static const nodesNonce = 69421;
 
+  /// Полный конфиг вместе с базой нод — запасной путь, если нода не ответила
+  /// на [nodesNonce] (встречалось на 2.7.23 по Wi‑Fi).
+  static const fullNonce = 69422;
+
+  /// Сколько ждать NodeInfo/конца базы, прежде чем повторить запрос.
+  Duration nodesTimeout = const Duration(seconds: 10);
+
   static const heartbeatInterval = Duration(seconds: 60);
   static const reconnectDelay = Duration(seconds: 5);
 
@@ -73,6 +80,8 @@ class RadioSession extends ChangeNotifier {
 
   Transport? _t;
   Timer? _heartbeat;
+  Timer? _nodesWatch;
+  int _nodesRetry = 0;
   Timer? _reconnect;
   final _subs = <StreamSubscription>[];
   bool _stopped = true;
@@ -169,6 +178,7 @@ class RadioSession extends ChangeNotifier {
         } catch (_) {}
       }
     }
+    if (f.hasNodeInfo() && state == RadioState.loadingNodes) _armNodesWatch();
     if (f.hasConfigCompleteId()) _onConfigComplete(f.configCompleteId);
     journal.add(
       f.hasLogRecord() ? JournalKind.node : JournalKind.radio,
@@ -180,14 +190,45 @@ class RadioSession extends ChangeNotifier {
   void _onConfigComplete(int id) {
     if (id == configNonce && state == RadioState.configuring) {
       _setState(RadioState.loadingNodes);
-      _app('want_config: база нод ($nodesNonce)');
-      send(ToRadio(wantConfigId: nodesNonce)).catchError((Object e) {
-        _app('want_config не отправлен: $e');
-      });
-    } else if (id == nodesNonce && state == RadioState.loadingNodes) {
+      _nodesRetry = 0;
+      _wantConfig(nodesNonce, 'база нод');
+      _armNodesWatch();
+    } else if ((id == nodesNonce || id == fullNonce) &&
+        state == RadioState.loadingNodes) {
+      _nodesWatch?.cancel();
       connectedSince = DateTime.now();
       _setState(RadioState.ready);
     }
+  }
+
+  void _wantConfig(int nonce, String what) {
+    _app('want_config: $what ($nonce)');
+    send(ToRadio(wantConfigId: nonce)).catchError((Object e) {
+      _app('want_config не отправлен: $e');
+    });
+  }
+
+  /// Нода молчит в фазе базы нод: повтор, затем полный конфиг, затем
+  /// считаем подключение готовым (ноды придут из эфира).
+  void _armNodesWatch() {
+    _nodesWatch?.cancel();
+    _nodesWatch = Timer(nodesTimeout, () {
+      if (state != RadioState.loadingNodes) return;
+      switch (_nodesRetry++) {
+        case 0:
+          _app('Нет ответа на запрос базы нод — повтор');
+          _wantConfig(nodesNonce, 'база нод');
+          _armNodesWatch();
+        case 1:
+          _app('Нет ответа — запрашиваю полную конфигурацию');
+          _wantConfig(fullNonce, 'полная конфигурация');
+          _armNodesWatch();
+        default:
+          _app('База нод не получена — работаем без неё');
+          connectedSince = DateTime.now();
+          _setState(RadioState.ready);
+      }
+    });
   }
 
   void _onLog(NodeLogChunk chunk) {
@@ -238,6 +279,7 @@ class RadioSession extends ChangeNotifier {
 
   Future<void> _teardown() async {
     _heartbeat?.cancel();
+    _nodesWatch?.cancel();
     queue.reset();
     // Копия: _teardown может зайти повторно (разрыв во время отключения).
     final subs = [..._subs];

@@ -37,6 +37,35 @@ void main() {
     await s.disconnect();
   });
 
+  test(
+    'нода молчит на запрос базы нод — повтор, затем полный конфиг',
+    () async {
+      final t = FakeTransport();
+      var nodesAsked = 0;
+      t.onSend = (m) {
+        if (!m.hasWantConfigId()) return;
+        final id = m.wantConfigId;
+        if (id == RadioSession.nodesNonce) {
+          nodesAsked++;
+          return; // как 2.7.23 по Wi‑Fi: не отвечает
+        }
+        Future.microtask(() => t.reply(FromRadio(configCompleteId: id)));
+      };
+      final s = RadioSession(Journal())
+        ..nodesTimeout = const Duration(milliseconds: 20);
+      await s.connect(RadioTarget('fake', (_) => t));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(nodesAsked, 2);
+      expect(
+        t.sent.where((m) => m.hasWantConfigId()).last.wantConfigId,
+        RadioSession.fullNonce,
+      );
+      expect(s.state, RadioState.ready);
+      await s.disconnect();
+    },
+  );
+
   test('ACK приходит в sendPacket, разрыв завершает ожидающие', () async {
     final t = FakeTransport();
     t.onSend = (m) {
