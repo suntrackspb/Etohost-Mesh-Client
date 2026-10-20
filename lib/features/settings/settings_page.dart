@@ -67,6 +67,12 @@ class SettingsPage extends ConsumerWidget {
                 onTap: () => context.go('/settings/user'),
               ),
               MeshTile(
+                title: 'Bluetooth',
+                leading: const Icon(Icons.bluetooth),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/bluetooth'),
+              ),
+              MeshTile(
                 title: 'Устройство',
                 leading: const Icon(Icons.memory),
                 trailing: const Icon(Icons.chevron_right),

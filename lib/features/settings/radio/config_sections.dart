@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/providers.dart';
+import '../../../data/settings/bluetooth_section.dart';
 import '../../../data/settings/device_section.dart';
 import '../../../data/settings/display_section.dart';
 import '../../../app/settings_providers.dart';
@@ -91,6 +92,15 @@ final networkSpec = ConfigSectionSpec(
         const EmptyState(icon: Icons.wifi_off, text: NetworkSection.noNetwork),
     ];
   },
+);
+
+final bluetoothSpec = ConfigSectionSpec(
+  name: 'bluetooth',
+  title: BluetoothSection.title,
+  confirm: BluetoothSection.saveConfirm,
+  fields: (_) => BluetoothSection.fields(),
+  read: (c) => BluetoothSection.read(c.bluetooth),
+  save: (admin, db, c, v) => BluetoothSection.save(admin, db, c.bluetooth, v),
 );
 
 final displaySpec = ConfigSectionSpec(
