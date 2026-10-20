@@ -116,6 +116,10 @@ final appRouter = GoRouter(
                   'neighbor-info',
                   (_) => ConfigSectionPage(neighborInfoSpec),
                 ),
+                _route(
+                  'ambient-lighting',
+                  (_) => ConfigSectionPage(ambientLightingSpec),
+                ),
                 _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),

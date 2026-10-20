@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/providers.dart';
 import '../../../core/proto/mesh.dart';
+import '../../../data/settings/ambient_lighting_section.dart';
 import '../../../data/settings/audio_section.dart';
 import '../../../data/settings/bluetooth_section.dart';
 import '../../../data/settings/canned_message_section.dart';
@@ -314,4 +315,38 @@ final neighborInfoSpec = ConfigSectionSpec<ModuleConfig>(
   read: (c) => NeighborInfoSection.read(c.neighborInfo),
   save: (admin, db, c, v, _) =>
       NeighborInfoSection.save(admin, db, c.neighborInfo, v),
+);
+
+final ambientLightingSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'ambientLighting',
+  title: AmbientLightingSection.title,
+  confirm: AmbientLightingSection.saveConfirm,
+  fields: (_) => AmbientLightingSection.fields(),
+  read: (c) => AmbientLightingSection.read(c.ambientLighting),
+  save: (admin, db, c, v, _) =>
+      AmbientLightingSection.save(admin, db, c.ambientLighting, v),
+  extra: (context, ref, form, cfg) => [
+    ListenableBuilder(
+      listenable: form,
+      builder: (_, _) => SectionCard(
+        title: 'Образец цвета',
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(Tokens.s16),
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: Color(AmbientLightingSection.argb(form.values)),
+                borderRadius: BorderRadius.circular(Tokens.s8),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ],
 );

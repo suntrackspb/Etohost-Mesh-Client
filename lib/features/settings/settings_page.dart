@@ -172,6 +172,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/neighbor-info'),
               ),
+              MeshTile(
+                title: 'Окружающее освещение',
+                leading: const Icon(Icons.lightbulb_outline),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/ambient-lighting'),
+              ),
             ],
           ),
           SectionCard(
