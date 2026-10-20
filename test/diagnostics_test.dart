@@ -30,6 +30,16 @@ void main() {
     expect(describeFromRadio(ch, private: true), isNot(contains('Дача')));
   });
 
+  test('toFile: false — только на экране, fileOnly — только в файл', () {
+    final file = <String>[];
+    final j = Journal()..sink = (l) => file.add(l.fileText);
+    j.add(JournalKind.radio, 'нода 1', toFile: false);
+    j.fileOnly(JournalKind.radio, 'база нод: 1 записей');
+    j.add(JournalKind.app, 'обычная');
+    expect(j.lines.map((l) => l.text), ['нода 1', 'обычная']);
+    expect(file, ['база нод: 1 записей', 'обычная']);
+  });
+
   test('координаты вырезаются из лога прошивки', () {
     expect(
       redactNodeLog('GPS lat=599123456 lon=-30123 alt=10'),

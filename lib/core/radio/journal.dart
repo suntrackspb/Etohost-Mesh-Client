@@ -31,15 +31,25 @@ class Journal extends ChangeNotifier {
   /// Куда дублировать строки (файл журнала); null — только память.
   void Function(JournalLine line)? sink;
 
-  void add(JournalKind kind, String text, {String? fileText}) {
+  /// [toFile] false — строка только на экране (файл получит сводку).
+  void add(
+    JournalKind kind,
+    String text, {
+    String? fileText,
+    bool toFile = true,
+  }) {
     final line = JournalLine(DateTime.now(), kind, text, fileText);
     _lines.add(line);
-    sink?.call(line);
+    if (toFile) sink?.call(line);
     if (_lines.length > maxLines) {
       _lines.removeRange(0, _lines.length - maxLines);
     }
     notifyListeners();
   }
+
+  /// Строка только в файл журнала (сводки вместо потока однотипных строк).
+  void fileOnly(JournalKind kind, String text) =>
+      sink?.call(JournalLine(DateTime.now(), kind, text));
 
   void clear() {
     _lines.clear();

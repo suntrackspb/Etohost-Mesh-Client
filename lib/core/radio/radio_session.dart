@@ -181,15 +181,28 @@ class RadioSession extends ChangeNotifier {
     }
     if (f.hasNodeInfo() && state == RadioState.loadingNodes) _armNodesWatch();
     if (f.hasConfigCompleteId()) _onConfigComplete(f.configCompleteId);
+    // Загрузка базы нод — тысячи строк; в файл (и отчёт) идёт сводка.
+    final bulkNode = f.hasNodeInfo() && state != RadioState.ready;
+    if (bulkNode) _nodeInfos++;
     journal.add(
       f.hasLogRecord() ? JournalKind.node : JournalKind.radio,
       describeFromRadio(f),
       fileText: describeFromRadio(f, private: true),
+      toFile: !bulkNode,
     );
     _packets.add(f);
   }
 
+  int _nodeInfos = 0;
+
+  void _flushNodeInfos() {
+    if (_nodeInfos == 0) return;
+    journal.fileOnly(JournalKind.radio, 'база нод: $_nodeInfos записей');
+    _nodeInfos = 0;
+  }
+
   void _onConfigComplete(int id) {
+    _flushNodeInfos();
     if (id == configNonce && state == RadioState.configuring) {
       _setState(RadioState.loadingNodes);
       _nodesRetry = 0;
@@ -330,6 +343,8 @@ class RadioSession extends ChangeNotifier {
   bool _disposed = false;
 
   void _setState(RadioState s) {
+    // Переход в ready или разрыв посреди загрузки — сводка тоже нужна.
+    if (s == RadioState.ready || s == RadioState.connecting) _flushNodeInfos();
     if (_disposed) return;
     state = s;
     notifyListeners();
