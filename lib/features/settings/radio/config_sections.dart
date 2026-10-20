@@ -12,6 +12,7 @@ import '../../../data/settings/network_section.dart';
 import '../../../data/settings/position_section.dart';
 import '../../../data/settings/power_section.dart';
 import '../../../data/settings/security_section.dart';
+import '../../../data/settings/serial_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
 import 'fixed_position_tile.dart';
@@ -176,4 +177,14 @@ final mqttSpec = ConfigSectionSpec<ModuleConfig>(
       ),
     ];
   },
+);
+
+final serialSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'serial',
+  title: SerialSection.title,
+  confirm: SerialSection.saveConfirm,
+  fields: (_) => SerialSection.fields(),
+  read: (c) => SerialSection.read(c.serial),
+  save: (admin, db, c, v, _) => SerialSection.save(admin, db, c.serial, v),
 );

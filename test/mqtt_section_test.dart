@@ -45,7 +45,6 @@ void main() {
     final now = MqttSection.apply(base, v, firmware: '2.8.0');
     expect(now.tlsEnabled, isTrue);
     expect(now.password, MqttSection.publicPassword);
-    expect(now.jsonEnabled, isTrue);
   });
 
   test('свой сервер: TLS и данные как ввели', () {

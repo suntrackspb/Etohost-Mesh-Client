@@ -118,6 +118,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/mqtt'),
               ),
+              MeshTile(
+                title: 'Последовательный порт',
+                leading: const Icon(Icons.cable),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/serial'),
+              ),
             ],
           ),
           SectionCard(

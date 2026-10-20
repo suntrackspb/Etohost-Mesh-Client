@@ -6,7 +6,7 @@ import 'intervals.dart';
 import 'user_section.dart' show firmwareAtLeast;
 
 /// Модуль «MQTT»: MQTTConfig.swift (iOS). Подписи — iOS ru, затем Android ru.
-/// json_enabled не показывается (устарел) и сохраняется как есть.
+/// «Вывод JSON включен» — из Android (в iOS его нет).
 /// Подбор ближних тем по геокодированию из iOS пока не перенесён.
 abstract final class MqttSection {
   static const title = 'Настройка MQTT';
@@ -87,6 +87,11 @@ abstract final class MqttSection {
       'Шифрование включено',
       group: groupOptions,
       help: 'Отправлять зашифрованные пакеты в MQTT',
+    ),
+    const BoolFieldSpec(
+      'jsonEnabled',
+      'Вывод JSON включен',
+      group: groupOptions,
     ),
     const BoolFieldSpec(
       'mapReportingEnabled',
@@ -192,6 +197,7 @@ abstract final class MqttSection {
       'enabled': c.enabled,
       'proxyToClientEnabled': c.proxyToClientEnabled,
       'encryptionEnabled': c.encryptionEnabled,
+      'jsonEnabled': c.jsonEnabled,
       'mapReportingEnabled': c.mapReportingEnabled,
       'shouldReportLocation': m.shouldReportLocation,
       // Прошивка требует не чаще раза в час и 12–15 бит (как normalize в iOS).
@@ -217,6 +223,7 @@ abstract final class MqttSection {
       ..enabled = v['enabled']! as bool
       ..proxyToClientEnabled = v['proxyToClientEnabled']! as bool
       ..encryptionEnabled = v['encryptionEnabled']! as bool
+      ..jsonEnabled = v['jsonEnabled']! as bool
       ..mapReportingEnabled = v['mapReportingEnabled']! as bool
       ..root = v['root']! as String
       ..address = v['address']! as String
