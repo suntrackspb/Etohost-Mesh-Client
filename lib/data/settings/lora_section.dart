@@ -68,20 +68,22 @@ abstract final class LoraSection {
   /// Регионы с ограничением рабочего цикла (dutyCycle 10% в iOS).
   static const _dutyCycleRegions = {2, 3, 14, 29, 30, 31, 32};
 
+  /// Названия пресетов — английские, как в iOS (смешанный ru-перевод
+  /// Android выглядит непоследовательно).
   static const presets = <Choice>[
-    (value: 0, label: 'Большая дальность - Быстрый'),
+    (value: 0, label: 'Long Range - Fast'),
     (value: 1, label: 'Long Range - Slow'),
-    (value: 7, label: 'Большая дальность - Умеренно'),
-    (value: 9, label: 'Большая дальность - Турбо'),
+    (value: 7, label: 'Long Range - Moderate'),
+    (value: 9, label: 'Long Range - Turbo'),
     (value: 3, label: 'Medium Range - Slow'),
     (value: 4, label: 'Medium Range - Fast'),
     (value: 5, label: 'Short Range - Slow'),
     (value: 6, label: 'Short Range - Fast'),
     (value: 8, label: 'Short Range - Turbo'),
-    (value: 10, label: 'Легкий - Быстро'),
-    (value: 11, label: 'Легкий - Медленно'),
-    (value: 12, label: 'Узкий - Быстро'),
-    (value: 13, label: 'Узкий - Медленно'),
+    (value: 10, label: 'Lite - Fast'),
+    (value: 11, label: 'Lite - Slow'),
+    (value: 12, label: 'Narrow - Fast'),
+    (value: 13, label: 'Narrow - Slow'),
     (value: 14, label: 'Tiny - Fast'),
     (value: 15, label: 'Tiny - Slow'),
     (value: 16, label: 'Medium Range - Turbo'),
