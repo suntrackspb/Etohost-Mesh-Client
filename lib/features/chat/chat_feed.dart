@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -639,25 +640,37 @@ class _SourceIcons extends StatelessWidget {
     final style = Theme.of(
       context,
     ).textTheme.labelSmall?.copyWith(color: color);
-    final radio = radioLabel(message);
+    final hops = messageHops(message);
+    final signal = directSignal(message);
+    Widget label(IconData icon, String text, String hint) => Tooltip(
+      message: hint,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 3),
+          Text(text, style: style),
+        ],
+      ),
+    );
+    // Как в iOS: RX и хопы для эфира, иначе зеркало.
+    final items = [
+      if (message.heardOnRadio && !message.isOutgoing) ...[
+        label(CupertinoIcons.dot_radiowaves_right, 'RX', 'Слышно в эфире'),
+        if (hops != null)
+          label(CupertinoIcons.arrow_branch, '$hops', 'Хопов: $hops'),
+        if (signal != null) Text(signal, style: style),
+      ] else if (mirror && message.heardOnMirror)
+        label(CupertinoIcons.globe, 'MQTT', 'Из зеркала'),
+    ];
+    // Row, а не Wrap: Wrap не учитывает spacing в intrinsic-ширине,
+    // и пузырь (IntrinsicWidth) получался уже футера.
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (message.heardOnRadio && !message.isOutgoing)
-          Tooltip(
-            message: 'Слышно в эфире',
-            child: Icon(Icons.cell_tower, size: 14, color: color),
-          ),
-        if (radio != null) ...[
-          const SizedBox(width: 2),
-          Text(radio, style: style),
-        ],
-        if (mirror && message.heardOnMirror) ...[
-          const SizedBox(width: Tokens.s4),
-          Tooltip(
-            message: 'Из зеркала',
-            child: Icon(Icons.cloud_outlined, size: 14, color: color),
-          ),
+        for (final (i, w) in items.indexed) ...[
+          if (i > 0) const SizedBox(width: Tokens.s8),
+          w,
         ],
       ],
     );
@@ -674,31 +687,32 @@ class _RelayChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final color = scheme.outline;
     return Tooltip(
-      message: 'Шлюзов приняли: $count — показать на карте',
+      message: 'Шлюзы: $count. Показать на карте',
       child: InkWell(
-        borderRadius: BorderRadius.circular(Tokens.radiusL),
+        customBorder: const StadiumBorder(),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-          decoration: BoxDecoration(
-            color: scheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(Tokens.radiusL),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: ShapeDecoration(
+            color: scheme.onSurface.withValues(alpha: 0.08),
+            shape: const StadiumBorder(),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.hub_outlined,
-                size: 12,
-                color: scheme.onSecondaryContainer,
+                CupertinoIcons.antenna_radiowaves_left_right,
+                size: 13,
+                color: color,
               ),
-              const SizedBox(width: 2),
+              const SizedBox(width: 3),
               Text(
                 '$count',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: scheme.onSecondaryContainer,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: color),
               ),
             ],
           ),

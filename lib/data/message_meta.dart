@@ -10,23 +10,14 @@ int? messageHops(Message m) {
   return hops < 0 ? null : hops;
 }
 
-/// Подпись под сообщением из эфира: «2 хопа» или «напрямую · SNR 5.5 · RSSI -80».
-String? radioLabel(Message m) {
-  final hops = messageHops(m);
-  if (hops == null) return null;
-  if (hops > 0) return '$hops ${_hopWord(hops)}';
-  return [
-    'напрямую',
-    if (m.rxSnr case final snr? when snr != 0) 'SNR ${snr.toStringAsFixed(1)}',
-    if (m.rxRssi case final rssi? when rssi != 0) 'RSSI $rssi',
-  ].join(' · ');
-}
-
-String _hopWord(int n) {
-  final d = n % 10, dd = n % 100;
-  if (d == 1 && dd != 11) return 'хоп';
-  if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return 'хопа';
-  return 'хопов';
+/// Сигнал прямого приёма (0 хопов): «S 5.5 · R -80»; иначе null.
+String? directSignal(Message m) {
+  if (messageHops(m) != 0) return null;
+  final parts = [
+    if (m.rxSnr case final snr? when snr != 0) 'S ${snr.toStringAsFixed(1)}',
+    if (m.rxRssi case final rssi? when rssi != 0) 'R $rssi',
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
 }
 
 /// Есть что показать в чипе шлюзов (только при включённом зеркале).
