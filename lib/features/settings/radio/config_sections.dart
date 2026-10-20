@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/providers.dart';
 import '../../../data/settings/device_section.dart';
+import '../../../data/settings/display_section.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/settings/lora_section.dart';
 import '../../../data/settings/network_section.dart';
@@ -90,4 +91,13 @@ final networkSpec = ConfigSectionSpec(
         const EmptyState(icon: Icons.wifi_off, text: NetworkSection.noNetwork),
     ];
   },
+);
+
+final displaySpec = ConfigSectionSpec(
+  name: 'display',
+  title: DisplaySection.title,
+  confirm: DisplaySection.saveConfirm,
+  fields: (_) => DisplaySection.fields(),
+  read: (c) => DisplaySection.read(c.display),
+  save: (admin, db, c, v) => DisplaySection.save(admin, db, c.display, v),
 );

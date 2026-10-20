@@ -90,6 +90,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/network'),
               ),
+              MeshTile(
+                title: 'Экран',
+                leading: const Icon(Icons.screenshot_monitor),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/display'),
+              ),
             ],
           ),
           SectionCard(
