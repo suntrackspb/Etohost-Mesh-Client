@@ -34,6 +34,13 @@ def patch_android():
         '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>',
         # Камера — сканер QR-кода каналов.
         '<uses-permission android:name="android.permission.CAMERA"/>',
+        # Foreground service — держит связь с нодой в фоне (тип connectedDevice).
+        '<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>',
+        '<uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>',
+        '<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>',
+        '<uses-permission android:name="android.permission.WAKE_LOCK"/>',
+        # connectedDevice по TCP: Android 14 требует одно из «сетевых» разрешений.
+        '<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>',
     ]
     # Раньше геолокация была ограничена Android 11 — снимаем ограничение.
     s = re.sub(r'(android\.permission\.ACCESS_(?:FINE|COARSE)_LOCATION")\s+android:maxSdkVersion="30"', r"\1", s)
@@ -44,6 +51,15 @@ def patch_android():
     # (иначе Flutter не получает predictive back).
     if "enableOnBackInvokedCallback" not in s:
         s = s.replace("<application", '<application\n        android:enableOnBackInvokedCallback="true"', 1)
+    # Служба flutter_foreground_task; имя менять нельзя. stopWithTask — смахнули
+    # приложение, соединения уже нет, уведомление не нужно.
+    if "flutter_foreground_task.service.ForegroundService" not in s:
+        s = s.replace("</application>", '''    <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="connectedDevice"
+            android:stopWithTask="true"
+            android:exported="false" />
+    </application>''', 1)
     if s != orig:
         f.write_text(s)
     print("android: ok")

@@ -91,6 +91,16 @@ class BleTransport implements Transport {
       log('BLE: MTU не изменён ($e)');
     }
 
+    // Android: высокий приоритет на загрузку конфига и базы нод, через 30 с —
+    // обычный ради батареи (как BleRadioTransport в Meshtastic-Android).
+    if (Platform.isAndroid) {
+      unawaited(_priority(BleConnectionPriority.highPerformance));
+      _priorityTimer = Timer(
+        const Duration(seconds: 30),
+        () => _priority(BleConnectionPriority.balanced),
+      );
+    }
+
     _subs.add(
       UniversalBle.characteristicValueStream(
         deviceId,
@@ -191,7 +201,19 @@ class BleTransport implements Transport {
   }
 
   void _finish(String reason) {
+    _priorityTimer?.cancel();
     if (!_closed.isCompleted) _closed.complete(reason);
+  }
+
+  Timer? _priorityTimer;
+
+  Future<void> _priority(BleConnectionPriority p) async {
+    try {
+      await UniversalBle.requestConnectionPriority(deviceId, p);
+      log('BLE: приоритет ${p.name}');
+    } catch (e) {
+      log('BLE: приоритет не изменён ($e)');
+    }
   }
 
   @override

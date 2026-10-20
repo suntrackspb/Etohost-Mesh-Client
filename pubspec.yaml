@@ -15,6 +15,7 @@ dependencies:
   fixnum: ^1.1.1
   flutter:
     sdk: flutter
+  flutter_foreground_task: ^11.0.3
   flutter_libserialport: ^0.6.0
   flutter_map: ^8.3.2
   flutter_map_marker_cluster: ^8.2.2
