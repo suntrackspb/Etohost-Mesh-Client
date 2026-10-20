@@ -45,6 +45,8 @@ class TextFieldSpec extends FieldSpec<String> {
     super.enabledWhen,
     required this.maxBytes,
     this.requiredMessage,
+    this.secure = false,
+    this.validator,
   });
 
   /// Предел в байтах UTF-8 (прошивка режет по байтам).
@@ -53,12 +55,20 @@ class TextFieldSpec extends FieldSpec<String> {
   /// Текст ошибки для пустого значения; null — пустое допустимо.
   final String? requiredMessage;
 
+  /// Скрытый ввод (пароль) с кнопкой «показать».
+  final bool secure;
+
+  /// Своя проверка значения (формат адреса и т. п.).
+  final String? Function(String value)? validator;
+
   @override
   String normalize(String value) => trimToBytes(value, maxBytes);
 
   @override
   String? validate(String value) =>
-      requiredMessage != null && value.trim().isEmpty ? requiredMessage : null;
+      requiredMessage != null && value.trim().isEmpty
+      ? requiredMessage
+      : validator?.call(value);
 }
 
 class BoolFieldSpec extends FieldSpec<bool> {

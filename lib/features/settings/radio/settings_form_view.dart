@@ -58,6 +58,7 @@ class SettingsFormView extends StatelessWidget {
             label: f.label,
             value: form.value<String>(f.key),
             error: form.error(f.key),
+            secure: f.secure,
             onChanged: (v) => form.set(f.key, v),
           ),
           const SizedBox(height: Tokens.s4),
@@ -228,10 +229,12 @@ class _TextInput extends StatefulWidget {
     this.suffix,
     this.number = false,
     this.decimal = false,
+    this.secure = false,
     required this.onChanged,
   });
 
   final bool decimal;
+  final bool secure;
 
   final String? label;
   final String value;
@@ -246,6 +249,7 @@ class _TextInput extends StatefulWidget {
 
 class _TextInputState extends State<_TextInput> {
   late final _c = TextEditingController(text: widget.value);
+  bool _shown = false;
 
   @override
   void didUpdateWidget(_TextInput old) {
@@ -277,10 +281,19 @@ class _TextInputState extends State<_TextInput> {
         : TextInputType.text,
     textAlign: widget.number ? TextAlign.end : TextAlign.start,
     autocorrect: false,
+    obscureText: widget.secure && !_shown,
+    enableSuggestions: !widget.secure,
     decoration: InputDecoration(
       labelText: widget.label,
       errorText: widget.error,
       suffixText: widget.suffix,
+      suffixIcon: widget.secure
+          ? IconButton(
+              tooltip: _shown ? 'Скрыть' : 'Показать',
+              icon: Icon(_shown ? Icons.visibility_off : Icons.visibility),
+              onPressed: () => setState(() => _shown = !_shown),
+            )
+          : null,
     ),
     onChanged: widget.onChanged,
   );

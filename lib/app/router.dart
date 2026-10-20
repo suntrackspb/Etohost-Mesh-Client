@@ -89,6 +89,7 @@ final appRouter = GoRouter(
                 _route('device', (_) => ConfigSectionPage(deviceSpec)),
                 _route('position', (_) => ConfigSectionPage(positionSpec)),
                 _route('power', (_) => ConfigSectionPage(powerSpec)),
+                _route('network', (_) => ConfigSectionPage(networkSpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),
                 _route('report', (_) => const ReportPage()),
               ],

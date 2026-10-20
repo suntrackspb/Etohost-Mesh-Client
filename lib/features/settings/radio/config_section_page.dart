@@ -55,7 +55,13 @@ class ConfigSectionSpec {
 }
 
 /// Своя нода для построения полей: прошивка и модель.
-typedef OwnDevice = ({String firmware, int hwModel, int role});
+typedef OwnDevice = ({
+  String firmware,
+  int hwModel,
+  int role,
+  bool hasWifi,
+  bool hasEthernet,
+});
 
 class ConfigSectionPage extends ConsumerStatefulWidget {
   const ConfigSectionPage(this.spec, {super.key});
@@ -104,6 +110,8 @@ class _ConfigSectionPageState extends ConsumerState<ConfigSectionPage> {
           firmware: device.firmware,
           hwModel: node?.hwModel ?? 0,
           role: node?.role ?? 0,
+          hasWifi: device.metadata?.hasWifi ?? false,
+          hasEthernet: device.metadata?.hasEthernet ?? false,
         )),
         data,
         adjust: spec.adjust,

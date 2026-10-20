@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../app/providers.dart';
 import '../../../data/settings/device_section.dart';
+import '../../../app/settings_providers.dart';
 import '../../../data/settings/lora_section.dart';
+import '../../../data/settings/network_section.dart';
 import '../../../data/settings/position_section.dart';
 import '../../../data/settings/power_section.dart';
 import '../../../ui/kit/kit.dart';
@@ -69,4 +71,23 @@ final powerSpec = ConfigSectionSpec(
   fields: (d) => PowerSection.fields(hwModel: d.hwModel, role: d.role),
   read: (c) => PowerSection.read(c.power),
   save: (admin, db, c, v) => PowerSection.save(admin, db, c.power, v),
+);
+
+final networkSpec = ConfigSectionSpec(
+  name: 'network',
+  title: NetworkSection.title,
+  confirm: NetworkSection.saveConfirm,
+  fields: (d) =>
+      NetworkSection.fields(hasWifi: d.hasWifi, hasEthernet: d.hasEthernet),
+  read: (c) => NetworkSection.read(c.network),
+  save: (admin, db, c, v) => NetworkSection.save(admin, db, c.network, v),
+  check: NetworkSection.check,
+  extra: (context, ref, form, cfg) {
+    final m = ref.watch(ownDeviceProvider).value?.metadata;
+    final none = m != null && !m.hasWifi && !m.hasEthernet;
+    return [
+      if (none)
+        const EmptyState(icon: Icons.wifi_off, text: NetworkSection.noNetwork),
+    ];
+  },
 );
