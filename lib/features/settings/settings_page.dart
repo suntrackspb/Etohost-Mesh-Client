@@ -190,6 +190,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/pax-counter'),
               ),
+              MeshTile(
+                title: 'TAK',
+                leading: const Icon(Icons.military_tech_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/tak'),
+              ),
             ],
           ),
           SectionCard(

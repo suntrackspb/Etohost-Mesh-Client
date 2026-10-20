@@ -23,6 +23,7 @@ import '../../../data/settings/remote_hardware_section.dart';
 import '../../../data/settings/security_section.dart';
 import '../../../data/settings/serial_section.dart';
 import '../../../data/settings/store_forward_section.dart';
+import '../../../data/settings/tak_section.dart';
 import '../../../data/settings/telemetry_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
@@ -373,4 +374,21 @@ final paxCounterSpec = ConfigSectionSpec<ModuleConfig>(
   read: (c) => PaxCounterSection.read(c.paxcounter),
   save: (admin, db, c, v, _) =>
       PaxCounterSection.save(admin, db, c.paxcounter, v),
+);
+
+final takSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'tak',
+  title: TakSection.title,
+  confirm: TakSection.saveConfirm,
+  fields: (_) => TakSection.fields(),
+  read: (c) => TakSection.read(c.tak),
+  save: (admin, db, c, v, _) => TakSection.save(admin, db, c.tak, v),
+  extra: (context, ref, form, cfg) {
+    final role = ref.watch(ownNodeProvider).value?.role;
+    return [
+      if (role != null && !TakSection.appliesTo(role))
+        const WarningNote(TakSection.roleWarning),
+    ];
+  },
 );
