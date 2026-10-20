@@ -78,6 +78,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/position'),
               ),
+              MeshTile(
+                title: 'Питание',
+                leading: const Icon(Icons.battery_charging_full),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/power'),
+              ),
             ],
           ),
           SectionCard(

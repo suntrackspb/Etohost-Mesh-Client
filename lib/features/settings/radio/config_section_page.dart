@@ -55,7 +55,7 @@ class ConfigSectionSpec {
 }
 
 /// Своя нода для построения полей: прошивка и модель.
-typedef OwnDevice = ({String firmware, int hwModel});
+typedef OwnDevice = ({String firmware, int hwModel, int role});
 
 class ConfigSectionPage extends ConsumerStatefulWidget {
   const ConfigSectionPage(this.spec, {super.key});
@@ -100,7 +100,11 @@ class _ConfigSectionPageState extends ConsumerState<ConfigSectionPage> {
     } else {
       final data = spec.read(cfg);
       final form = _form ??= SettingsForm(
-        spec.fields((firmware: device.firmware, hwModel: node?.hwModel ?? 0)),
+        spec.fields((
+          firmware: device.firmware,
+          hwModel: node?.hwModel ?? 0,
+          role: node?.role ?? 0,
+        )),
         data,
         adjust: spec.adjust,
         check: spec.check,

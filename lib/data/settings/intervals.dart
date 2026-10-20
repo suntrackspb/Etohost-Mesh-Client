@@ -55,6 +55,50 @@ abstract final class Intervals {
     never,
   ];
 
+  /// waitBluetooth (iOS): 0 — по умолчанию прошивки (минута).
+  static const waitBluetooth = [0, 15, 30, 60, 120, 300, 600, 900];
+
+  /// NAG_TIMEOUT (Android): минимальное время бодрствования.
+  static const nagTimeout = [0, 1, 5, 10, 15, 30, 60];
+
+  /// ALL (Android) по возрастанию.
+  static const all = [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    8,
+    10,
+    15,
+    20,
+    30,
+    40,
+    45,
+    60,
+    80,
+    90,
+    120,
+    300,
+    600,
+    900,
+    1800,
+    3600,
+    7200,
+    10800,
+    14400,
+    18000,
+    21600,
+    43200,
+    64800,
+    86400,
+    129600,
+    172800,
+    259200,
+    never,
+  ];
+
   static List<Choice> choices(List<int> secs) => [
     for (final s in secs) (value: s, label: label(s)),
   ];

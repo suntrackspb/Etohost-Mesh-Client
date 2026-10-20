@@ -4,6 +4,7 @@ import '../../../app/providers.dart';
 import '../../../data/settings/device_section.dart';
 import '../../../data/settings/lora_section.dart';
 import '../../../data/settings/position_section.dart';
+import '../../../data/settings/power_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
 import 'fixed_position_tile.dart';
@@ -59,4 +60,13 @@ final positionSpec = ConfigSectionSpec(
     ))
       FixedPositionTile(cfg: cfg.position),
   ],
+);
+
+final powerSpec = ConfigSectionSpec(
+  name: 'power',
+  title: PowerSection.title,
+  confirm: PowerSection.saveConfirm,
+  fields: (d) => PowerSection.fields(hwModel: d.hwModel, role: d.role),
+  read: (c) => PowerSection.read(c.power),
+  save: (admin, db, c, v) => PowerSection.save(admin, db, c.power, v),
 );
