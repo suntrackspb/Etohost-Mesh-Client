@@ -17,6 +17,7 @@ import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
 import 'link_text.dart';
 import 'relay_map_sheet.dart';
+import 'scroll_to_item.dart';
 import 'swipe_to_reply.dart';
 
 /// Быстрые реакции (как в официальных клиентах — эмодзи-ответ на сообщение).
@@ -252,7 +253,7 @@ String _authorName(Map<int, Node> nodes, int num) {
   return n?.longName.isNotEmpty == true ? n!.longName : nodeIdString(num);
 }
 
-class _MessageList extends ConsumerWidget {
+class _MessageList extends ConsumerStatefulWidget {
   const _MessageList({
     required this.feedId,
     required this.messages,
@@ -276,7 +277,50 @@ class _MessageList extends ConsumerWidget {
   final void Function(Message m, String emoji) onReact;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_MessageList> createState() => _MessageListState();
+}
+
+class _MessageListState extends ConsumerState<_MessageList> {
+  final _scroll = ScrollController();
+  final _keys = <int, GlobalKey>{};
+  int? _highlight;
+
+  GlobalKey _keyFor(int packetId) => _keys[packetId] ??= GlobalKey();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  /// Тап по цитате: прокрутить к исходному сообщению и подсветить его.
+  Future<void> _jumpTo(List<Message> visible, int packetId) async {
+    final target = visible.indexWhere((m) => m.packetId == packetId);
+    if (target < 0) return;
+    final ok = await scrollToItem(
+      _scroll,
+      target,
+      visible.length,
+      (i) => _keyFor(visible[i].packetId),
+    );
+    if (!ok || !mounted) return;
+    setState(() => _highlight = packetId);
+    await Future<void>.delayed(const Duration(milliseconds: 1200));
+    if (mounted && _highlight == packetId) setState(() => _highlight = null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final w = widget;
+    final (feedId, messages, canLoadMore, loadingMore, onLoadMore, nodes) = (
+      w.feedId,
+      w.messages,
+      w.canLoadMore,
+      w.loadingMore,
+      w.onLoadMore,
+      w.nodes,
+    );
+    final (canWrite, onReply) = (w.canWrite, w.onReply);
     final mirror = ref.watch(mirrorActiveProvider);
     final byPacket = {for (final m in messages) m.packetId: m};
     final reactions = <int, List<Message>>{};
@@ -309,6 +353,7 @@ class _MessageList extends ConsumerWidget {
       child: ListView.builder(
         // Позиция прокрутки своя у каждого канала.
         key: PageStorageKey('feed:$feedId'),
+        controller: _scroll,
         reverse: true, // свежие снизу; список отсортирован по убыванию времени
         padding: const EdgeInsets.all(Tokens.s8),
         itemCount: visible.length + more,
@@ -330,6 +375,11 @@ class _MessageList extends ConsumerWidget {
           return SwipeToReply(
             onReply: canWrite ? () => onReply(m) : null,
             child: _Bubble(
+              key: _keyFor(m.packetId),
+              highlighted: _highlight == m.packetId,
+              onOpenQuote: m.replyId == null || byPacket[m.replyId] == null
+                  ? null
+                  : () => _jumpTo(visible, m.replyId!),
               message: m,
               author: _authorName(nodes, m.fromNum),
               shortName: nodes[m.fromNum]?.shortName,
@@ -356,6 +406,11 @@ class _MessageList extends ConsumerWidget {
   }
 
   void _showMenu(BuildContext context, WidgetRef ref, Message m) {
+    final (canWrite, onReply, onReact) = (
+      widget.canWrite,
+      widget.onReply,
+      widget.onReact,
+    );
     final failed =
         m.isOutgoing &&
         const [
@@ -423,6 +478,9 @@ class _MessageList extends ConsumerWidget {
 
 class _Bubble extends StatelessWidget {
   const _Bubble({
+    super.key,
+    required this.highlighted,
+    required this.onOpenQuote,
     required this.message,
     required this.author,
     required this.shortName,
@@ -446,6 +504,12 @@ class _Bubble extends StatelessWidget {
   final VoidCallback onOpenNode;
   final VoidCallback onOpenRelays;
 
+  /// Подсветка после перехода по цитате.
+  final bool highlighted;
+
+  /// Тап по цитате; null — исходного сообщения нет в загруженной ленте.
+  final VoidCallback? onOpenQuote;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -455,13 +519,18 @@ class _Bubble extends StatelessWidget {
     final time =
         '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
-    final bubble = Container(
+    final bubble = AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
       padding: const EdgeInsets.symmetric(
         horizontal: Tokens.s12,
         vertical: Tokens.s8,
       ),
       decoration: BoxDecoration(
-        color: out ? scheme.primaryContainer : scheme.surfaceContainerHigh,
+        color: highlighted
+            ? scheme.tertiaryContainer
+            : out
+            ? scheme.primaryContainer
+            : scheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(Tokens.radiusL),
       ),
       child: IntrinsicWidth(
@@ -473,7 +542,11 @@ class _Bubble extends StatelessWidget {
                 author,
                 style: text.labelMedium?.copyWith(color: scheme.primary),
               ),
-            if (message.replyId != null) _Quote(quoted, quotedAuthor),
+            if (message.replyId != null)
+              GestureDetector(
+                onTap: onOpenQuote,
+                child: _Quote(quoted, quotedAuthor),
+              ),
             LinkText(message.body),
             const SizedBox(height: Tokens.s4),
             // Слева источник (и хопы), по центру шлюзы, справа время.
