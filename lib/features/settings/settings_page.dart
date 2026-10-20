@@ -26,7 +26,12 @@ class SettingsPage extends ConsumerWidget {
           const UpdateBanner(),
           SectionCard(
             children: [
-              soon('Приложение', Icons.tune),
+              MeshTile(
+                title: 'Приложение',
+                leading: const Icon(Icons.tune),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/app'),
+              ),
               MeshTile(
                 title: 'Зеркало',
                 leading: const Icon(Icons.public),

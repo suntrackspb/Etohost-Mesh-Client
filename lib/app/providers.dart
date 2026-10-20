@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:universal_ble/universal_ble.dart';
 
+import '../core/geo/geo.dart';
 import '../core/proto/channel_names.dart';
 import '../core/proto/mesh.dart';
 import '../core/radio/endpoint.dart';
@@ -18,12 +19,14 @@ import '../data/message_sender.dart';
 import '../data/map_points.dart';
 import '../data/node_actions.dart';
 import '../data/node_filter.dart';
+import '../data/position_sharer.dart';
 import '../data/mirror_ingest.dart';
 import '../data/packet_router.dart';
 import '../mirror/mirror_api.dart';
 import '../mirror/mirror_config.dart';
 import '../mirror/mirror_models.dart';
 import '../mirror/mirror_realtime.dart';
+import 'position_service.dart';
 
 /// База данных приложения. В тестах подменяется на in-memory.
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -138,7 +141,10 @@ final nodeFilterProvider = StateProvider<NodeFilter>(
 final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {
   final f = ref.watch(nodeFilterProvider);
   final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
-  return ref.watch(nodesProvider).whenData((l) => f.apply(l, me: me));
+  final area = ref.watch(nodeAreaProvider);
+  return ref
+      .watch(nodesProvider)
+      .whenData((l) => f.apply(l, me: me, area: area));
 });
 
 /// Ноды на карте: тот же фильтр, что и у списка.
@@ -454,3 +460,75 @@ final _updateDismissedProvider = StreamProvider<String?>(
   (ref) =>
       ref.watch(databaseProvider).watchSetting(AppSettingKeys.updateDismissed),
 );
+
+// ── Настройки приложения: карта и позиция ──
+
+Stream<String?> _setting(Ref ref, String key) =>
+    ref.watch(databaseProvider).watchSetting(key);
+
+Future<void> saveSetting(WidgetRef ref, String key, String value) =>
+    ref.read(databaseProvider).setSetting(key, value);
+
+/// Вращение карты жестом (по умолчанию выключено — север всегда сверху).
+final mapRotateProvider = StreamProvider<bool>(
+  (ref) => _setting(ref, AppSettingKeys.mapRotate).map((v) => v == 'true'),
+);
+
+final areaEnabledProvider = StreamProvider<bool>(
+  (ref) => _setting(ref, AppSettingKeys.areaEnabled).map((v) => v == 'true'),
+);
+
+const defaultAreaRadiusKm = 100.0;
+
+final areaRadiusProvider = StreamProvider<double>(
+  (ref) => _setting(
+    ref,
+    AppSettingKeys.areaRadiusKm,
+  ).map((v) => double.tryParse(v ?? '') ?? defaultAreaRadiusKm),
+);
+
+final areaCenterProvider = StreamProvider<LatLon?>(
+  (ref) => _setting(ref, AppSettingKeys.areaCenter).map(parseLatLon),
+);
+
+/// Область «скрывать дальние ноды»; null — выключено или центр не задан.
+final nodeAreaProvider = Provider<NodeArea?>((ref) {
+  if (ref.watch(areaEnabledProvider).value != true) return null;
+  final c = ref.watch(areaCenterProvider).value;
+  if (c == null) return null;
+  return (
+    center: c,
+    km: ref.watch(areaRadiusProvider).value ?? defaultAreaRadiusKm,
+  );
+});
+
+final positionShareProvider = StreamProvider<bool>(
+  (ref) => _setting(ref, AppSettingKeys.positionShare).map((v) => v == 'true'),
+);
+
+final positionIntervalProvider = StreamProvider<int>(
+  (ref) => _setting(
+    ref,
+    AppSettingKeys.positionIntervalMin,
+  ).map((v) => int.tryParse(v ?? '') ?? defaultPositionIntervalMin),
+);
+
+/// Передача позиции телефона своей ноде; null — выключена или нет связи.
+final positionServiceProvider = ChangeNotifierProvider<PositionService?>((ref) {
+  final on = ref.watch(positionShareProvider).value == true;
+  final ready = ref.watch(canSendProvider);
+  final minutes =
+      ref.watch(positionIntervalProvider).value ?? defaultPositionIntervalMin;
+  if (!on || !ready) return null;
+  final radio = ref.read(radioProvider);
+  final service = PositionService(
+    PositionSharer(
+      ref.read(databaseProvider),
+      radio.sendPacket,
+      () => radio.state == RadioState.ready ? radio.myNodeNum : null,
+      radio.queue.nextId,
+    ),
+    interval: Duration(minutes: minutes),
+  )..start();
+  return service;
+});

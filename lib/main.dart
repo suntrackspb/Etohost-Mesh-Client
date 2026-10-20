@@ -37,6 +37,7 @@ class _MeshAppState extends ConsumerState<MeshApp> {
   Widget build(BuildContext context) {
     // Держит подписку на зеркало живой (listen не перестраивает приложение).
     ref.listen(mirrorRealtimeProvider, (_, _) {});
+    ref.listen(positionServiceProvider, (_, _) {});
     return MaterialApp.router(
       title: 'Etohost Mesh',
       theme: buildTheme(Brightness.light),

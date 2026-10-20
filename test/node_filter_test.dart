@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:etohost_mesh/data/database.dart';
 import 'package:etohost_mesh/data/node_filter.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,13 +45,17 @@ void main() {
       n(3, fav: true),
       n(4),
     ];
-    expect(nums(const NodeFilter(), l, me: 4), [4, 3, 2, 1]);
+    expect(nums(const NodeFilter(onlineHours: null), l, me: 4), [4, 3, 2, 1]);
   });
 
   test('игнорируемые скрыты по умолчанию', () {
     final l = [n(1), n(2, ignored: true)];
-    expect(nums(const NodeFilter(), l), [1]);
-    expect(nums(const NodeFilter(showIgnored: true), l), [1, 2]);
+    const all = NodeFilter(onlineHours: null);
+    expect(nums(all, l), [1]);
+    expect(nums(const NodeFilter(onlineHours: null, showIgnored: true), l), [
+      1,
+      2,
+    ]);
   });
 
   test('онлайн за N часов, хопы, MQTT, источник, поиск', () {
@@ -66,11 +71,22 @@ void main() {
       n(4, name: 'Delta', radio: false, mirror: true),
     ];
     expect(nums(const NodeFilter(onlineHours: 1), l), [1, 3]);
-    expect(nums(const NodeFilter(maxHops: 1), l), [1, 3]);
-    expect(nums(const NodeFilter(hideMqtt: true), l), [1, 2, 4]);
-    expect(nums(const NodeFilter(source: NodeSource.mirror), l), [4]);
+    expect(nums(const NodeFilter(onlineHours: null, maxHops: 1), l), [1, 3]);
+    expect(nums(const NodeFilter(onlineHours: null, hideMqtt: true), l), [
+      1,
+      2,
+      4,
+    ]);
+    expect(
+      nums(const NodeFilter(onlineHours: null, source: NodeSource.mirror), l),
+      [4],
+    );
     expect(nums(const NodeFilter(query: 'bet'), l), [2]);
     expect(nums(const NodeFilter(query: '!00000003'), l), [3]);
+    // По умолчанию — за сутки: Delta без времени скрыта.
+    expect(nums(const NodeFilter(), l), [1, 3, 2]);
+    expect(const NodeFilter().active, isFalse);
+    expect(const NodeFilter(onlineHours: null).active, isTrue);
   });
 
   test('сортировка по имени и SNR, null в конце', () {
@@ -79,7 +95,26 @@ void main() {
       n(2, name: 'A'),
       n(3, name: 'c', snr: 4),
     ];
-    expect(nums(const NodeFilter(sort: NodeSort.name), l), [2, 1, 3]);
-    expect(nums(const NodeFilter(sort: NodeSort.snr), l), [3, 1, 2]);
+    const f = NodeFilter(onlineHours: null);
+    expect(nums(f.copyWith(sort: NodeSort.name), l), [2, 1, 3]);
+    expect(nums(f.copyWith(sort: NodeSort.snr), l), [3, 1, 2]);
+  });
+
+  test('дальние ноды скрываются, без координат и своя — остаются', () {
+    Node at(int num, double lat, double lon) =>
+        n(num).copyWith(latitude: Value(lat), longitude: Value(lon));
+    final l = [
+      at(1, 59.94, 30.31), // Петербург
+      at(2, 55.75, 37.62), // Москва
+      n(3),
+      at(4, 55.75, 37.62),
+    ];
+    const area = (center: (lat: 59.9, lon: 30.3), km: 100.0);
+    expect(
+      const NodeFilter(
+        onlineHours: null,
+      ).apply(l, me: 4, area: area).map((e) => e.num),
+      [4, 1, 3],
+    );
   });
 }

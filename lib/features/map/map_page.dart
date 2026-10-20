@@ -9,6 +9,7 @@ import '../../app/providers.dart';
 import '../../data/map_points.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/node_filter_sheet.dart';
+import 'map_tiles.dart';
 
 /// Карта нод (OSM). Фильтр общий со списком нод.
 class MapPage extends ConsumerStatefulWidget {
@@ -23,7 +24,8 @@ class _MapPageState extends ConsumerState<MapPage> {
   bool _ready = false;
   bool _fitted = false;
 
-  static const _spb = LatLng(59.94, 30.31);
+  /// Поворот карты, градусы (для кнопки «север сверху»).
+  double _rotation = 0;
 
   void _fitAll(List<MapPoint> points) {
     if (!_ready || points.isEmpty) return;
@@ -53,6 +55,13 @@ class _MapPageState extends ConsumerState<MapPage> {
     final points = ref.watch(mapPointsProvider);
     final filtered = ref.watch(nodeFilterProvider).active;
     final me = points.where((p) => p.isMe).firstOrNull;
+    final rotate = ref.watch(mapRotateProvider).value ?? false;
+    final area = ref.watch(nodeAreaProvider);
+    final scheme = Theme.of(context).colorScheme;
+    // Вращение выключили — вернуть север наверх.
+    if (!rotate && _rotation != 0 && _ready) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _map.rotate(0));
+    }
     // Первое появление точек — показать все.
     if (!_fitted && points.isNotEmpty && _ready) {
       _fitted = true;
@@ -90,15 +99,36 @@ class _MapPageState extends ConsumerState<MapPage> {
           FlutterMap(
             mapController: _map,
             options: MapOptions(
-              initialCenter: _spb,
+              initialCenter: defaultMapCenter,
               initialZoom: 9,
+              interactionOptions: InteractionOptions(
+                flags: rotate
+                    ? InteractiveFlag.all
+                    : InteractiveFlag.all & ~InteractiveFlag.rotate,
+              ),
               onMapReady: () => setState(() => _ready = true),
+              onPositionChanged: (cam, _) {
+                if ((cam.rotation - _rotation).abs() > 0.5 ||
+                    (cam.rotation == 0) != (_rotation == 0)) {
+                  setState(() => _rotation = cam.rotation);
+                }
+              },
             ),
             children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'ru.etohost.mesh',
-              ),
+              const OsmTiles(),
+              if (area != null)
+                CircleLayer(
+                  circles: [
+                    CircleMarker(
+                      point: LatLng(area.center.lat, area.center.lon),
+                      radius: area.km * 1000,
+                      useRadiusInMeter: true,
+                      color: Colors.transparent,
+                      borderColor: scheme.primary.withValues(alpha: 0.6),
+                      borderStrokeWidth: 2,
+                    ),
+                  ],
+                ),
               MarkerClusterLayerWidget(
                 options: MarkerClusterLayerOptions(
                   maxClusterRadius: 45,
@@ -120,11 +150,23 @@ class _MapPageState extends ConsumerState<MapPage> {
                   ),
                 ),
               ),
-              const SimpleAttributionWidget(
-                source: Text('OpenStreetMap contributors'),
-              ),
+              const OsmAttribution(),
             ],
           ),
+          if (_rotation % 360 != 0)
+            Positioned(
+              right: Tokens.s16,
+              top: Tokens.s16,
+              child: FloatingActionButton.small(
+                heroTag: 'north',
+                tooltip: 'Север сверху',
+                onPressed: () => _map.rotate(0),
+                child: Transform.rotate(
+                  angle: _rotation * 3.141592653589793 / 180,
+                  child: const Icon(Icons.navigation),
+                ),
+              ),
+            ),
           if (points.isEmpty)
             Align(
               alignment: Alignment.topCenter,

@@ -21,6 +21,24 @@ abstract final class AppSettingKeys {
   static const mirrorAddress = 'mirror.address';
   static const glyphZipLevel = 'chat.glyphZipLevel';
 
+  /// Карта: разрешить вращение жестом ('true'/'false', по умолчанию — нет).
+  static const mapRotate = 'map.rotate';
+
+  /// Скрывать ноды дальше радиуса от центра ('true'/'false', по умолчанию — нет).
+  static const areaEnabled = 'nodes.area.enabled';
+
+  /// Радиус, км (по умолчанию 100).
+  static const areaRadiusKm = 'nodes.area.radiusKm';
+
+  /// Центр области: «широта, долгота».
+  static const areaCenter = 'nodes.area.center';
+
+  /// Передавать позицию телефона своей ноде ('true'/'false', по умолчанию — нет).
+  static const positionShare = 'position.share';
+
+  /// Как часто передавать позицию, минуты (по умолчанию 15).
+  static const positionIntervalMin = 'position.intervalMin';
+
   /// Время последнего прочитанного сообщения канала (ISO-8601).
   static String channelRead(String key) => 'chat.read.$key';
 

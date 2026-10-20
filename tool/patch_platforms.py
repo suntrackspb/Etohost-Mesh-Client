@@ -14,25 +14,30 @@ APP_ID = "ru.etohost.mesh"
 PROJECT = "etohost_mesh"
 BT_TEXT = "Bluetooth нужен для подключения к ноде Meshtastic."
 NET_TEXT = "Локальная сеть нужна для подключения к ноде Meshtastic по Wi-Fi."
+LOC_TEXT = "Позиция телефона передаётся вашей ноде, если это включено в настройках приложения."
 
 
 def patch_android():
     f = ROOT / "android/app/src/main/AndroidManifest.xml"
     if not f.exists():
         return
-    s = f.read_text()
+    orig = s = f.read_text()
     perms = [
         '<uses-permission android:name="android.permission.INTERNET"/>',
         '<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>',
         '<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>',
         '<uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>',
         '<uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>',
-        '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30"/>',
-        '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="30"/>',
+        # Геолокация — для передачи позиции телефона ноде (и BLE-скана до Android 12).
+        '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>',
+        '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>',
     ]
+    # Раньше геолокация была ограничена Android 11 — снимаем ограничение.
+    s = re.sub(r'(android\.permission\.ACCESS_(?:FINE|COARSE)_LOCATION")\s+android:maxSdkVersion="30"', r"\1", s)
     add = "".join(f"    {p}\n" for p in perms if p.split('"')[1] not in s)
     if add:
         s = s.replace("<application", add + "    <application", 1)
+    if s != orig:
         f.write_text(s)
     print("android: ok")
 
@@ -144,15 +149,18 @@ def patch_apple():
     plist_add(ROOT / "ios/Runner/Info.plist", {
         "NSBluetoothAlwaysUsageDescription": BT_TEXT,
         "NSLocalNetworkUsageDescription": NET_TEXT,
+        "NSLocationWhenInUseUsageDescription": LOC_TEXT,
     })
     plist_add(ROOT / "macos/Runner/Info.plist", {
         "NSBluetoothAlwaysUsageDescription": BT_TEXT,
+        "NSLocationUsageDescription": LOC_TEXT,
     })
     for name in ("DebugProfile.entitlements", "Release.entitlements"):
         entitlements_add(ROOT / "macos/Runner" / name, [
             "com.apple.security.device.bluetooth",
             "com.apple.security.network.client",
             "com.apple.security.device.serial",
+            "com.apple.security.personal-information.location",
         ])
     print("apple: ok")
 

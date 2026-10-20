@@ -1,3 +1,4 @@
+import '../core/geo/geo.dart';
 import '../core/proto/mesh.dart';
 import 'database.dart';
 
@@ -5,13 +6,22 @@ enum NodeSort { lastHeard, name, snr, hops }
 
 enum NodeSource { all, radio, mirror }
 
+/// Варианты «слышали за…» в часах; null — за всё время.
+const onlineHoursOptions = <int?>[1, 2, 24, 168, null];
+
+/// По умолчанию — за сутки.
+const defaultOnlineHours = 24;
+
+/// Область из настроек приложения: ноды дальше [km] от [center] скрываются.
+typedef NodeArea = ({LatLon center, double km});
+
 /// Фильтр и сортировка списка нод (как `NodeFilter` в официальном iOS).
 /// Избранные всегда сверху; игнорируемые скрыты, пока их не попросили.
 class NodeFilter {
   const NodeFilter({
     this.query = '',
     this.source = NodeSource.all,
-    this.onlineHours,
+    this.onlineHours = defaultOnlineHours,
     this.favoritesOnly = false,
     this.hideMqtt = false,
     this.showIgnored = false,
@@ -33,7 +43,7 @@ class NodeFilter {
   /// Включено что-то кроме поиска и сортировки — для значка на кнопке.
   bool get active =>
       source != NodeSource.all ||
-      onlineHours != null ||
+      onlineHours != defaultOnlineHours ||
       favoritesOnly ||
       hideMqtt ||
       showIgnored ||
@@ -84,9 +94,13 @@ class NodeFilter {
   }
 
   /// Отфильтровать и отсортировать; [me] (своя нода) всегда первой.
-  List<Node> apply(List<Node> all, {int? me, DateTime? now}) {
+  /// [area] — скрыть ноды дальше радиуса; ноды без координат остаются
+  /// (на 2.8 позиция по умолчанию выключена).
+  List<Node> apply(List<Node> all, {int? me, DateTime? now, NodeArea? area}) {
     final t = now ?? DateTime.now();
-    final out = all.where((n) => n.num == me || matches(n, t)).toList();
+    final out = all
+        .where((n) => n.num == me || (matches(n, t) && _inArea(n, area)))
+        .toList();
     int cmp(Node a, Node b) {
       if ((a.num == me) != (b.num == me)) return a.num == me ? -1 : 1;
       if (a.isFavorite != b.isFavorite) return a.isFavorite ? -1 : 1;
@@ -100,6 +114,13 @@ class NodeFilter {
 
     return out..sort(cmp);
   }
+
+  static bool _inArea(Node n, NodeArea? a) =>
+      a == null ||
+      n.latitude == null ||
+      n.longitude == null ||
+      (n.latitude == 0 && n.longitude == 0) ||
+      distanceKm(a.center, (lat: n.latitude!, lon: n.longitude!)) <= a.km;
 
   static String _name(Node n) =>
       (n.longName.isEmpty ? nodeIdString(n.num) : n.longName).toLowerCase();

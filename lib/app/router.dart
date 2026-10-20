@@ -7,6 +7,8 @@ import '../features/journal/journal_page.dart';
 import '../features/map/map_page.dart';
 import '../features/nodes/node_detail_page.dart';
 import '../features/nodes/nodes_page.dart';
+import '../features/settings/app_settings_page.dart';
+import '../features/settings/area_picker_page.dart';
 import '../features/settings/mirror_settings_page.dart';
 import '../features/settings/settings_page.dart';
 import 'shell.dart';
@@ -69,6 +71,16 @@ final appRouter = GoRouter(
               path: '/settings',
               builder: (_, _) => const SettingsPage(),
               routes: [
+                GoRoute(
+                  path: 'app',
+                  builder: (_, _) => const AppSettingsPage(),
+                  routes: [
+                    GoRoute(
+                      path: 'area',
+                      builder: (_, _) => const AreaPickerPage(),
+                    ),
+                  ],
+                ),
                 GoRoute(
                   path: 'mirror',
                   builder: (_, _) => const MirrorSettingsPage(),

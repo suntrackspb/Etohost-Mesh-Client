@@ -60,10 +60,11 @@ class NodeFilterSheet extends ConsumerWidget {
               spacing: Tokens.s8,
               children: [
                 for (final (h, t) in const [
-                  (null, 'когда угодно'),
                   (1, 'за час'),
                   (2, 'за 2 ч'),
                   (24, 'за сутки'),
+                  (168, 'за 7 дней'),
+                  (null, 'за всё время'),
                 ])
                   ChoiceChip(
                     label: Text(t),
