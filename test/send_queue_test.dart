@@ -91,4 +91,22 @@ void main() {
       expect(results, hasLength(2));
     });
   });
+
+  test('разрыв после приёма в очередь ноды помечается accepted', () {
+    fakeAsync((fa) {
+      final sent = <ToRadio>[];
+      final q = SendQueue((m) async => sent.add(m));
+      DeliveryResult? r;
+      q.enqueue(_pkt()).then((x) => r = x);
+      fa.flushMicrotasks();
+      q.onQueueStatus(
+        QueueStatus(res: 0, free: 15, meshPacketId: sent[0].packet.id),
+      );
+      fa.flushMicrotasks();
+      q.reset(); // нода ушла в перезагрузку без ACK
+      fa.flushMicrotasks();
+      expect(r!.status, DeliveryStatus.disconnected);
+      expect(r!.accepted, isTrue);
+    });
+  });
 }

@@ -23,8 +23,17 @@ enum DeliveryStatus {
 }
 
 class DeliveryResult {
-  const DeliveryResult(this.status, [this.error, this.ackProof]);
+  const DeliveryResult(
+    this.status, [
+    this.error,
+    this.ackProof,
+    this.accepted = false,
+  ]);
   final DeliveryStatus status;
+
+  /// Нода взяла пакет в очередь (для [DeliveryStatus.disconnected]: связь
+  /// пропала уже после этого — например, нода ушла в перезагрузку).
+  final bool accepted;
   final Routing_Error? error;
 
   /// Доказательство доставки (2.8); на 2.7 — ACK_PROOF_ABSENT.
@@ -104,8 +113,13 @@ class SendQueue {
     _current?.finish(r);
     final ack = _queueAck;
     if (ack != null && !ack.isCompleted) ack.complete(false);
-    for (final i in [..._waiting, ..._inFlight.values]) {
+    for (final i in _waiting) {
       i.finish(r);
+    }
+    for (final i in _inFlight.values) {
+      i.finish(
+        const DeliveryResult(DeliveryStatus.disconnected, null, null, true),
+      );
     }
     _waiting.clear();
     _inFlight.clear();

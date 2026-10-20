@@ -23,6 +23,9 @@ class AdminSettings {
         decoded: Data(portnum: PortNum.ADMIN_APP, payload: m.writeToBuffer()),
       ),
     );
+    // Нода приняла команду и сразу ушла в перезагрузку, не успев ответить
+    // ACK (смена LoRa на 2.7, владельца и т. п.) — изменение применено.
+    if (r.status == DeliveryStatus.disconnected && r.accepted) return true;
     if (r.status == DeliveryStatus.failed) {
       throw StateError('ошибка ноды: ${r.error?.name}');
     }
