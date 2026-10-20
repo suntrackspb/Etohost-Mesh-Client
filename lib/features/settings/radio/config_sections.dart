@@ -15,6 +15,7 @@ import '../../../data/settings/network_section.dart';
 import '../../../data/settings/position_section.dart';
 import '../../../data/settings/power_section.dart';
 import '../../../data/settings/range_test_section.dart';
+import '../../../data/settings/remote_hardware_section.dart';
 import '../../../data/settings/security_section.dart';
 import '../../../data/settings/serial_section.dart';
 import '../../../data/settings/store_forward_section.dart';
@@ -290,4 +291,15 @@ final audioSpec = ConfigSectionSpec<ModuleConfig>(
   fields: (_) => AudioSection.fields(),
   read: (c) => AudioSection.read(c.audio),
   save: (admin, db, c, v, _) => AudioSection.save(admin, db, c.audio, v),
+);
+
+final remoteHardwareSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'remoteHardware',
+  title: RemoteHardwareSection.title,
+  confirm: RemoteHardwareSection.saveConfirm,
+  fields: (_) => RemoteHardwareSection.fields(),
+  read: (c) => RemoteHardwareSection.read(c.remoteHardware),
+  save: (admin, db, c, v, _) =>
+      RemoteHardwareSection.save(admin, db, c.remoteHardware, v),
 );

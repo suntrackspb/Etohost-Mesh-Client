@@ -143,6 +143,57 @@ class ChoiceFieldSpec extends FieldSpec<int> {
   }
 }
 
+/// Пин удалённого оборудования (RemoteHardwarePin) без привязки к protobuf.
+typedef RemotePin = ({int gpio, String name, int type});
+
+/// Список пинов как значение формы: сравнение по содержимому, чтобы форма
+/// видела, есть ли правки.
+class RemotePins {
+  const RemotePins(this.items);
+
+  final List<RemotePin> items;
+
+  @override
+  bool operator ==(Object other) =>
+      other is RemotePins &&
+      other.items.length == items.length &&
+      Iterable<int>.generate(
+        items.length,
+      ).every((i) => other.items[i] == items[i]);
+
+  @override
+  int get hashCode => Object.hashAll(items);
+}
+
+/// Редактируемый список пинов (как EditListPreference в Android).
+class PinListFieldSpec extends FieldSpec<RemotePins> {
+  const PinListFieldSpec(
+    super.key,
+    super.label, {
+    super.help,
+    super.group,
+    super.visibleWhen,
+    super.enabledWhen,
+    required this.maxCount,
+    required this.nameMaxBytes,
+    required this.types,
+  });
+
+  final int maxCount;
+  final int nameMaxBytes;
+  final List<Choice> types;
+
+  @override
+  RemotePins normalize(RemotePins value) => RemotePins([
+    for (final p in value.items.take(maxCount))
+      (
+        gpio: p.gpio.clamp(0, 255),
+        name: trimToBytes(p.name, nameMaxBytes),
+        type: p.type,
+      ),
+  ]);
+}
+
 typedef Choice = ({int value, String label});
 
 /// Дробное число (частота в МГц).

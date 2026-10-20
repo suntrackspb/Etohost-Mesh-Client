@@ -160,6 +160,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/audio'),
               ),
+              MeshTile(
+                title: 'Удаленное оборудование',
+                leading: const Icon(Icons.settings_input_component_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/remote-hardware'),
+              ),
             ],
           ),
           SectionCard(

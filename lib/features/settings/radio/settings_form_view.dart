@@ -125,6 +125,11 @@ class SettingsFormView extends StatelessWidget {
               form.set(f.key, v);
             },
     ),
+    PinListFieldSpec() => _PinList(
+      spec: f,
+      value: form.value<RemotePins>(f.key),
+      onChanged: form.saving ? null : (v) => form.set(f.key, v),
+    ),
   };
 }
 
@@ -374,4 +379,110 @@ class SaveBar extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// Список пинов: GPIO, имя, тип; «Добавить» до [PinListFieldSpec.maxCount]
+/// (как EditListPreference в Android).
+class _PinList extends StatelessWidget {
+  const _PinList({
+    required this.spec,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final PinListFieldSpec spec;
+  final RemotePins value;
+  final ValueChanged<RemotePins>? onChanged;
+
+  void _edit(int i, RemotePin p) =>
+      onChanged?.call(RemotePins([...value.items]..[i] = p));
+
+  @override
+  Widget build(BuildContext context) {
+    final items = value.items;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Tokens.s16,
+        vertical: Tokens.s8,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(spec.label, style: Theme.of(context).textTheme.titleSmall),
+          for (var i = 0; i < items.length; i++)
+            Padding(
+              // Ключ по позиции и длине: после удаления поля ввода берут
+              // новые значения.
+              key: ValueKey('${spec.key}-$i-${items.length}'),
+              padding: const EdgeInsets.only(top: Tokens.s8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 90,
+                    child: _TextInput(
+                      label: 'Контакт GPIO',
+                      value: '${items[i].gpio}',
+                      number: true,
+                      onChanged: (v) {
+                        final n = int.tryParse(v);
+                        if (n != null) {
+                          _edit(i, (
+                            gpio: n,
+                            name: items[i].name,
+                            type: items[i].type,
+                          ));
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: Tokens.s8),
+                  Expanded(
+                    child: _TextInput(
+                      label: 'Имя',
+                      value: items[i].name,
+                      onChanged: (v) => _edit(i, (
+                        gpio: items[i].gpio,
+                        name: v,
+                        type: items[i].type,
+                      )),
+                    ),
+                  ),
+                  const SizedBox(width: Tokens.s8),
+                  DropdownButton<int>(
+                    value: items[i].type,
+                    items: [
+                      for (final t in spec.types)
+                        DropdownMenuItem(value: t.value, child: Text(t.label)),
+                    ],
+                    onChanged: onChanged == null
+                        ? null
+                        : (t) => _edit(i, (
+                            gpio: items[i].gpio,
+                            name: items[i].name,
+                            type: t ?? 0,
+                          )),
+                  ),
+                  IconButton(
+                    tooltip: 'Удалить',
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: onChanged == null
+                        ? null
+                        : () => onChanged!(RemotePins([...items]..removeAt(i))),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: Tokens.s8),
+          OutlinedButton(
+            onPressed: onChanged == null || items.length >= spec.maxCount
+                ? null
+                : () => onChanged!(
+                    RemotePins([...items, (gpio: 0, name: '', type: 0)]),
+                  ),
+            child: const Text('Добавить'),
+          ),
+        ],
+      ),
+    );
+  }
 }
