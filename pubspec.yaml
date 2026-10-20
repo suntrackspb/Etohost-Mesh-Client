@@ -48,8 +48,27 @@ dev_dependencies:
   build_runner: ^2.16.2
   drift_dev: ^2.35.1
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
   assets:
     - assets/tray/
+    - assets/icon/window.png
+
+# Иконки приложения: CI запускает `dart run flutter_launcher_icons` после
+# flutter create. Исходник — assets/icon/app_icon.png; производные —
+# tool/make_icons.py.
+flutter_launcher_icons:
+  image_path: assets/icon/app_icon.png
+  android: true
+  # Рисунок целиком в фоне: глобус занимает ~57% и влезает в маску.
+  adaptive_icon_background: assets/icon/app_icon.png
+  adaptive_icon_foreground: assets/icon/android_foreground.png
+  ios: true
+  remove_alpha_ios: true
+  macos:
+    generate: true
+  windows:
+    generate: true
+    icon_size: 256

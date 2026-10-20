@@ -232,6 +232,32 @@ def patch_notifications():
 COMPILE_SDK = 36
 
 
+LINUX_ICON = """
+  // Иконка окна: data/flutter_assets рядом с исполняемым файлом.
+  {
+    g_autofree gchar* exe = g_file_read_link("/proc/self/exe", nullptr);
+    if (exe != nullptr) {
+      g_autofree gchar* dir = g_path_get_dirname(exe);
+      g_autofree gchar* icon = g_build_filename(
+          dir, "data", "flutter_assets", "assets", "icon", "window.png",
+          nullptr);
+      gtk_window_set_icon_from_file(window, icon, nullptr);
+    }
+  }
+"""
+
+
+def patch_linux_icon():
+    anchor = "gtk_window_set_default_size(window, 1280, 720);"
+    for f in (ROOT / "linux/runner/my_application.cc", ROOT / "linux/my_application.cc"):
+        if not f.exists():
+            continue
+        s = f.read_text()
+        if "window.png" not in s and anchor in s:
+            f.write_text(s.replace(anchor, anchor + "\n" + LINUX_ICON, 1))
+    print("linux icon: ok")
+
+
 def patch_plugins():
     """usb_serial и flutter_libserialport устарели: вызывают jcenter() (убран в
     Gradle 9) и собираются под старый compileSdk (androidx требует >= 34).
@@ -261,4 +287,5 @@ if __name__ == "__main__":
     patch_android()
     patch_apple()
     patch_notifications()
+    patch_linux_icon()
     patch_plugins()
