@@ -7,6 +7,7 @@ import '../../app/providers.dart';
 import '../../core/glyph_zip.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
+import '../../data/delivery.dart';
 import '../../data/message_sender.dart';
 import '../../data/mirror_ingest.dart';
 import '../../mirror/mirror_models.dart';
@@ -460,6 +461,13 @@ class _Bubble extends StatelessWidget {
                 const _PkiIcon(true, size: 12),
                 const SizedBox(width: Tokens.s4),
               ],
+              if (message.xeddsaSigned) ...[
+                const Tooltip(
+                  message: 'Подпись отправителя проверена',
+                  child: Icon(Icons.draw_outlined, size: 12),
+                ),
+                const SizedBox(width: Tokens.s4),
+              ],
               if (showSource) _SourceIcons(message: message),
               Text(time, style: text.labelSmall),
               if (out) ...[const SizedBox(width: Tokens.s4), _AckIcon(message)],
@@ -575,24 +583,15 @@ class _AckIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final (icon, color, hint) = switch (message.ackState) {
-      AckState.none ||
-      AckState.pending => (Icons.schedule, scheme.outline, 'Отправляется'),
-      AckState.acked => (Icons.done_all, scheme.primary, 'Доставлено'),
-      AckState.failed => (
-        Icons.error_outline,
-        scheme.error,
-        'Ошибка: ${Routing_Error.valueOf(message.ackError ?? 0)?.name ?? message.ackError}',
-      ),
-      AckState.timeout => (
-        Icons.error_outline,
-        scheme.error,
-        'Нет подтверждения',
-      ),
-      AckState.notSent => (Icons.error_outline, scheme.error, 'Не отправлено'),
+    final (icon, color) = switch (deliveryOf(message)) {
+      Delivery.sending => (Icons.schedule, scheme.outline),
+      Delivery.delivered => (Icons.done_all, scheme.primary),
+      Delivery.proven => (Icons.verified, StatusColors.ok),
+      Delivery.forged => (Icons.gpp_bad_outlined, scheme.error),
+      Delivery.failed => (Icons.error_outline, scheme.error),
     };
     return Tooltip(
-      message: hint,
+      message: deliveryHint(message),
       child: Icon(icon, size: 14, color: color),
     );
   }

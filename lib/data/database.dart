@@ -59,6 +59,10 @@ class Nodes extends Table {
   /// Нода не принимает личные сообщения (`User.is_unmessagable`).
   BoolColumn get isUnmessagable =>
       boolean().withDefault(const Constant(false))();
+
+  /// Нода подписывает пакеты XEdDSA (прошивка 2.8, `NodeInfo.has_xeddsa_signed`).
+  BoolColumn get hasXeddsaSigned =>
+      boolean().withDefault(const Constant(false))();
   DateTimeColumn get lastHeard => dateTime().nullable()();
   RealColumn get snr => real().nullable()();
   IntColumn get hopsAway => integer().nullable()();
@@ -112,6 +116,12 @@ class Messages extends Table {
 
   /// Личное, зашифрованное ключом получателя (PKI).
   BoolColumn get pkiEncrypted => boolean().withDefault(const Constant(false))();
+
+  /// Подпись XEdDSA проверена прошивкой (2.8, `MeshPacket.xeddsa_signed`).
+  BoolColumn get xeddsaSigned => boolean().withDefault(const Constant(false))();
+
+  /// Доказательство доставки исходящего (`MeshPacket_AckProofStatus`), null — нет данных.
+  IntColumn get ackProof => integer().nullable()();
   IntColumn get ackState =>
       intEnum<AckState>().withDefault(const Constant(0))();
 
@@ -258,13 +268,20 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
+      // С 5-й версии у тестеров уже есть данные — только добавляем колонки.
+      if (from == 5) {
+        await m.addColumn(nodes, nodes.hasXeddsaSigned);
+        await m.addColumn(messages, messages.xeddsaSigned);
+        await m.addColumn(messages, messages.ackProof);
+        return;
+      }
       for (final t in allTables) {
         await m.deleteTable(t.actualTableName);
       }

@@ -21,6 +21,7 @@ Node n(
   hwModel: 0,
   role: 0,
   isUnmessagable: false,
+  hasXeddsaSigned: false,
   lastHeard: heard,
   snr: snr,
   hopsAway: hops,

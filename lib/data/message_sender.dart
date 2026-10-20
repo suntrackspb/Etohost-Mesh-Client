@@ -113,6 +113,7 @@ class MessageSender {
         pkiEncrypted: Value(key != null),
         ackState: const Value(AckState.pending),
         ackError: const Value(null),
+        ackProof: const Value(null),
       ),
     );
     await _transmit(
@@ -176,7 +177,11 @@ class MessageSender {
     await (db.update(
       db.messages,
     )..where((m) => m.packetId.equals(id) & m.isOutgoing.equals(true))).write(
-      MessagesCompanion(ackState: Value(state), ackError: Value(error)),
+      MessagesCompanion(
+        ackState: Value(state),
+        ackError: Value(error),
+        ackProof: Value(r.ackProof?.value),
+      ),
     );
   }
 }

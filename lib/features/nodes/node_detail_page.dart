@@ -88,6 +88,8 @@ class NodeDetailPage extends ConsumerWidget {
                         'Публичный ключ',
                         n.publicKey == null ? 'нет' : 'есть',
                       ),
+                      if (n.hasXeddsaSigned)
+                        _row('Подпись XEdDSA', 'подписывает пакеты'),
                     ],
                   ),
                   SectionCard(

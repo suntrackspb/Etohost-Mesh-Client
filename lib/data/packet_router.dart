@@ -78,6 +78,7 @@ class PacketRouter {
             viaMqtt: Value(n.viaMqtt),
             isFavorite: Value(n.isFavorite),
             isIgnored: Value(n.isIgnored),
+            hasXeddsaSigned: Value(n.hasXeddsaSigned),
             latitude: Value(hasPos ? pos.latitudeI / 1e7 : null),
             longitude: Value(hasPos ? pos.longitudeI / 1e7 : null),
             altitude: Value(hasPos && pos.hasAltitude() ? pos.altitude : null),
@@ -337,6 +338,7 @@ class PacketRouter {
       hopStart: Value(p.hopStart == 0 ? null : p.hopStart),
       hopLimit: Value(p.hopLimit),
       viaMqtt: Value(p.viaMqtt),
+      xeddsaSigned: Value(p.xeddsaSigned),
       heardOnRadio: const Value(true),
     );
     await db
@@ -358,6 +360,7 @@ class PacketRouter {
             hopLimit: radio.hopLimit,
             viaMqtt: radio.viaMqtt,
             pkiEncrypted: Value(p.pkiEncrypted),
+            xeddsaSigned: radio.xeddsaSigned,
             heardOnRadio: const Value(true),
           ),
           // Уже пришло из зеркала (или нода повторила) — дополняем данными эфира.
@@ -366,6 +369,12 @@ class PacketRouter {
             target: [db.messages.packetId, db.messages.fromNum],
           ),
         );
+    // Подписанный пакет — значит, нода подписывает (на случай, если NodeInfo старая).
+    if (p.xeddsaSigned) {
+      await (db.update(db.nodes)..where((n) => n.num.equals(p.from))).write(
+        const NodesCompanion(hasXeddsaSigned: Value(true)),
+      );
+    }
   }
 
   /// Имя канала по индексу на своей ноде; безымянный основной — имя пресета.

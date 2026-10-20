@@ -215,4 +215,30 @@ void main() {
     expect(m.channelKey, '');
     expect(await db.watchDirectUnread(5, null).first, 1);
   });
+
+  test('подпись XEdDSA: флаг на сообщении и на ноде', () async {
+    await router.handle(
+      FromRadio(
+        nodeInfo: NodeInfo(num: 7, user: User(longName: 'S')),
+      ),
+    );
+    await router.handle(
+      FromRadio(
+        packet: MeshPacket(
+          from: 7,
+          to: broadcastNum,
+          id: 9,
+          xeddsaSigned: true,
+          decoded: Data(
+            portnum: PortNum.TEXT_MESSAGE_APP,
+            payload: utf8.encode('hi'),
+          ),
+        ),
+      ),
+    );
+    final m = await db.select(db.messages).getSingle();
+    expect(m.xeddsaSigned, isTrue);
+    final n = await db.select(db.nodes).getSingle();
+    expect(n.hasXeddsaSigned, isTrue);
+  });
 }

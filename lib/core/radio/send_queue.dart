@@ -23,9 +23,12 @@ enum DeliveryStatus {
 }
 
 class DeliveryResult {
-  const DeliveryResult(this.status, [this.error]);
+  const DeliveryResult(this.status, [this.error, this.ackProof]);
   final DeliveryStatus status;
   final Routing_Error? error;
+
+  /// Доказательство доставки (2.8); на 2.7 — ACK_PROOF_ABSENT.
+  final MeshPacket_AckProofStatus? ackProof;
 
   bool get ok => status == DeliveryStatus.acked;
 
@@ -81,13 +84,17 @@ class SendQueue {
   }
 
   /// Пришёл `Routing` с `request_id` = [requestId].
-  void onRouting(int requestId, Routing_Error error) {
+  void onRouting(
+    int requestId,
+    Routing_Error error, {
+    MeshPacket_AckProofStatus? ackProof,
+  }) {
     final item = _inFlight.remove(requestId);
     if (item == null) return;
     item.finish(
       error == Routing_Error.NONE
-          ? const DeliveryResult(DeliveryStatus.acked)
-          : DeliveryResult(DeliveryStatus.failed, error),
+          ? DeliveryResult(DeliveryStatus.acked, null, ackProof)
+          : DeliveryResult(DeliveryStatus.failed, error, ackProof),
     );
   }
 

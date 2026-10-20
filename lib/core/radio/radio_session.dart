@@ -174,6 +174,7 @@ class RadioSession extends ChangeNotifier {
           queue.onRouting(
             d.requestId,
             Routing.fromBuffer(d.payload).errorReason,
+            ackProof: f.packet.ackProofStatus,
           );
         } catch (_) {}
       }

@@ -99,6 +99,21 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _hasXeddsaSignedMeta = const VerificationMeta(
+    'hasXeddsaSigned',
+  );
+  @override
+  late final GeneratedColumn<bool> hasXeddsaSigned = GeneratedColumn<bool>(
+    'has_xeddsa_signed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("has_xeddsa_signed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _lastHeardMeta = const VerificationMeta(
     'lastHeard',
   );
@@ -303,6 +318,7 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     role,
     publicKey,
     isUnmessagable,
+    hasXeddsaSigned,
     lastHeard,
     snr,
     hopsAway,
@@ -380,6 +396,15 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         isUnmessagable.isAcceptableOrUnknown(
           data['is_unmessagable']!,
           _isUnmessagableMeta,
+        ),
+      );
+    }
+    if (data.containsKey('has_xeddsa_signed')) {
+      context.handle(
+        _hasXeddsaSignedMeta,
+        hasXeddsaSigned.isAcceptableOrUnknown(
+          data['has_xeddsa_signed']!,
+          _hasXeddsaSignedMeta,
         ),
       );
     }
@@ -529,6 +554,10 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_unmessagable'],
       )!,
+      hasXeddsaSigned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}has_xeddsa_signed'],
+      )!,
       lastHeard: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_heard'],
@@ -613,6 +642,9 @@ class Node extends DataClass implements Insertable<Node> {
 
   /// Нода не принимает личные сообщения (`User.is_unmessagable`).
   final bool isUnmessagable;
+
+  /// Нода подписывает пакеты XEdDSA (прошивка 2.8, `NodeInfo.has_xeddsa_signed`).
+  final bool hasXeddsaSigned;
   final DateTime? lastHeard;
   final double? snr;
   final int? hopsAway;
@@ -642,6 +674,7 @@ class Node extends DataClass implements Insertable<Node> {
     required this.role,
     this.publicKey,
     required this.isUnmessagable,
+    required this.hasXeddsaSigned,
     this.lastHeard,
     this.snr,
     this.hopsAway,
@@ -672,6 +705,7 @@ class Node extends DataClass implements Insertable<Node> {
       map['public_key'] = Variable<Uint8List>(publicKey);
     }
     map['is_unmessagable'] = Variable<bool>(isUnmessagable);
+    map['has_xeddsa_signed'] = Variable<bool>(hasXeddsaSigned);
     if (!nullToAbsent || lastHeard != null) {
       map['last_heard'] = Variable<DateTime>(lastHeard);
     }
@@ -725,6 +759,7 @@ class Node extends DataClass implements Insertable<Node> {
           ? const Value.absent()
           : Value(publicKey),
       isUnmessagable: Value(isUnmessagable),
+      hasXeddsaSigned: Value(hasXeddsaSigned),
       lastHeard: lastHeard == null && nullToAbsent
           ? const Value.absent()
           : Value(lastHeard),
@@ -778,6 +813,7 @@ class Node extends DataClass implements Insertable<Node> {
       role: serializer.fromJson<int>(json['role']),
       publicKey: serializer.fromJson<Uint8List?>(json['publicKey']),
       isUnmessagable: serializer.fromJson<bool>(json['isUnmessagable']),
+      hasXeddsaSigned: serializer.fromJson<bool>(json['hasXeddsaSigned']),
       lastHeard: serializer.fromJson<DateTime?>(json['lastHeard']),
       snr: serializer.fromJson<double?>(json['snr']),
       hopsAway: serializer.fromJson<int?>(json['hopsAway']),
@@ -810,6 +846,7 @@ class Node extends DataClass implements Insertable<Node> {
       'role': serializer.toJson<int>(role),
       'publicKey': serializer.toJson<Uint8List?>(publicKey),
       'isUnmessagable': serializer.toJson<bool>(isUnmessagable),
+      'hasXeddsaSigned': serializer.toJson<bool>(hasXeddsaSigned),
       'lastHeard': serializer.toJson<DateTime?>(lastHeard),
       'snr': serializer.toJson<double?>(snr),
       'hopsAway': serializer.toJson<int?>(hopsAway),
@@ -838,6 +875,7 @@ class Node extends DataClass implements Insertable<Node> {
     int? role,
     Value<Uint8List?> publicKey = const Value.absent(),
     bool? isUnmessagable,
+    bool? hasXeddsaSigned,
     Value<DateTime?> lastHeard = const Value.absent(),
     Value<double?> snr = const Value.absent(),
     Value<int?> hopsAway = const Value.absent(),
@@ -863,6 +901,7 @@ class Node extends DataClass implements Insertable<Node> {
     role: role ?? this.role,
     publicKey: publicKey.present ? publicKey.value : this.publicKey,
     isUnmessagable: isUnmessagable ?? this.isUnmessagable,
+    hasXeddsaSigned: hasXeddsaSigned ?? this.hasXeddsaSigned,
     lastHeard: lastHeard.present ? lastHeard.value : this.lastHeard,
     snr: snr.present ? snr.value : this.snr,
     hopsAway: hopsAway.present ? hopsAway.value : this.hopsAway,
@@ -896,6 +935,9 @@ class Node extends DataClass implements Insertable<Node> {
       isUnmessagable: data.isUnmessagable.present
           ? data.isUnmessagable.value
           : this.isUnmessagable,
+      hasXeddsaSigned: data.hasXeddsaSigned.present
+          ? data.hasXeddsaSigned.value
+          : this.hasXeddsaSigned,
       lastHeard: data.lastHeard.present ? data.lastHeard.value : this.lastHeard,
       snr: data.snr.present ? data.snr.value : this.snr,
       hopsAway: data.hopsAway.present ? data.hopsAway.value : this.hopsAway,
@@ -934,6 +976,7 @@ class Node extends DataClass implements Insertable<Node> {
           ..write('role: $role, ')
           ..write('publicKey: $publicKey, ')
           ..write('isUnmessagable: $isUnmessagable, ')
+          ..write('hasXeddsaSigned: $hasXeddsaSigned, ')
           ..write('lastHeard: $lastHeard, ')
           ..write('snr: $snr, ')
           ..write('hopsAway: $hopsAway, ')
@@ -964,6 +1007,7 @@ class Node extends DataClass implements Insertable<Node> {
     role,
     $driftBlobEquality.hash(publicKey),
     isUnmessagable,
+    hasXeddsaSigned,
     lastHeard,
     snr,
     hopsAway,
@@ -993,6 +1037,7 @@ class Node extends DataClass implements Insertable<Node> {
           other.role == this.role &&
           $driftBlobEquality.equals(other.publicKey, this.publicKey) &&
           other.isUnmessagable == this.isUnmessagable &&
+          other.hasXeddsaSigned == this.hasXeddsaSigned &&
           other.lastHeard == this.lastHeard &&
           other.snr == this.snr &&
           other.hopsAway == this.hopsAway &&
@@ -1020,6 +1065,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
   final Value<int> role;
   final Value<Uint8List?> publicKey;
   final Value<bool> isUnmessagable;
+  final Value<bool> hasXeddsaSigned;
   final Value<DateTime?> lastHeard;
   final Value<double?> snr;
   final Value<int?> hopsAway;
@@ -1045,6 +1091,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.role = const Value.absent(),
     this.publicKey = const Value.absent(),
     this.isUnmessagable = const Value.absent(),
+    this.hasXeddsaSigned = const Value.absent(),
     this.lastHeard = const Value.absent(),
     this.snr = const Value.absent(),
     this.hopsAway = const Value.absent(),
@@ -1071,6 +1118,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.role = const Value.absent(),
     this.publicKey = const Value.absent(),
     this.isUnmessagable = const Value.absent(),
+    this.hasXeddsaSigned = const Value.absent(),
     this.lastHeard = const Value.absent(),
     this.snr = const Value.absent(),
     this.hopsAway = const Value.absent(),
@@ -1097,6 +1145,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Expression<int>? role,
     Expression<Uint8List>? publicKey,
     Expression<bool>? isUnmessagable,
+    Expression<bool>? hasXeddsaSigned,
     Expression<DateTime>? lastHeard,
     Expression<double>? snr,
     Expression<int>? hopsAway,
@@ -1123,6 +1172,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
       if (role != null) 'role': role,
       if (publicKey != null) 'public_key': publicKey,
       if (isUnmessagable != null) 'is_unmessagable': isUnmessagable,
+      if (hasXeddsaSigned != null) 'has_xeddsa_signed': hasXeddsaSigned,
       if (lastHeard != null) 'last_heard': lastHeard,
       if (snr != null) 'snr': snr,
       if (hopsAway != null) 'hops_away': hopsAway,
@@ -1151,6 +1201,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Value<int>? role,
     Value<Uint8List?>? publicKey,
     Value<bool>? isUnmessagable,
+    Value<bool>? hasXeddsaSigned,
     Value<DateTime?>? lastHeard,
     Value<double?>? snr,
     Value<int?>? hopsAway,
@@ -1177,6 +1228,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
       role: role ?? this.role,
       publicKey: publicKey ?? this.publicKey,
       isUnmessagable: isUnmessagable ?? this.isUnmessagable,
+      hasXeddsaSigned: hasXeddsaSigned ?? this.hasXeddsaSigned,
       lastHeard: lastHeard ?? this.lastHeard,
       snr: snr ?? this.snr,
       hopsAway: hopsAway ?? this.hopsAway,
@@ -1222,6 +1274,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
     }
     if (isUnmessagable.present) {
       map['is_unmessagable'] = Variable<bool>(isUnmessagable.value);
+    }
+    if (hasXeddsaSigned.present) {
+      map['has_xeddsa_signed'] = Variable<bool>(hasXeddsaSigned.value);
     }
     if (lastHeard.present) {
       map['last_heard'] = Variable<DateTime>(lastHeard.value);
@@ -1285,6 +1340,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
           ..write('role: $role, ')
           ..write('publicKey: $publicKey, ')
           ..write('isUnmessagable: $isUnmessagable, ')
+          ..write('hasXeddsaSigned: $hasXeddsaSigned, ')
           ..write('lastHeard: $lastHeard, ')
           ..write('snr: $snr, ')
           ..write('hopsAway: $hopsAway, ')
@@ -1502,6 +1558,32 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _xeddsaSignedMeta = const VerificationMeta(
+    'xeddsaSigned',
+  );
+  @override
+  late final GeneratedColumn<bool> xeddsaSigned = GeneratedColumn<bool>(
+    'xeddsa_signed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("xeddsa_signed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _ackProofMeta = const VerificationMeta(
+    'ackProof',
+  );
+  @override
+  late final GeneratedColumn<int> ackProof = GeneratedColumn<int>(
+    'ack_proof',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   late final GeneratedColumnWithTypeConverter<AckState, int> ackState =
       GeneratedColumn<int>(
@@ -1609,6 +1691,8 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     hopLimit,
     viaMqtt,
     pkiEncrypted,
+    xeddsaSigned,
+    ackProof,
     ackState,
     ackError,
     heardOnRadio,
@@ -1741,6 +1825,21 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
         ),
       );
     }
+    if (data.containsKey('xeddsa_signed')) {
+      context.handle(
+        _xeddsaSignedMeta,
+        xeddsaSigned.isAcceptableOrUnknown(
+          data['xeddsa_signed']!,
+          _xeddsaSignedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ack_proof')) {
+      context.handle(
+        _ackProofMeta,
+        ackProof.isAcceptableOrUnknown(data['ack_proof']!, _ackProofMeta),
+      );
+    }
     if (data.containsKey('ack_error')) {
       context.handle(
         _ackErrorMeta,
@@ -1864,6 +1963,14 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
         DriftSqlType.bool,
         data['${effectivePrefix}pki_encrypted'],
       )!,
+      xeddsaSigned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}xeddsa_signed'],
+      )!,
+      ackProof: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ack_proof'],
+      ),
       ackState: $MessagesTable.$converterackState.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.int,
@@ -1932,6 +2039,12 @@ class Message extends DataClass implements Insertable<Message> {
 
   /// Личное, зашифрованное ключом получателя (PKI).
   final bool pkiEncrypted;
+
+  /// Подпись XEdDSA проверена прошивкой (2.8, `MeshPacket.xeddsa_signed`).
+  final bool xeddsaSigned;
+
+  /// Доказательство доставки исходящего (`MeshPacket_AckProofStatus`), null — нет данных.
+  final int? ackProof;
   final AckState ackState;
 
   /// Routing.Error при [AckState.failed].
@@ -1961,6 +2074,8 @@ class Message extends DataClass implements Insertable<Message> {
     this.hopLimit,
     required this.viaMqtt,
     required this.pkiEncrypted,
+    required this.xeddsaSigned,
+    this.ackProof,
     required this.ackState,
     this.ackError,
     required this.heardOnRadio,
@@ -2001,6 +2116,10 @@ class Message extends DataClass implements Insertable<Message> {
     }
     map['via_mqtt'] = Variable<bool>(viaMqtt);
     map['pki_encrypted'] = Variable<bool>(pkiEncrypted);
+    map['xeddsa_signed'] = Variable<bool>(xeddsaSigned);
+    if (!nullToAbsent || ackProof != null) {
+      map['ack_proof'] = Variable<int>(ackProof);
+    }
     {
       map['ack_state'] = Variable<int>(
         $MessagesTable.$converterackState.toSql(ackState),
@@ -2050,6 +2169,10 @@ class Message extends DataClass implements Insertable<Message> {
           : Value(hopLimit),
       viaMqtt: Value(viaMqtt),
       pkiEncrypted: Value(pkiEncrypted),
+      xeddsaSigned: Value(xeddsaSigned),
+      ackProof: ackProof == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ackProof),
       ackState: Value(ackState),
       ackError: ackError == null && nullToAbsent
           ? const Value.absent()
@@ -2087,6 +2210,8 @@ class Message extends DataClass implements Insertable<Message> {
       hopLimit: serializer.fromJson<int?>(json['hopLimit']),
       viaMqtt: serializer.fromJson<bool>(json['viaMqtt']),
       pkiEncrypted: serializer.fromJson<bool>(json['pkiEncrypted']),
+      xeddsaSigned: serializer.fromJson<bool>(json['xeddsaSigned']),
+      ackProof: serializer.fromJson<int?>(json['ackProof']),
       ackState: $MessagesTable.$converterackState.fromJson(
         serializer.fromJson<int>(json['ackState']),
       ),
@@ -2119,6 +2244,8 @@ class Message extends DataClass implements Insertable<Message> {
       'hopLimit': serializer.toJson<int?>(hopLimit),
       'viaMqtt': serializer.toJson<bool>(viaMqtt),
       'pkiEncrypted': serializer.toJson<bool>(pkiEncrypted),
+      'xeddsaSigned': serializer.toJson<bool>(xeddsaSigned),
+      'ackProof': serializer.toJson<int?>(ackProof),
       'ackState': serializer.toJson<int>(
         $MessagesTable.$converterackState.toJson(ackState),
       ),
@@ -2149,6 +2276,8 @@ class Message extends DataClass implements Insertable<Message> {
     Value<int?> hopLimit = const Value.absent(),
     bool? viaMqtt,
     bool? pkiEncrypted,
+    bool? xeddsaSigned,
+    Value<int?> ackProof = const Value.absent(),
     AckState? ackState,
     Value<int?> ackError = const Value.absent(),
     bool? heardOnRadio,
@@ -2174,6 +2303,8 @@ class Message extends DataClass implements Insertable<Message> {
     hopLimit: hopLimit.present ? hopLimit.value : this.hopLimit,
     viaMqtt: viaMqtt ?? this.viaMqtt,
     pkiEncrypted: pkiEncrypted ?? this.pkiEncrypted,
+    xeddsaSigned: xeddsaSigned ?? this.xeddsaSigned,
+    ackProof: ackProof.present ? ackProof.value : this.ackProof,
     ackState: ackState ?? this.ackState,
     ackError: ackError.present ? ackError.value : this.ackError,
     heardOnRadio: heardOnRadio ?? this.heardOnRadio,
@@ -2207,6 +2338,10 @@ class Message extends DataClass implements Insertable<Message> {
       pkiEncrypted: data.pkiEncrypted.present
           ? data.pkiEncrypted.value
           : this.pkiEncrypted,
+      xeddsaSigned: data.xeddsaSigned.present
+          ? data.xeddsaSigned.value
+          : this.xeddsaSigned,
+      ackProof: data.ackProof.present ? data.ackProof.value : this.ackProof,
       ackState: data.ackState.present ? data.ackState.value : this.ackState,
       ackError: data.ackError.present ? data.ackError.value : this.ackError,
       heardOnRadio: data.heardOnRadio.present
@@ -2243,6 +2378,8 @@ class Message extends DataClass implements Insertable<Message> {
           ..write('hopLimit: $hopLimit, ')
           ..write('viaMqtt: $viaMqtt, ')
           ..write('pkiEncrypted: $pkiEncrypted, ')
+          ..write('xeddsaSigned: $xeddsaSigned, ')
+          ..write('ackProof: $ackProof, ')
           ..write('ackState: $ackState, ')
           ..write('ackError: $ackError, ')
           ..write('heardOnRadio: $heardOnRadio, ')
@@ -2273,6 +2410,8 @@ class Message extends DataClass implements Insertable<Message> {
     hopLimit,
     viaMqtt,
     pkiEncrypted,
+    xeddsaSigned,
+    ackProof,
     ackState,
     ackError,
     heardOnRadio,
@@ -2302,6 +2441,8 @@ class Message extends DataClass implements Insertable<Message> {
           other.hopLimit == this.hopLimit &&
           other.viaMqtt == this.viaMqtt &&
           other.pkiEncrypted == this.pkiEncrypted &&
+          other.xeddsaSigned == this.xeddsaSigned &&
+          other.ackProof == this.ackProof &&
           other.ackState == this.ackState &&
           other.ackError == this.ackError &&
           other.heardOnRadio == this.heardOnRadio &&
@@ -2329,6 +2470,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   final Value<int?> hopLimit;
   final Value<bool> viaMqtt;
   final Value<bool> pkiEncrypted;
+  final Value<bool> xeddsaSigned;
+  final Value<int?> ackProof;
   final Value<AckState> ackState;
   final Value<int?> ackError;
   final Value<bool> heardOnRadio;
@@ -2354,6 +2497,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     this.hopLimit = const Value.absent(),
     this.viaMqtt = const Value.absent(),
     this.pkiEncrypted = const Value.absent(),
+    this.xeddsaSigned = const Value.absent(),
+    this.ackProof = const Value.absent(),
     this.ackState = const Value.absent(),
     this.ackError = const Value.absent(),
     this.heardOnRadio = const Value.absent(),
@@ -2380,6 +2525,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     this.hopLimit = const Value.absent(),
     this.viaMqtt = const Value.absent(),
     this.pkiEncrypted = const Value.absent(),
+    this.xeddsaSigned = const Value.absent(),
+    this.ackProof = const Value.absent(),
     this.ackState = const Value.absent(),
     this.ackError = const Value.absent(),
     this.heardOnRadio = const Value.absent(),
@@ -2410,6 +2557,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     Expression<int>? hopLimit,
     Expression<bool>? viaMqtt,
     Expression<bool>? pkiEncrypted,
+    Expression<bool>? xeddsaSigned,
+    Expression<int>? ackProof,
     Expression<int>? ackState,
     Expression<int>? ackError,
     Expression<bool>? heardOnRadio,
@@ -2436,6 +2585,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
       if (hopLimit != null) 'hop_limit': hopLimit,
       if (viaMqtt != null) 'via_mqtt': viaMqtt,
       if (pkiEncrypted != null) 'pki_encrypted': pkiEncrypted,
+      if (xeddsaSigned != null) 'xeddsa_signed': xeddsaSigned,
+      if (ackProof != null) 'ack_proof': ackProof,
       if (ackState != null) 'ack_state': ackState,
       if (ackError != null) 'ack_error': ackError,
       if (heardOnRadio != null) 'heard_on_radio': heardOnRadio,
@@ -2464,6 +2615,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     Value<int?>? hopLimit,
     Value<bool>? viaMqtt,
     Value<bool>? pkiEncrypted,
+    Value<bool>? xeddsaSigned,
+    Value<int?>? ackProof,
     Value<AckState>? ackState,
     Value<int?>? ackError,
     Value<bool>? heardOnRadio,
@@ -2490,6 +2643,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
       hopLimit: hopLimit ?? this.hopLimit,
       viaMqtt: viaMqtt ?? this.viaMqtt,
       pkiEncrypted: pkiEncrypted ?? this.pkiEncrypted,
+      xeddsaSigned: xeddsaSigned ?? this.xeddsaSigned,
+      ackProof: ackProof ?? this.ackProof,
       ackState: ackState ?? this.ackState,
       ackError: ackError ?? this.ackError,
       heardOnRadio: heardOnRadio ?? this.heardOnRadio,
@@ -2554,6 +2709,12 @@ class MessagesCompanion extends UpdateCompanion<Message> {
     if (pkiEncrypted.present) {
       map['pki_encrypted'] = Variable<bool>(pkiEncrypted.value);
     }
+    if (xeddsaSigned.present) {
+      map['xeddsa_signed'] = Variable<bool>(xeddsaSigned.value);
+    }
+    if (ackProof.present) {
+      map['ack_proof'] = Variable<int>(ackProof.value);
+    }
     if (ackState.present) {
       map['ack_state'] = Variable<int>(
         $MessagesTable.$converterackState.toSql(ackState.value),
@@ -2600,6 +2761,8 @@ class MessagesCompanion extends UpdateCompanion<Message> {
           ..write('hopLimit: $hopLimit, ')
           ..write('viaMqtt: $viaMqtt, ')
           ..write('pkiEncrypted: $pkiEncrypted, ')
+          ..write('xeddsaSigned: $xeddsaSigned, ')
+          ..write('ackProof: $ackProof, ')
           ..write('ackState: $ackState, ')
           ..write('ackError: $ackError, ')
           ..write('heardOnRadio: $heardOnRadio, ')
@@ -5569,6 +5732,7 @@ typedef $$NodesTableCreateCompanionBuilder =
       Value<int> role,
       Value<Uint8List?> publicKey,
       Value<bool> isUnmessagable,
+      Value<bool> hasXeddsaSigned,
       Value<DateTime?> lastHeard,
       Value<double?> snr,
       Value<int?> hopsAway,
@@ -5596,6 +5760,7 @@ typedef $$NodesTableUpdateCompanionBuilder =
       Value<int> role,
       Value<Uint8List?> publicKey,
       Value<bool> isUnmessagable,
+      Value<bool> hasXeddsaSigned,
       Value<DateTime?> lastHeard,
       Value<double?> snr,
       Value<int?> hopsAway,
@@ -5659,6 +5824,11 @@ class $$NodesTableFilterComposer extends Composer<_$AppDatabase, $NodesTable> {
 
   ColumnFilters<bool> get isUnmessagable => $composableBuilder(
     column: $table.isUnmessagable,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get hasXeddsaSigned => $composableBuilder(
+    column: $table.hasXeddsaSigned,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5792,6 +5962,11 @@ class $$NodesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get hasXeddsaSigned => $composableBuilder(
+    column: $table.hasXeddsaSigned,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get lastHeard => $composableBuilder(
     column: $table.lastHeard,
     builder: (column) => ColumnOrderings(column),
@@ -5908,6 +6083,11 @@ class $$NodesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get hasXeddsaSigned => $composableBuilder(
+    column: $table.hasXeddsaSigned,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get lastHeard =>
       $composableBuilder(column: $table.lastHeard, builder: (column) => column);
 
@@ -6001,6 +6181,7 @@ class $$NodesTableTableManager
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> publicKey = const Value.absent(),
                 Value<bool> isUnmessagable = const Value.absent(),
+                Value<bool> hasXeddsaSigned = const Value.absent(),
                 Value<DateTime?> lastHeard = const Value.absent(),
                 Value<double?> snr = const Value.absent(),
                 Value<int?> hopsAway = const Value.absent(),
@@ -6026,6 +6207,7 @@ class $$NodesTableTableManager
                 role: role,
                 publicKey: publicKey,
                 isUnmessagable: isUnmessagable,
+                hasXeddsaSigned: hasXeddsaSigned,
                 lastHeard: lastHeard,
                 snr: snr,
                 hopsAway: hopsAway,
@@ -6053,6 +6235,7 @@ class $$NodesTableTableManager
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> publicKey = const Value.absent(),
                 Value<bool> isUnmessagable = const Value.absent(),
+                Value<bool> hasXeddsaSigned = const Value.absent(),
                 Value<DateTime?> lastHeard = const Value.absent(),
                 Value<double?> snr = const Value.absent(),
                 Value<int?> hopsAway = const Value.absent(),
@@ -6078,6 +6261,7 @@ class $$NodesTableTableManager
                 role: role,
                 publicKey: publicKey,
                 isUnmessagable: isUnmessagable,
+                hasXeddsaSigned: hasXeddsaSigned,
                 lastHeard: lastHeard,
                 snr: snr,
                 hopsAway: hopsAway,
@@ -6145,6 +6329,8 @@ typedef $$MessagesTableCreateCompanionBuilder =
       Value<int?> hopLimit,
       Value<bool> viaMqtt,
       Value<bool> pkiEncrypted,
+      Value<bool> xeddsaSigned,
+      Value<int?> ackProof,
       Value<AckState> ackState,
       Value<int?> ackError,
       Value<bool> heardOnRadio,
@@ -6172,6 +6358,8 @@ typedef $$MessagesTableUpdateCompanionBuilder =
       Value<int?> hopLimit,
       Value<bool> viaMqtt,
       Value<bool> pkiEncrypted,
+      Value<bool> xeddsaSigned,
+      Value<int?> ackProof,
       Value<AckState> ackState,
       Value<int?> ackError,
       Value<bool> heardOnRadio,
@@ -6272,6 +6460,16 @@ class $$MessagesTableFilterComposer
 
   ColumnFilters<bool> get pkiEncrypted => $composableBuilder(
     column: $table.pkiEncrypted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get xeddsaSigned => $composableBuilder(
+    column: $table.xeddsaSigned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ackProof => $composableBuilder(
+    column: $table.ackProof,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6406,6 +6604,16 @@ class $$MessagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get xeddsaSigned => $composableBuilder(
+    column: $table.xeddsaSigned,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ackProof => $composableBuilder(
+    column: $table.ackProof,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get ackState => $composableBuilder(
     column: $table.ackState,
     builder: (column) => ColumnOrderings(column),
@@ -6508,6 +6716,14 @@ class $$MessagesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get xeddsaSigned => $composableBuilder(
+    column: $table.xeddsaSigned,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get ackProof =>
+      $composableBuilder(column: $table.ackProof, builder: (column) => column);
+
   GeneratedColumnWithTypeConverter<AckState, int> get ackState =>
       $composableBuilder(column: $table.ackState, builder: (column) => column);
 
@@ -6581,6 +6797,8 @@ class $$MessagesTableTableManager
                 Value<int?> hopLimit = const Value.absent(),
                 Value<bool> viaMqtt = const Value.absent(),
                 Value<bool> pkiEncrypted = const Value.absent(),
+                Value<bool> xeddsaSigned = const Value.absent(),
+                Value<int?> ackProof = const Value.absent(),
                 Value<AckState> ackState = const Value.absent(),
                 Value<int?> ackError = const Value.absent(),
                 Value<bool> heardOnRadio = const Value.absent(),
@@ -6606,6 +6824,8 @@ class $$MessagesTableTableManager
                 hopLimit: hopLimit,
                 viaMqtt: viaMqtt,
                 pkiEncrypted: pkiEncrypted,
+                xeddsaSigned: xeddsaSigned,
+                ackProof: ackProof,
                 ackState: ackState,
                 ackError: ackError,
                 heardOnRadio: heardOnRadio,
@@ -6633,6 +6853,8 @@ class $$MessagesTableTableManager
                 Value<int?> hopLimit = const Value.absent(),
                 Value<bool> viaMqtt = const Value.absent(),
                 Value<bool> pkiEncrypted = const Value.absent(),
+                Value<bool> xeddsaSigned = const Value.absent(),
+                Value<int?> ackProof = const Value.absent(),
                 Value<AckState> ackState = const Value.absent(),
                 Value<int?> ackError = const Value.absent(),
                 Value<bool> heardOnRadio = const Value.absent(),
@@ -6658,6 +6880,8 @@ class $$MessagesTableTableManager
                 hopLimit: hopLimit,
                 viaMqtt: viaMqtt,
                 pkiEncrypted: pkiEncrypted,
+                xeddsaSigned: xeddsaSigned,
+                ackProof: ackProof,
                 ackState: ackState,
                 ackError: ackError,
                 heardOnRadio: heardOnRadio,
