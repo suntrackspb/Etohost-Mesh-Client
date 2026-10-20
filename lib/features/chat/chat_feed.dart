@@ -17,6 +17,7 @@ import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
 import 'link_text.dart';
 import 'relay_map_sheet.dart';
+import 'swipe_to_reply.dart';
 
 /// Быстрые реакции (как в официальных клиентах — эмодзи-ответ на сообщение).
 const quickReactions = ['👍', '❤️', '😂', '😮', '😢', '👎'];
@@ -326,25 +327,28 @@ class _MessageList extends ConsumerWidget {
             );
           }
           final m = visible[i];
-          return _Bubble(
-            message: m,
-            author: _authorName(nodes, m.fromNum),
-            shortName: nodes[m.fromNum]?.shortName,
-            quoted: m.replyId == null ? null : byPacket[m.replyId],
-            quotedAuthor: m.replyId == null || byPacket[m.replyId] == null
-                ? null
-                : _authorName(nodes, byPacket[m.replyId]!.fromNum),
-            reactions: reactions[m.packetId] ?? const [],
-            mirror: mirror,
-            onMenu: () => _showMenu(context, ref, m),
-            onOpenNode: () => context.go('/nodes/${m.fromNum}'),
-            onOpenRelays: () {
-              final cfg = ref.read(mirrorConfigProvider).value;
-              final url = cfg == null || m.mirrorId == null
+          return SwipeToReply(
+            onReply: canWrite ? () => onReply(m) : null,
+            child: _Bubble(
+              message: m,
+              author: _authorName(nodes, m.fromNum),
+              shortName: nodes[m.fromNum]?.shortName,
+              quoted: m.replyId == null ? null : byPacket[m.replyId],
+              quotedAuthor: m.replyId == null || byPacket[m.replyId] == null
                   ? null
-                  : relayMapUrl(cfg, m.mirrorId!);
-              if (url != null) showRelayMap(context, url);
-            },
+                  : _authorName(nodes, byPacket[m.replyId]!.fromNum),
+              reactions: reactions[m.packetId] ?? const [],
+              mirror: mirror,
+              onMenu: () => _showMenu(context, ref, m),
+              onOpenNode: () => context.go('/nodes/${m.fromNum}'),
+              onOpenRelays: () {
+                final cfg = ref.read(mirrorConfigProvider).value;
+                final url = cfg == null || m.mirrorId == null
+                    ? null
+                    : relayMapUrl(cfg, m.mirrorId!);
+                if (url != null) showRelayMap(context, url);
+              },
+            ),
           );
         },
       ),

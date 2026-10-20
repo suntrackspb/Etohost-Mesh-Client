@@ -37,6 +37,10 @@ def patch_android():
     add = "".join(f"    {p}\n" for p in perms if p.split('"')[1] not in s)
     if add:
         s = s.replace("<application", add + "    <application", 1)
+    # Системный жест «назад» Android 13+ через OnBackInvokedCallback
+    # (иначе Flutter не получает predictive back).
+    if "enableOnBackInvokedCallback" not in s:
+        s = s.replace("<application", '<application\n        android:enableOnBackInvokedCallback="true"', 1)
     if s != orig:
         f.write_text(s)
     print("android: ok")

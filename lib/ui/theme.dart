@@ -10,12 +10,13 @@ ThemeData buildTheme(Brightness brightness) {
   );
   return ThemeData(
     colorScheme: scheme,
-    // iOS/macOS: «назад» свайпом с любого места экрана, как в системных приложениях.
+    // «Назад» свайпом с любого места экрана, как в системных приложениях iOS;
+    // на Android системный жест от края тоже работает.
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
         TargetPlatform.iOS: SwipeablePageTransitionsBuilder(),
         TargetPlatform.macOS: SwipeablePageTransitionsBuilder(),
-        TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+        TargetPlatform.android: SwipeablePageTransitionsBuilder(),
       },
     ),
     useMaterial3: true,
