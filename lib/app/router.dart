@@ -112,6 +112,10 @@ final appRouter = GoRouter(
                   'remote-hardware',
                   (_) => ConfigSectionPage(remoteHardwareSpec),
                 ),
+                _route(
+                  'neighbor-info',
+                  (_) => ConfigSectionPage(neighborInfoSpec),
+                ),
                 _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),

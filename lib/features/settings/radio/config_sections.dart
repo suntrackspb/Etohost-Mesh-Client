@@ -11,6 +11,7 @@ import '../../../data/settings/external_notification_section.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/settings/lora_section.dart';
 import '../../../data/settings/mqtt_section.dart';
+import '../../../data/settings/neighbor_info_section.dart';
 import '../../../data/settings/network_section.dart';
 import '../../../data/settings/position_section.dart';
 import '../../../data/settings/power_section.dart';
@@ -302,4 +303,15 @@ final remoteHardwareSpec = ConfigSectionSpec<ModuleConfig>(
   read: (c) => RemoteHardwareSection.read(c.remoteHardware),
   save: (admin, db, c, v, _) =>
       RemoteHardwareSection.save(admin, db, c.remoteHardware, v),
+);
+
+final neighborInfoSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'neighborInfo',
+  title: NeighborInfoSection.title,
+  confirm: NeighborInfoSection.saveConfirm,
+  fields: (_) => NeighborInfoSection.fields(),
+  read: (c) => NeighborInfoSection.read(c.neighborInfo),
+  save: (admin, db, c, v, _) =>
+      NeighborInfoSection.save(admin, db, c.neighborInfo, v),
 );

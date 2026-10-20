@@ -166,6 +166,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/remote-hardware'),
               ),
+              MeshTile(
+                title: 'Информация о соседях',
+                leading: const Icon(Icons.hub_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/neighbor-info'),
+              ),
             ],
           ),
           SectionCard(
