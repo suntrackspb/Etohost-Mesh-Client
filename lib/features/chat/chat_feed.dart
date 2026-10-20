@@ -11,6 +11,7 @@ import '../../data/database.dart';
 import '../../data/delivery.dart';
 import '../../data/message_meta.dart';
 import '../../data/message_sender.dart';
+import '../../data/message_split.dart';
 import '../../data/mirror_ingest.dart';
 import '../../mirror/mirror_config.dart';
 import '../../mirror/mirror_models.dart';
@@ -884,15 +885,40 @@ class _ComposerState extends ConsumerState<_Composer> {
   /// Что реально уйдёт в эфир.
   String _outgoing(int zip) => GlyphZip.apply(_text.text.trim(), zip);
 
+  /// Части для отправки: длинный текст — несколькими сообщениями.
+  List<String> _parts(int zip) => MessageSplit.split(_outgoing(zip));
+
   bool _valid(int zip) {
-    final t = _outgoing(zip);
-    return t.isNotEmpty && messageBytes(t) <= maxMessageBytes;
+    final n = _parts(zip).length;
+    return n > 0 && n <= MessageSplit.maxParts;
   }
+
+  /// Идёт отправка частей: (отправлено, всего).
+  (int, int)? _progress;
 
   Future<void> _submit() async {
     final zip = _zip;
-    if (!_valid(zip) || !ref.read(canSendProvider)) return;
-    if (await widget.onSend(_outgoing(zip))) _text.clear();
+    if (_progress != null || !_valid(zip) || !ref.read(canSendProvider)) {
+      return;
+    }
+    final parts = _parts(zip);
+    var sent = 0;
+    setState(() => _progress = (0, parts.length));
+    for (final part in parts) {
+      if (sent > 0) await Future<void>.delayed(MessageSplit.delay);
+      if (!mounted || !await widget.onSend(part)) break;
+      sent++;
+      if (mounted) setState(() => _progress = (sent, parts.length));
+    }
+    if (!mounted) return;
+    setState(() => _progress = null);
+    if (sent == parts.length) {
+      _text.clear();
+    } else if (sent > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Отправлено $sent из ${parts.length}')),
+      );
+    }
     _focus.requestFocus();
   }
 
@@ -902,7 +928,9 @@ class _ComposerState extends ConsumerState<_Composer> {
     final canSend = ref.watch(canSendProvider);
     final zip = ref.watch(glyphZipLevelProvider).value ?? 0;
     final bytes = messageBytes(_outgoing(zip));
-    final over = bytes > maxMessageBytes;
+    final parts = _parts(zip).length;
+    final over = parts > MessageSplit.maxParts;
+    final progress = _progress;
     final reply = widget.replyTo;
 
     return SafeArea(
@@ -950,7 +978,11 @@ class _ComposerState extends ConsumerState<_Composer> {
                     right: Tokens.s12,
                   ),
                   child: Text(
-                    '$bytes / $maxMessageBytes',
+                    parts <= 1
+                        ? '$bytes / $maxMessageBytes'
+                        : over
+                        ? 'Слишком длинно: больше ${MessageSplit.maxParts} сообщений'
+                        : '$bytes байт · уйдёт $parts сообщениями',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: over ? scheme.error : scheme.onSurfaceVariant,
                     ),
@@ -992,11 +1024,23 @@ class _ComposerState extends ConsumerState<_Composer> {
                   height: _rowHeight,
                   child: Center(child: _ZipButton(level: zip)),
                 ),
-                IconButton(
-                  tooltip: 'Отправить',
-                  icon: const Icon(Icons.send),
-                  onPressed: canSend && _valid(zip) ? _submit : null,
-                ),
+                if (progress != null)
+                  SizedBox(
+                    width: _rowHeight,
+                    height: _rowHeight,
+                    child: Center(
+                      child: Text(
+                        '${progress.$1}/${progress.$2}',
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                    ),
+                  )
+                else
+                  IconButton(
+                    tooltip: 'Отправить',
+                    icon: const Icon(Icons.send),
+                    onPressed: canSend && _valid(zip) ? _submit : null,
+                  ),
               ],
             ),
           ],
