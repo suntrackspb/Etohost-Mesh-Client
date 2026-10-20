@@ -473,6 +473,28 @@ class AppDatabase extends _$AppDatabase {
     appSettings,
   ).insertOnConflictUpdate(AppSettingsCompanion.insert(key: key, value: value));
 
+  /// После сброса NodeDB своей ноды: ноды только с радио удаляем, у нод из
+  /// зеркала снимаем отметку радио. Свою ноду и (при [keepFavorites])
+  /// избранные не трогаем — прошивка их тоже сохранит.
+  Future<void> resetRadioNodes(int me, {required bool keepFavorites}) =>
+      transaction(() async {
+        Expression<bool> kept(Nodes n) =>
+            n.num.equals(me) |
+            (keepFavorites ? n.isFavorite : const Constant(false));
+        await (delete(
+          nodes,
+        )..where((n) => n.onRadio & n.onMirror.not() & kept(n).not())).go();
+        await (update(nodes)..where((n) => kept(n).not())).write(
+          const NodesCompanion(onRadio: Value(false), isFavorite: Value(false)),
+        );
+      });
+
+  /// После сброса к заводским: каналы и конфиги ноды больше не верны.
+  Future<void> clearDeviceConfig() => transaction(() async {
+    await delete(channels).go();
+    await delete(configBlobs).go();
+  });
+
   /// Канал с ноды или после сохранения своей правки.
   Future<void> upsertChannel(Channel c) =>
       into(channels).insertOnConflictUpdate(

@@ -12,6 +12,7 @@ import '../features/nodes/nodes_page.dart';
 import '../features/settings/app_settings_page.dart';
 import '../features/settings/area_picker_page.dart';
 import '../features/settings/mirror_settings_page.dart';
+import '../features/settings/radio/administration_page.dart';
 import '../features/settings/radio/channel_share_page.dart';
 import '../features/settings/radio/channels_page.dart';
 import '../features/settings/radio/config_section_page.dart';
@@ -149,6 +150,7 @@ final appRouter = GoRouter(
                 ),
                 _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
+                _route('admin', (_) => const AdministrationPage()),
                 _route('mirror', (_) => const MirrorSettingsPage()),
                 _route('report', (_) => const ReportPage()),
               ],

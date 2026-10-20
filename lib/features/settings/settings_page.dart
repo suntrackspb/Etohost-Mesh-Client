@@ -205,6 +205,16 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           SectionCard(
+            children: [
+              MeshTile(
+                title: 'Администрирование',
+                leading: const Icon(Icons.admin_panel_settings_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/admin'),
+              ),
+            ],
+          ),
+          SectionCard(
             title: 'Поддержка',
             children: [
               MeshTile(
