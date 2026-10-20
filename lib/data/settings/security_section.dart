@@ -52,7 +52,7 @@ abstract final class SecurityKey {
 /// Раздел «Безопасность»: SecurityConfig.swift и PacketAuthenticity.swift
 /// (iOS). Подписи — iOS ru, затем Android ru, затем английские.
 /// admin_channel_enabled не показывается (как в iOS) и сохраняется как есть.
-/// Lockdown и резервная копия ключа в iCloud — пока нет.
+/// Lockdown — пока нет.
 abstract final class SecuritySection {
   static const title = 'Настройки безопасности';
   static const saveConfirm = 'Сохранить настройки безопасности?';

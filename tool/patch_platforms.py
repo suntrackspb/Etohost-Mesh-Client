@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Прописывает имя приложения и разрешения Bluetooth/сети/USB/камеры в папки, созданные `flutter create`.
+"""Прописывает имя приложения и разрешения Bluetooth/сети/USB/камеры/файлов в папки, созданные `flutter create`.
 Запускается в CI после `flutter create`; повторный запуск безопасен."""
 import json
 import pathlib
@@ -171,6 +171,8 @@ def patch_apple():
             "com.apple.security.device.serial",
             "com.apple.security.personal-information.location",
             "com.apple.security.device.camera",
+            # Резервная копия ключей в файл: выбор и сохранение через диалог.
+            "com.apple.security.files.user-selected.read-write",
         ])
     print("apple: ok")
 

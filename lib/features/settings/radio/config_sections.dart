@@ -154,6 +154,7 @@ final securitySpec = ConfigSectionSpec<Config>(
     return [
       if (xeddsa == null) const WarningNote(SecuritySection.unknownXeddsa),
       SecurityKeyTiles(form: form),
+      KeyBackupCard(form: form),
       ListenableBuilder(
         listenable: form,
         builder: (_, _) => SecuritySection.hasAdminKey(form.values)

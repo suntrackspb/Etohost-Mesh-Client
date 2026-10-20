@@ -4,6 +4,7 @@ import '../core/proto/mesh.dart';
 import '../core/radio/radio_session.dart';
 import '../data/database.dart';
 import '../data/settings/admin_settings.dart';
+import '../data/settings/key_backup.dart';
 import '../data/settings/node_text.dart';
 import 'providers.dart';
 
@@ -69,3 +70,8 @@ final nodeTextProvider = StreamProvider.family<String?, String>((ref, key) {
       .watchSingleOrNull()
       .map((r) => r == null ? null : NodeText.decode(r.data));
 });
+
+/// Резервные копии закрытого ключа в системном хранилище секретов.
+final keyBackupStoreProvider = Provider<KeyBackupStore>(
+  (ref) => KeyBackupStore(PlatformSecretStore()),
+);
