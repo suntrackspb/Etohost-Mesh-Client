@@ -3,19 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers.dart';
 import '../../../app/settings_providers.dart';
-import '../../../data/settings/ringtone.dart';
+import '../../../data/settings/node_text.dart';
 import '../../../ui/kit/kit.dart';
 
-/// Рингтон RTTTL (как в Android): при открытии запрашивается у ноды,
-/// сохраняется своей кнопкой — это отдельная админ-команда.
-class RingtoneTile extends ConsumerStatefulWidget {
-  const RingtoneTile({super.key});
+/// Текстовая настройка ноды (рингтон, заготовленные сообщения): при
+/// открытии запрашивается у ноды, сохраняется своей кнопкой — это отдельная
+/// админ-команда.
+class NodeTextTile extends ConsumerStatefulWidget {
+  const NodeTextTile(this.spec, {super.key});
+
+  final NodeText spec;
 
   @override
-  ConsumerState<RingtoneTile> createState() => _RingtoneTileState();
+  ConsumerState<NodeTextTile> createState() => _NodeTextTileState();
 }
 
-class _RingtoneTileState extends ConsumerState<RingtoneTile> {
+class _NodeTextTileState extends ConsumerState<NodeTextTile> {
+  NodeText get _spec => widget.spec;
   final _text = TextEditingController();
   String? _loaded;
   bool _saving = false;
@@ -23,7 +27,7 @@ class _RingtoneTileState extends ConsumerState<RingtoneTile> {
   @override
   void initState() {
     super.initState();
-    Ringtone.request(ref.read(adminSettingsProvider)).catchError((_) => false);
+    _spec.fetch(ref.read(adminSettingsProvider)).catchError((_) => false);
   }
 
   @override
@@ -36,7 +40,7 @@ class _RingtoneTileState extends ConsumerState<RingtoneTile> {
     setState(() => _saving = true);
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final ok = await Ringtone.save(
+      final ok = await _spec.save(
         ref.read(adminSettingsProvider),
         ref.read(databaseProvider),
         _text.text,
@@ -53,13 +57,13 @@ class _RingtoneTileState extends ConsumerState<RingtoneTile> {
 
   @override
   Widget build(BuildContext context) {
-    final stored = ref.watch(ringtoneProvider).value;
+    final stored = ref.watch(nodeTextProvider(_spec.key)).value;
     if (stored != null && stored != _loaded) {
       _loaded = stored;
       _text.text = stored;
     }
     return SectionCard(
-      title: Ringtone.label,
+      title: _spec.label,
       children: [
         Padding(
           padding: const EdgeInsets.all(Tokens.s16),
@@ -73,11 +77,11 @@ class _RingtoneTileState extends ConsumerState<RingtoneTile> {
                   enabled: !_saving,
                   maxLines: null,
                   decoration: InputDecoration(
-                    labelText: Ringtone.label,
-                    helperText: Ringtone.help,
+                    labelText: _spec.label,
+                    helperText: _spec.help,
                     helperMaxLines: 4,
-                    errorText: Ringtone.check(_text.text),
-                    counterText: '${_text.text.length}/${Ringtone.maxLength}',
+                    errorText: _spec.check(_text.text),
+                    counterText: '${_spec.lengthOf(_text.text)}/${_spec.max}',
                   ),
                 ),
                 const SizedBox(height: Tokens.s8),
@@ -87,10 +91,10 @@ class _RingtoneTileState extends ConsumerState<RingtoneTile> {
                     onPressed:
                         _saving ||
                             _text.text == (_loaded ?? '') ||
-                            Ringtone.check(_text.text) != null
+                            _spec.check(_text.text) != null
                         ? null
                         : _save,
-                    child: const Text('Сохранить рингтон'),
+                    child: const Text('Сохранить'),
                   ),
                 ),
               ],

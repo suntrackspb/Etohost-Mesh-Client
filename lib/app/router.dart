@@ -103,6 +103,10 @@ final appRouter = GoRouter(
                 ),
                 _route('range-test', (_) => ConfigSectionPage(rangeTestSpec)),
                 _route('telemetry', (_) => ConfigSectionPage(telemetrySpec)),
+                _route(
+                  'canned-messages',
+                  (_) => ConfigSectionPage(cannedMessageSpec),
+                ),
                 _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),

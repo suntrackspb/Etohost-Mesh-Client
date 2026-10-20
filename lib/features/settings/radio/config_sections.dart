@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/providers.dart';
 import '../../../core/proto/mesh.dart';
 import '../../../data/settings/bluetooth_section.dart';
+import '../../../data/settings/canned_message_section.dart';
 import '../../../data/settings/device_section.dart';
 import '../../../data/settings/display_section.dart';
 import '../../../data/settings/external_notification_section.dart';
@@ -20,7 +21,8 @@ import '../../../data/settings/telemetry_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
 import 'fixed_position_tile.dart';
-import 'ringtone_tile.dart';
+import '../../../data/settings/node_text.dart';
+import 'node_text_tile.dart';
 import 'security_tiles.dart';
 
 /// Разделы Config своей ноды: логика — в `lib/data/settings/*_section.dart`.
@@ -203,7 +205,7 @@ final externalNotificationSpec = ConfigSectionSpec<ModuleConfig>(
   read: (c) => ExternalNotificationSection.read(c.externalNotification),
   save: (admin, db, c, v, _) =>
       ExternalNotificationSection.save(admin, db, c.externalNotification, v),
-  extra: (context, ref, form, cfg) => [const RingtoneTile()],
+  extra: (context, ref, form, cfg) => [NodeTextTile(ringtone)],
 );
 
 final storeForwardSpec = ConfigSectionSpec<ModuleConfig>(
@@ -264,4 +266,17 @@ final telemetrySpec = ConfigSectionSpec<ModuleConfig>(
   read: (c) => TelemetrySection.read(c.telemetry),
   save: (admin, db, c, v, _) =>
       TelemetrySection.save(admin, db, c.telemetry, v),
+);
+
+final cannedMessageSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'cannedMessage',
+  title: CannedMessageSection.title,
+  confirm: CannedMessageSection.saveConfirm,
+  fields: (_) => CannedMessageSection.fields(),
+  adjust: CannedMessageSection.adjust,
+  read: (c) => CannedMessageSection.read(c.cannedMessage),
+  save: (admin, db, c, v, _) =>
+      CannedMessageSection.save(admin, db, c.cannedMessage, v),
+  extra: (context, ref, form, cfg) => [NodeTextTile(cannedMessages)],
 );

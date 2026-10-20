@@ -148,6 +148,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/telemetry'),
               ),
+              MeshTile(
+                title: 'Сохраненные сообщения',
+                leading: const Icon(Icons.quickreply_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/canned-messages'),
+              ),
             ],
           ),
           SectionCard(

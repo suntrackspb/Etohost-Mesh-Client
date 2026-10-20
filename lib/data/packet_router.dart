@@ -6,7 +6,7 @@ import 'package:drift/drift.dart';
 import '../core/proto/channel_names.dart';
 import '../core/proto/mesh.dart';
 import 'database.dart';
-import 'settings/ringtone.dart';
+import 'settings/node_text.dart';
 
 /// Раскладывает FromRadio по таблицам. UI читает только из БД,
 /// поэтому эфир, зеркало и история после перезапуска выглядят одинаково.
@@ -303,7 +303,12 @@ class PacketRouter {
       case AdminMessage_PayloadVariant.getChannelResponse:
         await _upsertChannel(a.getChannelResponse);
       case AdminMessage_PayloadVariant.getRingtoneResponse:
-        await _saveConfig(Ringtone.key, utf8.encode(a.getRingtoneResponse));
+        await _saveConfig(ringtone.key, utf8.encode(a.getRingtoneResponse));
+      case AdminMessage_PayloadVariant.getCannedMessageModuleMessagesResponse:
+        await _saveConfig(
+          cannedMessages.key,
+          utf8.encode(a.getCannedMessageModuleMessagesResponse),
+        );
       default:
         break;
     }

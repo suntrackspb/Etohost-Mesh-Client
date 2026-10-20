@@ -7,7 +7,7 @@ import 'intervals.dart';
 /// Модуль «Внешние уведомления»: ExternalNotificationConfig.swift (iOS).
 /// Подписи — iOS ru, затем Android ru, затем английские. Как в Android:
 /// «Активно» видно только при заданном выходе, PWM — при выходе зуммера.
-/// Рингтон — отдельно, см. Ringtone.
+/// Рингтон — отдельно, см. [ringtone] в node_text.dart.
 abstract final class ExternalNotificationSection {
   static const title = 'Настройка внешних уведомлений';
   static const saveConfirm = 'Сохранить настройки внешних уведомлений?';

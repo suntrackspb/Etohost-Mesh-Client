@@ -4,7 +4,7 @@ import '../core/proto/mesh.dart';
 import '../core/radio/radio_session.dart';
 import '../data/database.dart';
 import '../data/settings/admin_settings.dart';
-import '../data/settings/ringtone.dart';
+import '../data/settings/node_text.dart';
 import 'providers.dart';
 
 /// Админ-команды настроек своей ноде.
@@ -62,10 +62,10 @@ final configProvider = StreamProvider.family<Config?, String>((ref, name) {
       .map((r) => r == null ? null : Config.fromBuffer(r.data));
 });
 
-/// Рингтон RTTTL своей ноды (ответ на get_ringtone_request).
-final ringtoneProvider = StreamProvider<String?>((ref) {
+/// Текстовая настройка своей ноды (рингтон, заготовленные сообщения).
+final nodeTextProvider = StreamProvider.family<String?, String>((ref, key) {
   final db = ref.watch(databaseProvider);
-  return (db.select(db.configBlobs)..where((c) => c.key.equals(Ringtone.key)))
+  return (db.select(db.configBlobs)..where((c) => c.key.equals(key)))
       .watchSingleOrNull()
-      .map((r) => r == null ? null : Ringtone.decode(r.data));
+      .map((r) => r == null ? null : NodeText.decode(r.data));
 });
