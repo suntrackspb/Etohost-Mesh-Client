@@ -58,6 +58,9 @@ abstract final class Intervals {
   /// waitBluetooth (iOS): 0 — по умолчанию прошивки (минута).
   static const waitBluetooth = [0, 15, 30, 60, 120, 300, 600, 900];
 
+  /// rangeTestSender (iOS): 0 — не отправлять.
+  static const rangeTestSender = [0, 15, 30, 45, 60, 300, 600, 900, 1800, 3600];
+
   /// NAG_TIMEOUT (Android): минимальное время бодрствования.
   static const nagTimeout = [0, 1, 5, 10, 15, 30, 60];
 

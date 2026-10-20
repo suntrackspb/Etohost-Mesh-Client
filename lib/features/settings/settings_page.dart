@@ -136,6 +136,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/store-forward'),
               ),
+              MeshTile(
+                title: 'Тест дальности',
+                leading: const Icon(Icons.social_distance_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/range-test'),
+              ),
             ],
           ),
           SectionCard(

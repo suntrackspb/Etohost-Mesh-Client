@@ -12,6 +12,7 @@ import '../../../data/settings/mqtt_section.dart';
 import '../../../data/settings/network_section.dart';
 import '../../../data/settings/position_section.dart';
 import '../../../data/settings/power_section.dart';
+import '../../../data/settings/range_test_section.dart';
 import '../../../data/settings/security_section.dart';
 import '../../../data/settings/serial_section.dart';
 import '../../../data/settings/store_forward_section.dart';
@@ -221,4 +222,34 @@ final storeForwardSpec = ConfigSectionSpec<ModuleConfig>(
           : const SizedBox.shrink(),
     ),
   ],
+);
+
+final rangeTestSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'rangeTest',
+  title: RangeTestSection.title,
+  confirm: RangeTestSection.saveConfirm,
+  fields: (d) => RangeTestSection.fields(
+    hasWifi: d.hasWifi,
+    primaryPublic: d.primaryPublic,
+  ),
+  read: (c) => RangeTestSection.read(c.rangeTest),
+  save: (admin, db, c, v, d) => RangeTestSection.save(
+    admin,
+    db,
+    c.rangeTest,
+    v,
+    primaryPublic: d.primaryPublic,
+  ),
+  extra: (context, ref, form, cfg) {
+    final primary = ref
+        .watch(channelsProvider)
+        .value
+        ?.where((c) => c.index == 0)
+        .firstOrNull;
+    return [
+      if (primary != null && isPublicPsk(primary.psk))
+        const WarningNote(RangeTestSection.publicChannel),
+    ];
+  },
 );

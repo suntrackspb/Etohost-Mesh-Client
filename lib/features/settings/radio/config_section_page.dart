@@ -8,6 +8,7 @@ import '../../../app/settings_providers.dart';
 import '../../../data/settings/admin_settings.dart';
 import '../../../data/database.dart';
 import '../../../data/settings/fields.dart';
+import '../../../data/settings/range_test_section.dart';
 import '../../../data/settings/settings_form.dart';
 import '../../../ui/kit/kit.dart';
 import 'settings_form_view.dart';
@@ -70,6 +71,9 @@ typedef OwnDevice = ({
 
   /// Подпись XEdDSA (metadata.has_xeddsa); null — нода не сообщила.
   bool? xeddsa,
+
+  /// Основной канал без ключа или с однобайтовым ключом по умолчанию.
+  bool primaryPublic,
 });
 
 class ConfigSectionPage<C> extends ConsumerStatefulWidget {
@@ -99,6 +103,7 @@ class _ConfigSectionPageState<C> extends ConsumerState<ConfigSectionPage<C>> {
     final device = ref.watch(ownDeviceProvider).value;
     final node = ref.watch(ownNodeProvider).value;
     final canSend = ref.watch(canSendProvider);
+    final channels = ref.watch(channelsProvider).value ?? const [];
     final cfg = cfgAsync.value;
 
     Widget body;
@@ -122,6 +127,9 @@ class _ConfigSectionPageState<C> extends ConsumerState<ConfigSectionPage<C>> {
         hasWifi: device.metadata?.hasWifi ?? false,
         hasEthernet: device.metadata?.hasEthernet ?? false,
         xeddsa: device.metadata?.hasXeddsa,
+        primaryPublic: isPublicPsk(
+          channels.where((c) => c.index == 0).firstOrNull?.psk,
+        ),
       );
       final form = _form ??= SettingsForm(
         spec.fields(own),
