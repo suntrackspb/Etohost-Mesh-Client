@@ -27,6 +27,7 @@ class MirrorMessage {
     this.toId,
     this.text,
     this.replyToPacketId,
+    this.emoji,
     this.snr,
     this.rssi,
     this.channel,
@@ -50,6 +51,7 @@ class MirrorMessage {
       toId: raw['to_id'] as String?,
       text: raw['text'] as String?,
       replyToPacketId: _int(raw['reply_to_packet_id']),
+      emoji: _int(raw['emoji']),
       snr: _double(raw['snr']),
       rssi: _int(raw['rssi']),
       channel: raw['channel'] as String?,
@@ -71,6 +73,10 @@ class MirrorMessage {
   final String? toId;
   final String? text;
   final int? replyToPacketId;
+
+  /// Data.emoji: не 0 — реакция на [replyToPacketId]. Старое зеркало
+  /// поле не отдаёт — null.
+  final int? emoji;
   final double? snr;
   final int? rssi;
   final String? channel;

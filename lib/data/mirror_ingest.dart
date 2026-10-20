@@ -39,6 +39,7 @@ class MirrorIngest {
               body: text,
               rxTime: time,
               replyId: Value(m.replyToPacketId),
+              emoji: Value(m.emoji ?? 0),
               rxSnr: Value(m.snr),
               rxRssi: Value(m.rssi),
               heardOnMirror: const Value(true),
@@ -52,6 +53,8 @@ class MirrorIngest {
                 mirrorId: ex.mirrorId,
                 isBot: ex.isBot,
                 relayCount: _max(old.relayCount, ex.relayCount),
+                // Флаг реакции из эфира не затираем нулём из старого зеркала.
+                emoji: _max(old.emoji, ex.emoji),
                 // Лента из зеркала без эфира — выравниваем по времени сервера;
                 // своё исходящее и услышанное в эфире — время наше.
                 rxTime: live

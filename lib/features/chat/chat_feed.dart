@@ -23,8 +23,10 @@ import 'swipe_to_reply.dart';
 /// Быстрые реакции (как в официальных клиентах — эмодзи-ответ на сообщение).
 const quickReactions = ['👍', '❤️', '😂', '😮', '😢', '👎'];
 
-/// Сообщение-реакция: эмодзи-ответ на другое сообщение.
-bool isReaction(Message m) => m.emoji != 0 && m.replyId != null;
+/// Сообщение-реакция: эмодзи-ответ на другое сообщение. Из зеркала флаг
+/// `emoji` не приходит — тогда реакция это ответ из одних эмодзи.
+bool isReaction(Message m) =>
+    m.replyId != null && (m.emoji != 0 || isEmojiOnly(m.body));
 
 /// Лента переписки (канал или личный диалог) с полем ввода.
 class ChatFeed extends ConsumerStatefulWidget {
@@ -388,6 +390,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
                   ? null
                   : _authorName(nodes, byPacket[m.replyId]!.fromNum),
               reactions: reactions[m.packetId] ?? const [],
+              nameOf: (n) => _authorName(nodes, n),
               mirror: mirror,
               onMenu: () => _showMenu(context, ref, m),
               onOpenNode: () => context.go('/nodes/${m.fromNum}'),
@@ -487,6 +490,7 @@ class _Bubble extends StatelessWidget {
     required this.quoted,
     required this.quotedAuthor,
     required this.reactions,
+    required this.nameOf,
     required this.mirror,
     required this.onMenu,
     required this.onOpenNode,
@@ -499,6 +503,7 @@ class _Bubble extends StatelessWidget {
   final Message? quoted;
   final String? quotedAuthor;
   final List<Message> reactions;
+  final String Function(int num) nameOf;
   final bool mirror;
   final VoidCallback onMenu;
   final VoidCallback onOpenNode;
@@ -615,7 +620,7 @@ class _Bubble extends StatelessWidget {
                       : CrossAxisAlignment.start,
                   children: [
                     bubble,
-                    if (reactions.isNotEmpty) _Reactions(reactions),
+                    if (reactions.isNotEmpty) _Reactions(reactions, nameOf),
                   ],
                 ),
               ),
@@ -656,26 +661,37 @@ class _Quote extends StatelessWidget {
 }
 
 class _Reactions extends StatelessWidget {
-  const _Reactions(this.reactions);
+  const _Reactions(this.reactions, this.nameOf);
 
   final List<Message> reactions;
+  final String Function(int num) nameOf;
 
   @override
   Widget build(BuildContext context) {
-    final counts = <String, int>{};
+    // Эмодзи → кто поставил (без повторов, в порядке ленты).
+    final who = <String, List<String>>{};
     for (final r in reactions) {
-      counts[r.body] = (counts[r.body] ?? 0) + 1;
+      final names = who[r.body.trim()] ??= [];
+      final name = nameOf(r.fromNum);
+      if (!names.contains(name)) names.add(name);
     }
     return Padding(
       padding: const EdgeInsets.only(top: Tokens.s4),
       child: Wrap(
         spacing: Tokens.s4,
         children: [
-          for (final e in counts.entries)
-            Chip(
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              label: Text(e.value > 1 ? '${e.key} ${e.value}' : e.key),
+          for (final e in who.entries)
+            Tooltip(
+              message: e.value.join('\n'),
+              triggerMode: TooltipTriggerMode.tap,
+              showDuration: const Duration(seconds: 3),
+              child: Chip(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                label: Text(
+                  e.value.length > 1 ? '${e.key} ${e.value.length}' : e.key,
+                ),
+              ),
             ),
         ],
       ),

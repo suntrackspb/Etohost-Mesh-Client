@@ -63,6 +63,13 @@ void main() {
       expect(parseMirrorDate('2026-10-09T19:20:32')!.toUtc().hour, 19);
     });
 
+    test('флаг emoji: есть у нового зеркала, у старого — null', () {
+      final base = {'id': 1, 'from_id': '!a1b2c3d4', 'text': '👍'};
+      expect(MirrorMessage.tryParse({...base, 'emoji': 1})!.emoji, 1);
+      expect(MirrorMessage.tryParse({...base, 'emoji': null})!.emoji, isNull);
+      expect(MirrorMessage.tryParse(base)!.emoji, isNull);
+    });
+
     test('init: записи без числового id пропускаются', () {
       final e = MirrorEvent.parse(
         jsonDecode('''
