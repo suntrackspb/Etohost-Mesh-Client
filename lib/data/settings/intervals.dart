@@ -1,0 +1,44 @@
+import 'fields.dart';
+
+/// Интервалы из IntervalEnums.swift (iOS), в секундах.
+abstract final class Intervals {
+  static const never = 2147483647;
+
+  /// broadcastLong: NodeInfo и подобное (минимум прошивки — 3 часа).
+  static const broadcastLong = [
+    10800,
+    14400,
+    18000,
+    21600,
+    43200,
+    64800,
+    86400,
+    129600,
+    172800,
+    259200,
+    never,
+  ];
+
+  static List<Choice> choices(List<int> secs) => [
+    for (final s in secs) (value: s, label: label(s)),
+  ];
+
+  static String label(int s) {
+    if (s == never) return 'Никогда';
+    if (s == 0) return 'Не задан';
+    if (s % 3600 == 0) {
+      return '${s ~/ 3600} ${_plural(s ~/ 3600, 'час', 'часа', 'часов')}';
+    }
+    if (s % 60 == 0) {
+      return '${s ~/ 60} ${_plural(s ~/ 60, 'минута', 'минуты', 'минут')}';
+    }
+    return '$s ${_plural(s, 'секунда', 'секунды', 'секунд')}';
+  }
+
+  static String _plural(int n, String one, String few, String many) {
+    final m10 = n % 10, m100 = n % 100;
+    if (m10 == 1 && m100 != 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+}

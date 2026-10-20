@@ -400,26 +400,10 @@ abstract final class LoraSection {
     ..overrideFrequency = v['overrideFrequency']! as double
     ..txPower = v['txPower']! as int;
 
-  /// set_config своей ноде; при подтверждении — сохранить конфиг в БД.
   static Future<bool> save(
     AdminSettings admin,
     AppDatabase db,
     Config_LoRaConfig base,
     Map<String, Object?> v,
-  ) async {
-    final cfg = Config(lora: apply(base, v));
-    final ok = await admin.send(AdminMessage(setConfig: cfg));
-    if (ok) {
-      await db
-          .into(db.configBlobs)
-          .insertOnConflictUpdate(
-            ConfigBlobsCompanion.insert(
-              key: 'config.lora',
-              data: cfg.writeToBuffer(),
-              updated: DateTime.now(),
-            ),
-          );
-    }
-    return ok;
-  }
+  ) => saveConfig(admin, db, 'lora', Config(lora: apply(base, v)));
 }

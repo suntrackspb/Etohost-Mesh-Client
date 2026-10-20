@@ -1,5 +1,6 @@
 import '../../core/proto/mesh.dart';
 import '../../core/radio/send_queue.dart';
+import '../database.dart';
 
 /// Отправка админ-команд настроек своей ноде (как saveUser/saveConfig в iOS):
 /// RELIABLE, want_ack, без сессионного ключа (он нужен только для удалённых нод).
@@ -40,4 +41,27 @@ class AdminSettings {
     }
     return send(AdminMessage(commitEditSettings: true));
   }
+}
+
+/// set_config своей ноде; при подтверждении — сохранить конфиг в БД
+/// (ключ `config.<name>`, как у PacketRouter).
+Future<bool> saveConfig(
+  AdminSettings admin,
+  AppDatabase db,
+  String name,
+  Config cfg,
+) async {
+  final ok = await admin.send(AdminMessage(setConfig: cfg));
+  if (ok) {
+    await db
+        .into(db.configBlobs)
+        .insertOnConflictUpdate(
+          ConfigBlobsCompanion.insert(
+            key: 'config.$name',
+            data: cfg.writeToBuffer(),
+            updated: DateTime.now(),
+          ),
+        );
+  }
+  return ok;
 }

@@ -66,7 +66,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/user'),
               ),
-              soon('Устройство', Icons.memory),
+              MeshTile(
+                title: 'Устройство',
+                leading: const Icon(Icons.memory),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/device'),
+              ),
             ],
           ),
           const AboutSection(),

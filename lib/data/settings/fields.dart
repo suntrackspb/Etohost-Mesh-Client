@@ -105,7 +105,15 @@ class ChoiceFieldSpec extends FieldSpec<int> {
     super.enabledWhen,
     this.optionsFor,
     this.unknownLabel,
+    this.helpFor,
+    this.confirmFor,
   });
+
+  /// Пояснение к выбранному значению (описание роли и т. п.).
+  final String? Function(int value)? helpFor;
+
+  /// Предупреждение, которое нужно подтвердить перед выбором значения.
+  final String? Function(int value)? confirmFor;
 
   final List<Choice> options;
 

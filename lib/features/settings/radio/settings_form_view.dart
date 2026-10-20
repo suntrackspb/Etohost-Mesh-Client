@@ -106,15 +106,50 @@ class SettingsFormView extends StatelessWidget {
         ),
       ),
     ),
-    ChoiceFieldSpec() => _ChoiceTile(
+    ChoiceFieldSpec(:final helpFor, :final confirmFor) => _ChoiceTile(
       label: f.label,
-      help: f.help,
+      help: [
+        ?f.help,
+        ?helpFor?.call(form.value<int>(f.key)),
+      ].join('\n\n').ifEmpty,
       value: form.value<int>(f.key),
       options: f.choices(form.values),
-      onChanged: form.saving ? null : (v) => form.set(f.key, v),
+      onChanged: form.saving
+          ? null
+          : (v) async {
+              final warn = v == null ? null : confirmFor?.call(v);
+              if (warn != null && !await _confirm(context, warn)) {
+                return;
+              }
+              form.set(f.key, v);
+            },
     ),
   };
 }
+
+extension on String {
+  String? get ifEmpty => isEmpty ? null : this;
+}
+
+Future<bool> _confirm(BuildContext context, String text) async =>
+    await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Вы уверены?'),
+        content: Text(text),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Подтверждение'),
+          ),
+        ],
+      ),
+    ) ==
+    true;
 
 /// Дробное без лишнего «.0».
 String _num(double v) => v == v.roundToDouble() ? v.toStringAsFixed(0) : '$v';
@@ -147,19 +182,25 @@ class _ChoiceTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DropdownButtonFormField<int>(
-            initialValue: value,
-            key: ValueKey('$label/$value/${options.length}'),
-            isExpanded: true,
+          // Управляемый список: значение всегда из формы (откат после
+          // отказа в подтверждении виден сразу).
+          InputDecorator(
             decoration: InputDecoration(labelText: label),
-            items: [
-              for (final o in options)
-                DropdownMenuItem(
-                  value: o.value,
-                  child: Text(o.label, overflow: TextOverflow.ellipsis),
-                ),
-            ],
-            onChanged: onChanged,
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                value: value,
+                isExpanded: true,
+                isDense: true,
+                items: [
+                  for (final o in options)
+                    DropdownMenuItem(
+                      value: o.value,
+                      child: Text(o.label, overflow: TextOverflow.ellipsis),
+                    ),
+                ],
+                onChanged: onChanged,
+              ),
+            ),
           ),
           if (help != null) ...[
             const SizedBox(height: Tokens.s4),
