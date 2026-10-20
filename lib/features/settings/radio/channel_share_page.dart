@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,9 @@ import '../../../app/settings_providers.dart';
 import '../../../data/database.dart';
 import '../../../data/settings/channel_url.dart';
 import '../../../ui/kit/kit.dart';
+
+/// mobile_scanner есть только на Android, iOS и macOS.
+final _canScan = Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
 String _channelName(MeshChannel c, String preset) => c.name.isNotEmpty
     ? c.name
@@ -158,22 +163,24 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [
-          OutlinedButton.icon(
-            icon: const Icon(Icons.qr_code_scanner),
-            label: const Text('Сканировать QR-код общих каналов'),
-            onPressed: () async {
-              final text = await Navigator.of(context).push<String>(
-                MaterialPageRoute(builder: (_) => const ChannelScanPage()),
-              );
-              if (text != null && mounted) {
-                setState(() {
-                  _text.text = text;
-                  _add = null;
-                });
-              }
-            },
-          ),
-          const SizedBox(height: Tokens.s16),
+          if (_canScan) ...[
+            OutlinedButton.icon(
+              icon: const Icon(Icons.qr_code_scanner),
+              label: const Text('Сканировать QR-код общих каналов'),
+              onPressed: () async {
+                final text = await Navigator.of(context).push<String>(
+                  MaterialPageRoute(builder: (_) => const ChannelScanPage()),
+                );
+                if (text != null && mounted) {
+                  setState(() {
+                    _text.text = text;
+                    _add = null;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: Tokens.s16),
+          ],
           TextField(
             controller: _text,
             minLines: 1,

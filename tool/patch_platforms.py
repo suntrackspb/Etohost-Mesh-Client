@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Прописывает имя приложения и разрешения Bluetooth/сети/USB в папки, созданные `flutter create`.
+"""Прописывает имя приложения и разрешения Bluetooth/сети/USB/камеры в папки, созданные `flutter create`.
 Запускается в CI после `flutter create`; повторный запуск безопасен."""
 import json
 import pathlib
@@ -14,6 +14,7 @@ APP_ID = "ru.etohost.mesh"
 PROJECT = "etohost_mesh"
 BT_TEXT = "Bluetooth нужен для подключения к ноде Meshtastic."
 NET_TEXT = "Локальная сеть нужна для подключения к ноде Meshtastic по Wi-Fi."
+CAM_TEXT = "Камера нужна, чтобы сканировать QR-код каналов Meshtastic."
 LOC_TEXT = "Позиция телефона передаётся вашей ноде, если это включено в настройках приложения."
 
 
@@ -31,6 +32,8 @@ def patch_android():
         # Геолокация — для передачи позиции телефона ноде (и BLE-скана до Android 12).
         '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>',
         '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>',
+        # Камера — сканер QR-кода каналов.
+        '<uses-permission android:name="android.permission.CAMERA"/>',
     ]
     # Раньше геолокация была ограничена Android 11 — снимаем ограничение.
     s = re.sub(r'(android\.permission\.ACCESS_(?:FINE|COARSE)_LOCATION")\s+android:maxSdkVersion="30"', r"\1", s)
@@ -154,10 +157,12 @@ def patch_apple():
         "NSBluetoothAlwaysUsageDescription": BT_TEXT,
         "NSLocalNetworkUsageDescription": NET_TEXT,
         "NSLocationWhenInUseUsageDescription": LOC_TEXT,
+        "NSCameraUsageDescription": CAM_TEXT,
     })
     plist_add(ROOT / "macos/Runner/Info.plist", {
         "NSBluetoothAlwaysUsageDescription": BT_TEXT,
         "NSLocationUsageDescription": LOC_TEXT,
+        "NSCameraUsageDescription": CAM_TEXT,
     })
     for name in ("DebugProfile.entitlements", "Release.entitlements"):
         entitlements_add(ROOT / "macos/Runner" / name, [
@@ -165,6 +170,7 @@ def patch_apple():
             "com.apple.security.network.client",
             "com.apple.security.device.serial",
             "com.apple.security.personal-information.location",
+            "com.apple.security.device.camera",
         ])
     print("apple: ok")
 
