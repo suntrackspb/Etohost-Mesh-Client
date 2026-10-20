@@ -26,6 +26,10 @@ abstract final class AppSettingKeys {
   /// Тема: 'system' / 'light' / 'dark' (по умолчанию — как в системе).
   static const theme = 'app.theme';
 
+  /// MQTT-прокси в этом приложении ('true'/'false', по умолчанию — да):
+  /// выключить пересылку, не меняя настройку ноды.
+  static const mqttProxyLocal = 'mqtt.proxyLocal';
+
   /// Карта: разрешить вращение жестом ('true'/'false', по умолчанию — нет).
   static const mapRotate = 'map.rotate';
 

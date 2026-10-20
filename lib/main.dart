@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'app/mqtt_providers.dart';
 import 'app/providers.dart';
 import 'app/router.dart';
 import 'core/radio/journal.dart';
@@ -70,6 +71,7 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     // Держит подписку на зеркало живой (listen не перестраивает приложение).
     ref.listen(mirrorRealtimeProvider, (_, _) {});
     ref.listen(positionServiceProvider, (_, _) {});
+    ref.listen(mqttProxyProvider, (_, _) {});
     return MaterialApp.router(
       title: 'Etohost Mesh',
       theme: buildTheme(Brightness.light),

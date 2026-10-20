@@ -13,6 +13,7 @@ import '../../../data/settings/external_notification_section.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/settings/lora_section.dart';
 import '../../../data/settings/mqtt_section.dart';
+import '../../../mqtt/mqtt_proxy_config.dart';
 import '../../../data/settings/neighbor_info_section.dart';
 import '../../../data/settings/network_section.dart';
 import '../../../data/settings/pax_counter_section.dart';
@@ -30,6 +31,7 @@ import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
 import 'fixed_position_tile.dart';
 import '../../../data/settings/node_text.dart';
+import 'mqtt_proxy_card.dart';
 import 'node_text_tile.dart';
 import 'security_tiles.dart';
 
@@ -183,8 +185,10 @@ final mqttSpec = ConfigSectionSpec<ModuleConfig>(
       if (duty != null) WarningNote(MqttSection.dutyCycleWarning(duty)),
       ListenableBuilder(
         listenable: form,
-        builder: (_, _) => form.value<bool>('proxyToClientEnabled')
-            ? const WarningNote(MqttSection.proxyNote)
+        builder: (_, _) =>
+            form.value<bool>('enabled') &&
+                form.value<bool>('proxyToClientEnabled')
+            ? MqttProxyCard(saved: MqttProxyConfig.wanted(cfg.mqtt))
             : const SizedBox.shrink(),
       ),
       const Padding(

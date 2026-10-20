@@ -24,9 +24,12 @@ abstract final class MqttSection {
       'Для всей функциональности MQTT, кроме отчета карты, вы также должны '
       'настроить восходящую и нисходящую связь для каждого канала, который '
       'хотите мостить через MQTT.';
-  static const proxyNote =
-      'Etohost Mesh пока не умеет быть MQTT-прокси: при включённом '
-      'клиент-прокси нода не выйдет в MQTT через это приложение.';
+
+  /// iOS: «Connect to MQTT via Proxy».
+  static const proxyLocal = 'Подключение к MQTT через прокси';
+  static const proxyUnsaved =
+      'Сохраните настройки: прокси подключится, когда клиент-прокси '
+      'будет включён в ноде.';
 
   static String dutyCycleWarning(int percent) =>
       'В вашем регионе действует режим работы $percent%. Не рекомендуется '

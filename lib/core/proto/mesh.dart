@@ -8,6 +8,7 @@ export 'generated/meshtastic/config.pb.dart';
 export 'generated/meshtastic/mesh.pb.dart';
 export 'generated/meshtastic/mesh.pbenum.dart';
 export 'generated/meshtastic/module_config.pb.dart';
+export 'generated/meshtastic/mqtt.pb.dart' show ServiceEnvelope;
 export 'generated/meshtastic/portnums.pbenum.dart';
 export 'generated/meshtastic/telemetry.pb.dart';
 
