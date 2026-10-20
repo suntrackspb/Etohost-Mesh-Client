@@ -107,6 +107,7 @@ final appRouter = GoRouter(
                   'canned-messages',
                   (_) => ConfigSectionPage(cannedMessageSpec),
                 ),
+                _route('audio', (_) => ConfigSectionPage(audioSpec)),
                 _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),

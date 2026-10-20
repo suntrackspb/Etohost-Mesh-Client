@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/providers.dart';
 import '../../../core/proto/mesh.dart';
+import '../../../data/settings/audio_section.dart';
 import '../../../data/settings/bluetooth_section.dart';
 import '../../../data/settings/canned_message_section.dart';
 import '../../../data/settings/device_section.dart';
@@ -279,4 +280,14 @@ final cannedMessageSpec = ConfigSectionSpec<ModuleConfig>(
   save: (admin, db, c, v, _) =>
       CannedMessageSection.save(admin, db, c.cannedMessage, v),
   extra: (context, ref, form, cfg) => [NodeTextTile(cannedMessages)],
+);
+
+final audioSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'audio',
+  title: AudioSection.title,
+  confirm: AudioSection.saveConfirm,
+  fields: (_) => AudioSection.fields(),
+  read: (c) => AudioSection.read(c.audio),
+  save: (admin, db, c, v, _) => AudioSection.save(admin, db, c.audio, v),
 );

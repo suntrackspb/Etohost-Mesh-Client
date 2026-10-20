@@ -154,6 +154,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/canned-messages'),
               ),
+              MeshTile(
+                title: 'Звук',
+                leading: const Icon(Icons.graphic_eq),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/audio'),
+              ),
             ],
           ),
           SectionCard(
