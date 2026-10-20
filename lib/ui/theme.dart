@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:swipeable_page_route/swipeable_page_route.dart';
 
 import 'tokens.dart';
 
@@ -9,6 +10,14 @@ ThemeData buildTheme(Brightness brightness) {
   );
   return ThemeData(
     colorScheme: scheme,
+    // iOS/macOS: «назад» свайпом с любого места экрана, как в системных приложениях.
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.iOS: SwipeablePageTransitionsBuilder(),
+        TargetPlatform.macOS: SwipeablePageTransitionsBuilder(),
+        TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+      },
+    ),
     useMaterial3: true,
     visualDensity: VisualDensity.adaptivePlatformDensity,
     cardTheme: CardThemeData(

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,13 +23,13 @@ final appRouter = GoRouter(
       branches: [
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: '/chat',
-              builder: (_, _) => const ChatPage(),
+            _route(
+              '/chat',
+              (_) => const ChatPage(),
               routes: [
-                GoRoute(
-                  path: ':id',
-                  builder: (_, s) => ChatPage(selected: s.pathParameters['id']),
+                _route(
+                  ':id',
+                  (s) => ChatPage(selected: s.pathParameters['id']),
                 ),
               ],
             ),
@@ -36,60 +37,52 @@ final appRouter = GoRouter(
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: '/nodes',
-              builder: (_, _) => const NodesPage(),
+            _route(
+              '/nodes',
+              (_) => const NodesPage(),
               routes: [
-                GoRoute(
-                  path: ':num',
-                  builder: (_, s) =>
+                _route(
+                  ':num',
+                  (s) =>
                       NodesPage(selected: int.parse(s.pathParameters['num']!)),
                 ),
               ],
             ),
           ],
         ),
-        StatefulShellBranch(
-          routes: [GoRoute(path: '/map', builder: (_, _) => const MapPage())],
-        ),
+        StatefulShellBranch(routes: [_route('/map', (_) => const MapPage())]),
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: '/connection',
-              builder: (_, _) => const ConnectionPage(),
-              routes: [
-                GoRoute(
-                  path: 'journal',
-                  builder: (_, _) => const JournalPage(),
-                ),
-              ],
+            _route(
+              '/connection',
+              (_) => const ConnectionPage(),
+              routes: [_route('journal', (_) => const JournalPage())],
             ),
           ],
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: '/settings',
-              builder: (_, _) => const SettingsPage(),
+            _route(
+              '/settings',
+              (_) => const SettingsPage(),
               routes: [
-                GoRoute(
-                  path: 'app',
-                  builder: (_, _) => const AppSettingsPage(),
+                _route(
+                  'app',
+                  (_) => const AppSettingsPage(),
                   routes: [
+                    // На экране — карта: её панорамирование важнее свайпа,
+                    // «назад» только от края.
                     GoRoute(
                       path: 'area',
-                      builder: (_, _) => const AreaPickerPage(),
+                      pageBuilder: (_, s) => CupertinoPage(
+                        key: s.pageKey,
+                        child: const AreaPickerPage(),
+                      ),
                     ),
                   ],
                 ),
-                GoRoute(
-                  path: 'user',
-                  builder: (_, _) => const UserConfigPage(),
-                ),
-                GoRoute(
-                  path: 'mirror',
-                  builder: (_, _) => const MirrorSettingsPage(),
-                ),
+                _route('user', (_) => const UserConfigPage()),
+                _route('mirror', (_) => const MirrorSettingsPage()),
               ],
             ),
           ],
@@ -97,14 +90,26 @@ final appRouter = GoRouter(
       ],
     ),
     // Отдельный экран ноды для узкой раскладки (на широкой — правая колонка).
-    GoRoute(
-      path: '/node/:num',
-      builder: (_, s) => NodeDetailPage(
+    _route(
+      '/node/:num',
+      (s) => NodeDetailPage(
         num: int.parse(s.pathParameters['num']!),
         standalone: true,
       ),
     ),
   ],
+);
+
+/// Маршрут с явной MaterialPage: go_router 18.1 иначе может выбрать
+/// страницу без перехода платформы, и свайп «назад» на iOS не работает.
+GoRoute _route(
+  String path,
+  Widget Function(GoRouterState s) build, {
+  List<RouteBase> routes = const [],
+}) => GoRoute(
+  path: path,
+  pageBuilder: (_, s) => MaterialPage(key: s.pageKey, child: build(s)),
+  routes: routes,
 );
 
 /// Вкладки приложения — одно описание для нижней панели и боковой.
