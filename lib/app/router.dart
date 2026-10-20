@@ -12,6 +12,7 @@ import '../features/nodes/nodes_page.dart';
 import '../features/settings/app_settings_page.dart';
 import '../features/settings/area_picker_page.dart';
 import '../features/settings/mirror_settings_page.dart';
+import '../features/settings/radio/channel_share_page.dart';
 import '../features/settings/radio/channels_page.dart';
 import '../features/settings/radio/config_section_page.dart';
 import '../features/settings/radio/config_sections.dart';
@@ -91,6 +92,8 @@ final appRouter = GoRouter(
                   'channels',
                   (_) => const ChannelsPage(),
                   routes: [
+                    _route('share', (_) => const ChannelSharePage()),
+                    _route('import', (_) => const ChannelImportPage()),
                     _route(
                       ':index',
                       (s) => ChannelEditPage(

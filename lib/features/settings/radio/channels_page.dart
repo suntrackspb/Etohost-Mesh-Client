@@ -55,6 +55,20 @@ class ChannelsPage extends ConsumerWidget {
                 ),
             ],
           ),
+          SectionCard(
+            children: [
+              MeshTile(
+                leading: const Icon(Icons.qr_code),
+                title: 'Поделиться QR-кодом',
+                onTap: () => context.go('/settings/channels/share'),
+              ),
+              MeshTile(
+                leading: const Icon(Icons.download_outlined),
+                title: 'Импортировать',
+                onTap: () => context.go('/settings/channels/import'),
+              ),
+            ],
+          ),
         ],
       ),
     );

@@ -2,6 +2,7 @@
 library;
 
 export 'generated/meshtastic/admin.pb.dart';
+export 'generated/meshtastic/apponly.pb.dart';
 export 'generated/meshtastic/channel.pb.dart';
 export 'generated/meshtastic/config.pb.dart';
 export 'generated/meshtastic/mesh.pb.dart';
