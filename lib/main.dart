@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'app/desktop_tray_provider.dart';
 import 'app/keep_alive_provider.dart';
 import 'app/mqtt_providers.dart';
 import 'app/notify_providers.dart';
@@ -76,6 +77,7 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     ref.listen(mqttProxyProvider, (_, _) {});
     ref.listen(keepAliveProvider, (_, _) {});
     ref.listen(messageAlertsProvider, (_, _) {});
+    ref.listen(desktopTrayProvider, (_, _) {});
     return MaterialApp.router(
       title: 'Etohost Mesh',
       theme: buildTheme(Brightness.light),

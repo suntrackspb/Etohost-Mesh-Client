@@ -33,11 +33,13 @@ dependencies:
   protobuf: ^6.1.0
   qr_flutter: ^4.1.0
   swipeable_page_route: ^0.4.8
+  tray_manager: ^0.5.2
   typed_data: ^1.4.0
   universal_ble: ^3.1.1
   url_launcher: ^6.3.3
   usb_serial: ^0.5.2
   webview_flutter: ^4.14.1
+  window_manager: ^0.5.2
 
 dev_dependencies:
   flutter_test:
@@ -49,3 +51,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/tray/

@@ -39,6 +39,9 @@ abstract final class AppSettingKeys {
   /// Разрешение на уведомления уже спрашивали ('true').
   static const notifyAsked = 'notify.asked';
 
+  /// Windows/Linux: крестик сворачивает в трей ('true'/'false', по умолчанию — да).
+  static const closeToTray = 'app.closeToTray';
+
   /// Карта: разрешить вращение жестом ('true'/'false', по умолчанию — нет).
   static const mapRotate = 'map.rotate';
 

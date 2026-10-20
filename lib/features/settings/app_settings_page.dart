@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/desktop_tray_provider.dart';
 import '../../app/notify_providers.dart';
 import '../../app/position_service.dart';
 import '../../app/providers.dart';
 import '../../app/settings_providers.dart';
+import '../../core/desktop/desktop_tray.dart';
 import '../../core/geo/geo.dart';
 import '../../data/database.dart';
 import '../../data/notify/message_alerts.dart';
@@ -78,6 +80,21 @@ class AppSettingsPage extends ConsumerWidget {
               ),
             ],
           ),
+          if (DesktopTray.supported)
+            SectionCard(
+              title: 'Окно',
+              children: [
+                SwitchListTile(
+                  title: const Text('Сворачивать в трей при закрытии'),
+                  subtitle: const Text(
+                    'Связь с нодой и уведомления продолжают работать. '
+                    'Выключено — крестик закрывает приложение.',
+                  ),
+                  value: ref.watch(closeToTrayProvider).value ?? true,
+                  onChanged: (v) => save(AppSettingKeys.closeToTray, '$v'),
+                ),
+              ],
+            ),
           SectionCard(
             title: 'Уведомления',
             footer:
