@@ -80,6 +80,18 @@ class SettingsPage extends ConsumerWidget {
               ),
             ],
           ),
+          SectionCard(
+            title: 'Поддержка',
+            children: [
+              MeshTile(
+                title: 'Отправить отчёт разработчику',
+                subtitle: 'Журнал и сведения о приложении и ноде',
+                leading: const Icon(Icons.bug_report_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/report'),
+              ),
+            ],
+          ),
           const AboutSection(),
         ],
       ),

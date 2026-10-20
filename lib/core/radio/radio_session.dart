@@ -184,6 +184,7 @@ class RadioSession extends ChangeNotifier {
     journal.add(
       f.hasLogRecord() ? JournalKind.node : JournalKind.radio,
       describeFromRadio(f),
+      fileText: describeFromRadio(f, private: true),
     );
     _packets.add(f);
   }
@@ -243,10 +244,8 @@ class RadioSession extends ChangeNotifier {
     switch (chunk) {
       case NodeLogRecord(:final bytes):
         try {
-          journal.add(
-            JournalKind.node,
-            describeLogRecord(LogRecord.fromBuffer(bytes)),
-          );
+          final s = describeLogRecord(LogRecord.fromBuffer(bytes));
+          journal.add(JournalKind.node, s, fileText: redactNodeLog(s));
         } catch (_) {
           journal.add(
             JournalKind.node,
@@ -255,7 +254,9 @@ class RadioSession extends ChangeNotifier {
         }
       case NodeLogText(:final text):
         for (final l in text.split('\n')) {
-          if (l.trim().isNotEmpty) journal.add(JournalKind.node, l.trimRight());
+          if (l.trim().isEmpty) continue;
+          final s = l.trimRight();
+          journal.add(JournalKind.node, s, fileText: redactNodeLog(s));
         }
     }
   }

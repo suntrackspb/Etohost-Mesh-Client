@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../core/radio/journal.dart';
@@ -65,6 +66,11 @@ class _JournalPageState extends ConsumerState<JournalPage> {
             },
           ),
           IconButton(
+            tooltip: 'Отправить отчёт',
+            icon: const Icon(Icons.bug_report_outlined),
+            onPressed: () => context.go('/settings/report'),
+          ),
+          IconButton(
             tooltip: 'Очистить',
             icon: const Icon(Icons.delete_outline),
             onPressed: journal.clear,
@@ -96,6 +102,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
                       JournalKind.app => cs.primary,
                       JournalKind.radio => cs.onSurfaceVariant,
                       JournalKind.node => cs.onSurface,
+                      JournalKind.error => cs.error,
                     };
                     return Text(
                       '${_ts(l.time)} ${l.text}',

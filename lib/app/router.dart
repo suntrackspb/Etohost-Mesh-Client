@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../features/chat/chat_page.dart';
 import '../features/connection/connection_page.dart';
 import '../features/journal/journal_page.dart';
+import '../features/report/report_page.dart';
 import '../features/map/map_page.dart';
 import '../features/nodes/node_detail_page.dart';
 import '../features/nodes/nodes_page.dart';
@@ -88,6 +89,7 @@ final appRouter = GoRouter(
                 _route('device', (_) => ConfigSectionPage(deviceSpec)),
                 _route('position', (_) => ConfigSectionPage(positionSpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),
+                _route('report', (_) => const ReportPage()),
               ],
             ),
           ],

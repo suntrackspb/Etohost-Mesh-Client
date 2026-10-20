@@ -4,13 +4,21 @@ import 'package:flutter/foundation.dart';
 
 import '../proto/mesh.dart';
 
-enum JournalKind { app, radio, node }
+enum JournalKind { app, radio, node, error }
 
 class JournalLine {
-  JournalLine(this.time, this.kind, this.text);
+  JournalLine(this.time, this.kind, this.text, [String? fileText])
+    : fileText = fileText ?? text;
   final DateTime time;
   final JournalKind kind;
   final String text;
+
+  /// Текст для файла журнала (уходит в отчёт): без содержимого сообщений.
+  final String fileText;
+
+  /// Строка файла журнала.
+  String get fileLine =>
+      '${time.toIso8601String()} ${kind.name.padRight(5)} $fileText';
 }
 
 /// Кольцевой журнал событий соединения, пакетов и лога ноды (экран «Журнал»).
@@ -20,8 +28,13 @@ class Journal extends ChangeNotifier {
   final _lines = <JournalLine>[];
   List<JournalLine> get lines => List.unmodifiable(_lines);
 
-  void add(JournalKind kind, String text) {
-    _lines.add(JournalLine(DateTime.now(), kind, text));
+  /// Куда дублировать строки (файл журнала); null — только память.
+  void Function(JournalLine line)? sink;
+
+  void add(JournalKind kind, String text, {String? fileText}) {
+    final line = JournalLine(DateTime.now(), kind, text, fileText);
+    _lines.add(line);
+    sink?.call(line);
     if (_lines.length > maxLines) {
       _lines.removeRange(0, _lines.length - maxLines);
     }
@@ -35,10 +48,11 @@ class Journal extends ChangeNotifier {
 }
 
 /// Короткое описание FromRadio для журнала.
-String describeFromRadio(FromRadio f) {
+/// [private] — без текста сообщений (для файла журнала и отчёта).
+String describeFromRadio(FromRadio f, {bool private = false}) {
   switch (f.whichPayloadVariant()) {
     case FromRadio_PayloadVariant.packet:
-      return describePacket(f.packet);
+      return describePacket(f.packet, private: private);
     case FromRadio_PayloadVariant.myInfo:
       return 'моя нода ${nodeIdString(f.myInfo.myNodeNum)}';
     case FromRadio_PayloadVariant.nodeInfo:
@@ -50,7 +64,9 @@ String describeFromRadio(FromRadio f) {
       return 'module config ${f.moduleConfig.whichPayloadVariant().name}';
     case FromRadio_PayloadVariant.channel:
       final c = f.channel;
-      return 'канал ${c.index} ${c.role.name} «${c.settings.name}»';
+      return private
+          ? 'канал ${c.index} ${c.role.name}'
+          : 'канал ${c.index} ${c.role.name} «${c.settings.name}»';
     case FromRadio_PayloadVariant.configCompleteId:
       return 'конфигурация получена (id ${f.configCompleteId})';
     case FromRadio_PayloadVariant.rebooted:
@@ -68,20 +84,25 @@ String describeFromRadio(FromRadio f) {
     case FromRadio_PayloadVariant.deviceuiConfig:
       return 'настройки экрана (deviceUIConfig)';
     case FromRadio_PayloadVariant.logRecord:
-      return describeLogRecord(f.logRecord);
+      final s = describeLogRecord(f.logRecord);
+      return private ? redactNodeLog(s) : s;
     default:
       return 'FromRadio ${f.whichPayloadVariant().name}';
   }
 }
 
-String describePacket(MeshPacket p) {
+String describePacket(MeshPacket p, {bool private = false}) {
   final to = p.to == broadcastNum ? '^all' : nodeIdString(p.to);
   final b = StringBuffer('${nodeIdString(p.from)} → $to');
   if (p.hasDecoded()) {
     final port = p.decoded.portnum;
     b.write(' ${port.name}');
     if (port == PortNum.TEXT_MESSAGE_APP) {
-      b.write(': ${utf8.decode(p.decoded.payload, allowMalformed: true)}');
+      b.write(
+        private
+            ? ' (текст, ${p.decoded.payload.length} байт)'
+            : ': ${utf8.decode(p.decoded.payload, allowMalformed: true)}',
+      );
     }
   } else if (p.hasEncrypted()) {
     b.write(' (зашифровано)');
@@ -96,3 +117,13 @@ String describeLogRecord(LogRecord r) {
   final src = r.source.isEmpty ? '' : '[${r.source}] ';
   return '$lvl$src${r.message.trimRight()}';
 }
+
+final _coords = RegExp(
+  r'\b(lat|lon|lng|latitude|longitude|latI|lonI|latitude_i|longitude_i)'
+  r'(\s*[=:]\s*)-?\d+(\.\d+)?',
+  caseSensitive: false,
+);
+
+/// Лог прошивки без координат (для файла журнала и отчёта).
+String redactNodeLog(String s) =>
+    s.replaceAllMapped(_coords, (m) => '${m[1]}${m[2]}…');

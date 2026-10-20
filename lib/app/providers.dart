@@ -4,8 +4,10 @@ import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:universal_ble/universal_ble.dart';
 
+import '../core/diagnostics/journal_file.dart';
 import '../core/geo/geo.dart';
 import '../core/proto/channel_names.dart';
 import '../core/proto/mesh.dart';
@@ -36,7 +38,17 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   return db;
 });
 
-final journalProvider = ChangeNotifierProvider<Journal>((ref) => Journal());
+/// Файл журнала (ротация 2×1 МБ) — источник журнала для отчётов.
+final journalFileProvider = Provider<JournalFile>(
+  (ref) => JournalFile(
+    getApplicationSupportDirectory().then((d) => Directory('${d.path}/logs')),
+  ),
+);
+
+final journalProvider = ChangeNotifierProvider<Journal>((ref) {
+  final file = ref.read(journalFileProvider);
+  return Journal()..sink = file.add;
+});
 
 /// Соединение с нодой. Пакеты сразу уходят в БД через [PacketRouter].
 final radioProvider = ChangeNotifierProvider<RadioSession>((ref) {
@@ -103,10 +115,15 @@ final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
 
   final ingest = MirrorIngest(ref.read(databaseProvider));
   final journal = ref.read(journalProvider);
-  void log(String s) => journal.add(JournalKind.app, s);
+  // В файл (и отчёт) — без текста ошибки: в нём бывает адрес зеркала.
+  void log(String s, [Object? e]) => journal.add(
+    JournalKind.app,
+    e == null ? s : '$s: $e',
+    fileText: e == null ? s : '$s (${e.runtimeType})',
+  );
 
   api.nodes().then(ingest.nodes).catchError((Object e) {
-    log('Зеркало: ноды не загружены: $e');
+    log('Зеркало: ноды не загружены', e);
   });
 
   final rt = MirrorRealtime(ws, (e) async {
