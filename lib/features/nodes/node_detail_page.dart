@@ -68,6 +68,14 @@ class NodeDetailPage extends ConsumerWidget {
             : ListView(
                 padding: const EdgeInsets.all(Tokens.s16),
                 children: [
+                  Center(
+                    child: NodeAvatar(
+                      nodeNum: n.num,
+                      shortName: n.shortName,
+                      size: 72,
+                    ),
+                  ),
+                  const SizedBox(height: Tokens.s16),
                   SectionCard(
                     title: 'Нода',
                     children: [

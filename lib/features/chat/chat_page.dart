@@ -103,12 +103,7 @@ class _DirectTile extends StatelessWidget {
     return MeshTile(
       title: name,
       subtitle: '${last.isOutgoing ? 'Вы: ' : ''}${last.body}',
-      leading: CircleAvatar(
-        child: Text(
-          node?.shortName.isNotEmpty == true ? node!.shortName : '?',
-          style: const TextStyle(fontSize: 12),
-        ),
-      ),
+      leading: NodeAvatar(nodeNum: conv.peer, shortName: node?.shortName),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

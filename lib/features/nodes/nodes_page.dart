@@ -136,13 +136,7 @@ class _NodeTile extends StatelessWidget {
       title: name,
       subtitle: parts.join(' · '),
       selected: selected,
-      leading: CircleAvatar(
-        child: Text(
-          node.shortName.isEmpty ? '?' : node.shortName,
-          style: const TextStyle(fontSize: 12),
-          maxLines: 1,
-        ),
-      ),
+      leading: NodeAvatar(nodeNum: node.num, shortName: node.shortName),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

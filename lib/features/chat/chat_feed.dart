@@ -8,10 +8,14 @@ import '../../core/glyph_zip.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
 import '../../data/delivery.dart';
+import '../../data/message_meta.dart';
 import '../../data/message_sender.dart';
 import '../../data/mirror_ingest.dart';
+import '../../mirror/mirror_config.dart';
 import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
+import 'link_text.dart';
+import 'relay_map_sheet.dart';
 
 /// Быстрые реакции (как в официальных клиентах — эмодзи-ответ на сообщение).
 const quickReactions = ['👍', '❤️', '😂', '😮', '😢', '👎'];
@@ -330,8 +334,16 @@ class _MessageList extends ConsumerWidget {
                 ? null
                 : _authorName(nodes, byPacket[m.replyId]!.fromNum),
             reactions: reactions[m.packetId] ?? const [],
-            showSource: mirror,
+            mirror: mirror,
             onMenu: () => _showMenu(context, ref, m),
+            onOpenNode: () => context.go('/nodes/${m.fromNum}'),
+            onOpenRelays: () {
+              final cfg = ref.read(mirrorConfigProvider).value;
+              final url = cfg == null || m.mirrorId == null
+                  ? null
+                  : relayMapUrl(cfg, m.mirrorId!);
+              if (url != null) showRelayMap(context, url);
+            },
           );
         },
       ),
@@ -412,8 +424,10 @@ class _Bubble extends StatelessWidget {
     required this.quoted,
     required this.quotedAuthor,
     required this.reactions,
-    required this.showSource,
+    required this.mirror,
     required this.onMenu,
+    required this.onOpenNode,
+    required this.onOpenRelays,
   });
 
   final Message message;
@@ -422,8 +436,10 @@ class _Bubble extends StatelessWidget {
   final Message? quoted;
   final String? quotedAuthor;
   final List<Message> reactions;
-  final bool showSource;
+  final bool mirror;
   final VoidCallback onMenu;
+  final VoidCallback onOpenNode;
+  final VoidCallback onOpenRelays;
 
   @override
   Widget build(BuildContext context) {
@@ -443,37 +459,50 @@ class _Bubble extends StatelessWidget {
         color: out ? scheme.primaryContainer : scheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(Tokens.radiusL),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!out)
-            Text(
-              author,
-              style: text.labelMedium?.copyWith(color: scheme.primary),
+      child: IntrinsicWidth(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (!out)
+              Text(
+                author,
+                style: text.labelMedium?.copyWith(color: scheme.primary),
+              ),
+            if (message.replyId != null) _Quote(quoted, quotedAuthor),
+            LinkText(message.body),
+            const SizedBox(height: Tokens.s4),
+            // Слева источник (и хопы), по центру шлюзы, справа время.
+            Row(
+              children: [
+                if (message.pkiEncrypted) ...[
+                  const _PkiIcon(true, size: 12),
+                  const SizedBox(width: Tokens.s4),
+                ],
+                if (message.xeddsaSigned) ...[
+                  const Tooltip(
+                    message: 'Подпись отправителя проверена',
+                    child: Icon(Icons.draw_outlined, size: 12),
+                  ),
+                  const SizedBox(width: Tokens.s4),
+                ],
+                _SourceIcons(message: message, mirror: mirror),
+                const Spacer(),
+                if (showRelays(message, mirror: mirror)) ...[
+                  const SizedBox(width: Tokens.s8),
+                  _RelayChip(count: message.relayCount, onTap: onOpenRelays),
+                  const SizedBox(width: Tokens.s8),
+                  const Spacer(),
+                ] else
+                  const SizedBox(width: Tokens.s12),
+                Text(time, style: text.labelSmall),
+                if (out) ...[
+                  const SizedBox(width: Tokens.s4),
+                  _AckIcon(message),
+                ],
+              ],
             ),
-          if (message.replyId != null) _Quote(quoted, quotedAuthor),
-          Text(message.body),
-          const SizedBox(height: Tokens.s4),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (message.pkiEncrypted) ...[
-                const _PkiIcon(true, size: 12),
-                const SizedBox(width: Tokens.s4),
-              ],
-              if (message.xeddsaSigned) ...[
-                const Tooltip(
-                  message: 'Подпись отправителя проверена',
-                  child: Icon(Icons.draw_outlined, size: 12),
-                ),
-                const SizedBox(width: Tokens.s4),
-              ],
-              if (showSource) _SourceIcons(message: message),
-              Text(time, style: text.labelSmall),
-              if (out) ...[const SizedBox(width: Tokens.s4), _AckIcon(message)],
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
 
@@ -486,11 +515,12 @@ class _Bubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!out) ...[
-            CircleAvatar(
-              radius: 16,
-              child: Text(
-                shortName?.isNotEmpty == true ? shortName! : '?',
-                style: const TextStyle(fontSize: 11),
+            GestureDetector(
+              onTap: onOpenNode,
+              child: NodeAvatar(
+                nodeNum: message.fromNum,
+                shortName: shortName,
+                size: 36,
               ),
             ),
             const SizedBox(width: Tokens.s8),
@@ -598,31 +628,81 @@ class _AckIcon extends StatelessWidget {
 }
 
 class _SourceIcons extends StatelessWidget {
-  const _SourceIcons({required this.message});
+  const _SourceIcons({required this.message, required this.mirror});
 
   final Message message;
+  final bool mirror;
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.outline;
-    return Padding(
-      padding: const EdgeInsets.only(right: Tokens.s4),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (message.heardOnRadio)
-            Tooltip(
-              message: 'Слышно в эфире',
-              child: Icon(Icons.cell_tower, size: 14, color: color),
-            ),
-          if (message.heardOnMirror)
-            Tooltip(
-              message: message.relayCount > 0
-                  ? 'Из зеркала · ретрансляций: ${message.relayCount}'
-                  : 'Из зеркала',
-              child: Icon(Icons.cloud_outlined, size: 14, color: color),
-            ),
+    final style = Theme.of(
+      context,
+    ).textTheme.labelSmall?.copyWith(color: color);
+    final radio = radioLabel(message);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (message.heardOnRadio && !message.isOutgoing)
+          Tooltip(
+            message: 'Слышно в эфире',
+            child: Icon(Icons.cell_tower, size: 14, color: color),
+          ),
+        if (radio != null) ...[
+          const SizedBox(width: 2),
+          Text(radio, style: style),
         ],
+        if (mirror && message.heardOnMirror) ...[
+          const SizedBox(width: Tokens.s4),
+          Tooltip(
+            message: 'Из зеркала',
+            child: Icon(Icons.cloud_outlined, size: 14, color: color),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Сколько шлюзов зеркала приняли сообщение; нажатие — карта ретрансляций.
+class _RelayChip extends StatelessWidget {
+  const _RelayChip({required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: 'Шлюзов приняли: $count — показать на карте',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(Tokens.radiusL),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+          decoration: BoxDecoration(
+            color: scheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(Tokens.radiusL),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.hub_outlined,
+                size: 12,
+                color: scheme.onSecondaryContainer,
+              ),
+              const SizedBox(width: 2),
+              Text(
+                '$count',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: scheme.onSecondaryContainer,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

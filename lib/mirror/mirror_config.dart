@@ -47,3 +47,7 @@ Uri? normalizeMirrorUrl(String raw) {
   if ((scheme != 'https' && scheme != 'http') || u.host.isEmpty) return null;
   return Uri(scheme: scheme, host: u.host, port: u.hasPort ? u.port : null);
 }
+
+/// Страница карты ретрансляций сообщения на зеркале (`/relay/<id>`).
+Uri? relayMapUrl(MirrorConfig c, int mirrorId) =>
+    c.active ? c.baseUrl!.replace(path: '/relay/$mirrorId') : null;

@@ -194,3 +194,54 @@ class SplitView extends StatelessWidget {
     );
   }
 }
+
+/// Цвет ноды: младшие 24 бита node_id (как в iOS-клиенте Etohost).
+Color nodeColor(int nodeNum) => Color(0xFF000000 | (nodeNum & 0xFFFFFF));
+
+/// Читаемый цвет текста поверх [bg]: чёрный на светлом, белый на тёмном
+/// (яркость 0.299R + 0.587G + 0.114B > 0.6, как contrastingText в iOS).
+Color contrastingText(Color bg) =>
+    0.299 * bg.r + 0.587 * bg.g + 0.114 * bg.b > 0.6
+    ? Colors.black
+    : Colors.white;
+
+/// Круглая аватарка ноды: цвет по node_id, короткое имя внутри.
+class NodeAvatar extends StatelessWidget {
+  const NodeAvatar({
+    super.key,
+    required this.nodeNum,
+    this.shortName,
+    this.size = 40,
+  });
+
+  final int nodeNum;
+  final String? shortName;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = nodeColor(nodeNum);
+    final name = shortName?.trim() ?? '';
+    return ExcludeSemantics(
+      child: Container(
+        width: size,
+        height: size,
+        alignment: Alignment.center,
+        padding: EdgeInsets.all(size * 0.12),
+        decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            name.isEmpty ? '?' : name,
+            maxLines: 1,
+            style: TextStyle(
+              color: contrastingText(bg),
+              fontSize: size * 0.32,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
