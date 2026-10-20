@@ -23,10 +23,13 @@ class PacketRouter {
       case FromRadio_PayloadVariant.packet:
         await _onPacket(f.packet);
       case FromRadio_PayloadVariant.myInfo:
+        // Единственная строка id = 0; дубли от старых версий удаляем.
+        await (db.delete(db.myNode)..where((m) => m.id.equals(0).not())).go();
         await db
             .into(db.myNode)
             .insertOnConflictUpdate(
               MyNodeCompanion.insert(
+                id: const Value(0),
                 myNodeNum: f.myInfo.myNodeNum,
                 rebootCount: Value(f.myInfo.rebootCount),
               ),

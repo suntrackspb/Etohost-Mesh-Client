@@ -241,4 +241,19 @@ void main() {
     final n = await db.select(db.nodes).getSingle();
     expect(n.hasXeddsaSigned, isTrue);
   });
+
+  test('MyNode — одна строка, дубли чистятся, прошивка сохраняется', () async {
+    await db.into(db.myNode).insert(MyNodeCompanion.insert(myNodeNum: 1));
+    await db.into(db.myNode).insert(MyNodeCompanion.insert(myNodeNum: 1));
+    for (var i = 0; i < 2; i++) {
+      await router.handle(FromRadio(myInfo: MyNodeInfo(myNodeNum: 0x1234)));
+      await router.handle(
+        FromRadio(metadata: DeviceMetadata(firmwareVersion: '2.8.1')),
+      );
+    }
+    final r = await db.select(db.myNode).getSingle();
+    expect(r.id, 0);
+    expect(r.myNodeNum, 0x1234);
+    expect(r.firmwareVersion, '2.8.1');
+  });
 }

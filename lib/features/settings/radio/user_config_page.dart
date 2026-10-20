@@ -29,17 +29,29 @@ class _UserConfigPageState extends ConsumerState<UserConfigPage> {
 
   @override
   Widget build(BuildContext context) {
-    final node = ref.watch(ownNodeProvider).value;
-    final device = ref.watch(ownDeviceProvider).value;
+    final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
+    final nodeAsync = ref.watch(ownNodeProvider);
+    final deviceAsync = ref.watch(ownDeviceProvider);
+    // Конфиг статуса не обязателен: нет его (или ошибка) — поле просто скрыто.
     final status = ref.watch(moduleConfigProvider('statusmessage'));
     final canSend = ref.watch(canSendProvider);
+    final node = nodeAsync.value;
+    final device = deviceAsync.value;
 
     Widget body;
-    if (node == null || device == null || status.isLoading) {
-      body = const EmptyState(
-        icon: Icons.link_off,
-        text: 'Подключитесь к своей ноде',
-      );
+    final problem = me == null
+        ? 'Подключитесь к своей ноде'
+        : nodeAsync.hasError
+        ? 'Ошибка чтения своей ноды: ${nodeAsync.error}'
+        : deviceAsync.hasError
+        ? 'Ошибка чтения данных прошивки: ${deviceAsync.error}'
+        : node == null && !nodeAsync.isLoading
+        ? 'Своя нода ${nodeIdString(me)} ещё не загружена'
+        : null;
+    if (problem != null) {
+      body = EmptyState(icon: Icons.link_off, text: problem);
+    } else if (node == null || device == null) {
+      body = const Center(child: CircularProgressIndicator());
     } else {
       final statusCfg = status.value;
       final withStatus = UserSection.supportsStatusMessage(

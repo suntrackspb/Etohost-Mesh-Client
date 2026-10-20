@@ -30,17 +30,16 @@ final ownNodeProvider = StreamProvider<Node?>((ref) {
 final ownDeviceProvider =
     StreamProvider<({String firmware, DeviceMetadata? metadata})>((ref) {
       final db = ref.watch(databaseProvider);
-      return db
-          .select(db.myNode)
-          .watchSingleOrNull()
-          .map(
-            (r) => (
-              firmware: r?.firmwareVersion ?? '',
-              metadata: r?.metadata == null
-                  ? null
-                  : DeviceMetadata.fromBuffer(r!.metadata!),
-            ),
-          );
+      return (db.select(
+        db.myNode,
+      )..where((m) => m.id.equals(0))).watchSingleOrNull().map(
+        (r) => (
+          firmware: r?.firmwareVersion ?? '',
+          metadata: r?.metadata == null
+              ? null
+              : DeviceMetadata.fromBuffer(r!.metadata!),
+        ),
+      );
     });
 
 /// Сохранённый конфиг модуля по имени варианта (`statusmessage`, `mqtt`…).
