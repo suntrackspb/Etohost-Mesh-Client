@@ -15,6 +15,7 @@ import '../../../data/settings/lora_section.dart';
 import '../../../data/settings/mqtt_section.dart';
 import '../../../data/settings/neighbor_info_section.dart';
 import '../../../data/settings/network_section.dart';
+import '../../../data/settings/pax_counter_section.dart';
 import '../../../data/settings/position_section.dart';
 import '../../../data/settings/power_section.dart';
 import '../../../data/settings/range_test_section.dart';
@@ -361,4 +362,15 @@ final detectionSensorSpec = ConfigSectionSpec<ModuleConfig>(
   read: (c) => DetectionSensorSection.read(c.detectionSensor),
   save: (admin, db, c, v, _) =>
       DetectionSensorSection.save(admin, db, c.detectionSensor, v),
+);
+
+final paxCounterSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'paxcounter',
+  title: PaxCounterSection.title,
+  confirm: PaxCounterSection.saveConfirm,
+  fields: (_) => PaxCounterSection.fields(),
+  read: (c) => PaxCounterSection.read(c.paxcounter),
+  save: (admin, db, c, v, _) =>
+      PaxCounterSection.save(admin, db, c.paxcounter, v),
 );

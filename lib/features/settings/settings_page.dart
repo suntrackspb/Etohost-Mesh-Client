@@ -184,6 +184,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/detection-sensor'),
               ),
+              MeshTile(
+                title: 'Счетчик прохожих',
+                leading: const Icon(Icons.directions_walk),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/pax-counter'),
+              ),
             ],
           ),
           SectionCard(

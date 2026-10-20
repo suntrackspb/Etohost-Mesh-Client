@@ -124,6 +124,7 @@ final appRouter = GoRouter(
                   'detection-sensor',
                   (_) => ConfigSectionPage(detectionSensorSpec),
                 ),
+                _route('pax-counter', (_) => ConfigSectionPage(paxCounterSpec)),
                 _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),
