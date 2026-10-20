@@ -13,6 +13,14 @@ class NodeFilterSheet extends ConsumerWidget {
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
+    // Корневой навигатор: из вложенного (вкладка go_router) системное
+    // «назад» на Android лист не закрывало.
+    useRootNavigator: true,
+    useSafeArea: true,
+    // Не на весь экран — остаётся полоса, тап по которой закрывает лист.
+    constraints: BoxConstraints(
+      maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+    ),
     builder: (_) => const NodeFilterSheet(),
   );
 
@@ -128,11 +136,22 @@ class NodeFilterSheet extends ConsumerWidget {
               value: f.showIgnored,
               onChanged: (v) => set(f.copyWith(showIgnored: v)),
             ),
-            if (f.active)
-              TextButton(
-                onPressed: () => set(NodeFilter(query: f.query, sort: f.sort)),
-                child: const Text('Сбросить фильтры'),
-              ),
+            const SizedBox(height: Tokens.s8),
+            Row(
+              children: [
+                if (f.active)
+                  TextButton(
+                    onPressed: () =>
+                        set(NodeFilter(query: f.query, sort: f.sort)),
+                    child: const Text('Сбросить фильтры'),
+                  ),
+                const Spacer(),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Готово'),
+                ),
+              ],
+            ),
           ],
         ),
       ),

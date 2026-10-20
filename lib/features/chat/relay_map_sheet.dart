@@ -20,6 +20,7 @@ Future<void> showRelayMap(BuildContext context, Uri url) async {
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
+    useRootNavigator: true,
     enableDrag: false,
     showDragHandle: true,
     builder: (_) =>

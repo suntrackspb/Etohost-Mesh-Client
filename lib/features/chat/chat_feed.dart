@@ -426,6 +426,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      useRootNavigator: true,
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
