@@ -1,8 +1,9 @@
 name: build
 
+# Сборка: по тегу v* (релиз) и вручную (Actions → build → Run workflow).
+# На каждый пуш в main не собираем — прогоны копились в очереди.
 on:
   push:
-    branches: [main]
     tags: ['v*']
   pull_request:
   workflow_dispatch:
@@ -10,7 +11,7 @@ on:
       release:
         description: 'Создать draft release'
         type: boolean
-        default: true
+        default: false
 
 jobs:
   build:
