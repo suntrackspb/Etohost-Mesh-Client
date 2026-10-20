@@ -45,7 +45,13 @@ class ConfigSectionSpec {
   final void Function(WidgetRef ref)? afterSave;
 
   /// Дополнительные элементы под формой (кнопки и т. п.).
-  final List<Widget> Function(BuildContext context, SettingsForm form)? extra;
+  final List<Widget> Function(
+    BuildContext context,
+    WidgetRef ref,
+    SettingsForm form,
+    Config cfg,
+  )?
+  extra;
 }
 
 /// Своя нода для построения полей: прошивка и модель.
@@ -111,7 +117,7 @@ class _ConfigSectionPageState extends ConsumerState<ConfigSectionPage> {
             absorbing: !canSend,
             child: SettingsFormView(form: form),
           ),
-          ...?spec.extra?.call(context, form),
+          ...?spec.extra?.call(context, ref, form, cfg),
           SaveBar(
             form: form,
             confirm: spec.confirm,

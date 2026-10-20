@@ -86,6 +86,7 @@ final appRouter = GoRouter(
                 _route('user', (_) => const UserConfigPage()),
                 _route('lora', (_) => ConfigSectionPage(loraSpec)),
                 _route('device', (_) => ConfigSectionPage(deviceSpec)),
+                _route('position', (_) => ConfigSectionPage(positionSpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),
               ],
             ),

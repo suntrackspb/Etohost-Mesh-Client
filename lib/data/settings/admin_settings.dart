@@ -52,16 +52,17 @@ Future<bool> saveConfig(
   Config cfg,
 ) async {
   final ok = await admin.send(AdminMessage(setConfig: cfg));
-  if (ok) {
-    await db
-        .into(db.configBlobs)
-        .insertOnConflictUpdate(
-          ConfigBlobsCompanion.insert(
-            key: 'config.$name',
-            data: cfg.writeToBuffer(),
-            updated: DateTime.now(),
-          ),
-        );
-  }
+  if (ok) await storeConfig(db, name, cfg);
   return ok;
 }
+
+/// Записать конфиг в БД под ключом `config.<name>`.
+Future<void> storeConfig(AppDatabase db, String name, Config cfg) => db
+    .into(db.configBlobs)
+    .insertOnConflictUpdate(
+      ConfigBlobsCompanion.insert(
+        key: 'config.$name',
+        data: cfg.writeToBuffer(),
+        updated: DateTime.now(),
+      ),
+    );

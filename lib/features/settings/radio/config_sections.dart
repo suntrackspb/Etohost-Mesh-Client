@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../app/providers.dart';
 import '../../../data/settings/device_section.dart';
 import '../../../data/settings/lora_section.dart';
+import '../../../data/settings/position_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
+import 'fixed_position_tile.dart';
 
 /// Разделы Config своей ноды: логика — в `lib/data/settings/*_section.dart`.
 final loraSpec = ConfigSectionSpec(
@@ -27,7 +29,7 @@ final deviceSpec = ConfigSectionSpec(
   fields: (_) => DeviceSection.fields(),
   read: (c) => DeviceSection.read(c.device),
   save: (admin, db, c, v) => DeviceSection.save(admin, db, c.device, v),
-  extra: (context, form) => [
+  extra: (context, ref, form, cfg) => [
     SectionCard(
       children: [
         MeshTile(
@@ -40,5 +42,21 @@ final deviceSpec = ConfigSectionSpec(
         ),
       ],
     ),
+  ],
+);
+
+final positionSpec = ConfigSectionSpec(
+  name: 'position',
+  title: PositionSection.title,
+  confirm: PositionSection.saveConfirm,
+  fields: (_) => PositionSection.fields(),
+  read: (c) => PositionSection.read(c.position),
+  save: (admin, db, c, v) => PositionSection.save(admin, db, c.position, v),
+  extra: (context, ref, form, cfg) => [
+    if (PositionSection.fixedAvailable(
+      form.value<int>('gpsMode'),
+      cfg.position.fixedPosition,
+    ))
+      FixedPositionTile(cfg: cfg.position),
   ],
 );

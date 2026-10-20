@@ -19,6 +19,42 @@ abstract final class Intervals {
     never,
   ];
 
+  /// broadcastMedium: позиция.
+  static const broadcastMedium = [
+    3600,
+    7200,
+    10800,
+    14400,
+    18000,
+    21600,
+    43200,
+    64800,
+    86400,
+    129600,
+    172800,
+    259200,
+    never,
+  ];
+
+  /// smartBroadcastMinimum: минимальный интервал умной позиции.
+  static const smartMinimum = [15, 30, 45, 60, 300, 600, 900, 1800, 3600];
+
+  /// GpsUpdateIntervals.
+  static const gpsUpdate = [
+    30,
+    60,
+    120,
+    300,
+    600,
+    900,
+    1800,
+    3600,
+    21600,
+    43200,
+    86400,
+    never,
+  ];
+
   static List<Choice> choices(List<int> secs) => [
     for (final s in secs) (value: s, label: label(s)),
   ];

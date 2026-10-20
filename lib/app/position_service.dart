@@ -102,3 +102,28 @@ class PositionService extends ChangeNotifier {
     super.dispose();
   }
 }
+
+/// Разовая точка телефона (для фиксированной позиции ноды). Бросает
+/// исключение с понятным текстом, если геолокация недоступна.
+Future<Fix> phoneFix() async {
+  if (!await Geolocator.isLocationServiceEnabled()) {
+    throw StateError('геолокация на телефоне выключена');
+  }
+  var p = await Geolocator.checkPermission();
+  if (p == LocationPermission.denied) p = await Geolocator.requestPermission();
+  if (p == LocationPermission.denied || p == LocationPermission.deniedForever) {
+    throw StateError('нет доступа к геолокации');
+  }
+  final pos = await Geolocator.getCurrentPosition(
+    locationSettings: const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      timeLimit: Duration(seconds: 30),
+    ),
+  );
+  return (
+    lat: pos.latitude,
+    lon: pos.longitude,
+    altitude: pos.altitude == 0 ? null : pos.altitude,
+    time: DateTime.now(),
+  );
+}
