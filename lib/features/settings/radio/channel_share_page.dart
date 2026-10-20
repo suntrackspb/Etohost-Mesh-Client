@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../app/providers.dart';
@@ -157,6 +158,22 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [
+          OutlinedButton.icon(
+            icon: const Icon(Icons.qr_code_scanner),
+            label: const Text('Сканировать QR-код общих каналов'),
+            onPressed: () async {
+              final text = await Navigator.of(context).push<String>(
+                MaterialPageRoute(builder: (_) => const ChannelScanPage()),
+              );
+              if (text != null && mounted) {
+                setState(() {
+                  _text.text = text;
+                  _add = null;
+                });
+              }
+            },
+          ),
+          const SizedBox(height: Tokens.s16),
           TextField(
             controller: _text,
             minLines: 1,
@@ -278,4 +295,54 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
     );
     if (ok) Navigator.of(context).pop();
   }
+}
+
+/// «Сканировать QR-код общих каналов» (Android): возвращает текст кода.
+class ChannelScanPage extends StatefulWidget {
+  const ChannelScanPage({super.key});
+
+  @override
+  State<ChannelScanPage> createState() => _ChannelScanPageState();
+}
+
+class _ChannelScanPageState extends State<ChannelScanPage> {
+  final _controller = MobileScannerController(
+    formats: const [BarcodeFormat.qrCode],
+  );
+  bool _done = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    if (_done) return;
+    for (final b in capture.barcodes) {
+      final text = b.rawValue;
+      if (text == null) continue;
+      try {
+        ChannelLink.parse(text);
+      } on FormatException {
+        continue;
+      }
+      _done = true;
+      Navigator.of(context).pop(text);
+      return;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Сканировать QR-код общих каналов')),
+    body: MobileScanner(
+      controller: _controller,
+      onDetect: _onDetect,
+      errorBuilder: (context, error) => EmptyState(
+        icon: Icons.no_photography_outlined,
+        text: 'Камера недоступна: ${error.errorCode.name}',
+      ),
+    ),
+  );
 }
