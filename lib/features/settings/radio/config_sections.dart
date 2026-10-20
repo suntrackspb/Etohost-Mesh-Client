@@ -14,6 +14,7 @@ import '../../../data/settings/position_section.dart';
 import '../../../data/settings/power_section.dart';
 import '../../../data/settings/security_section.dart';
 import '../../../data/settings/serial_section.dart';
+import '../../../data/settings/store_forward_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
 import 'fixed_position_tile.dart';
@@ -201,4 +202,23 @@ final externalNotificationSpec = ConfigSectionSpec<ModuleConfig>(
   save: (admin, db, c, v, _) =>
       ExternalNotificationSection.save(admin, db, c.externalNotification, v),
   extra: (context, ref, form, cfg) => [const RingtoneTile()],
+);
+
+final storeForwardSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'storeForward',
+  title: StoreForwardSection.title,
+  confirm: StoreForwardSection.saveConfirm,
+  fields: (_) => StoreForwardSection.fields(),
+  read: (c) => StoreForwardSection.read(c.storeForward),
+  save: (admin, db, c, v, _) =>
+      StoreForwardSection.save(admin, db, c.storeForward, v),
+  extra: (context, ref, form, cfg) => [
+    ListenableBuilder(
+      listenable: form,
+      builder: (_, _) => StoreForwardSection.showServerNote(form.values)
+          ? const WarningNote(StoreForwardSection.serverNote)
+          : const SizedBox.shrink(),
+    ),
+  ],
 );

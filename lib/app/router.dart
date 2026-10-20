@@ -97,6 +97,10 @@ final appRouter = GoRouter(
                   'external-notification',
                   (_) => ConfigSectionPage(externalNotificationSpec),
                 ),
+                _route(
+                  'store-forward',
+                  (_) => ConfigSectionPage(storeForwardSpec),
+                ),
                 _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),

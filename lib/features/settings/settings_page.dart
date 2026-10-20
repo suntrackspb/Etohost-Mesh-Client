@@ -130,6 +130,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/external-notification'),
               ),
+              MeshTile(
+                title: 'Сохранить и переслать',
+                leading: const Icon(Icons.move_to_inbox_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/store-forward'),
+              ),
             ],
           ),
           SectionCard(
