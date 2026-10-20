@@ -3,10 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/notify_providers.dart';
 import '../../app/position_service.dart';
 import '../../app/providers.dart';
+import '../../app/settings_providers.dart';
 import '../../core/geo/geo.dart';
 import '../../data/database.dart';
+import '../../data/notify/message_alerts.dart';
 import '../../data/position_sharer.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/nodes_page.dart';
@@ -25,7 +28,20 @@ class AppSettingsPage extends ConsumerWidget {
     final share = ref.watch(positionShareProvider).value ?? false;
     final interval =
         ref.watch(positionIntervalProvider).value ?? defaultPositionIntervalMin;
+    final alerts =
+        ref.watch(alertSettingsProvider).value ?? const AlertSettings();
+    final myShort = ref.watch(ownNodeProvider).value?.shortName ?? '';
     void save(String k, String v) => saveSetting(ref, k, v);
+    Widget alert(String title, String? sub, String key, bool v) =>
+        SwitchListTile(
+          title: Text(title),
+          subtitle: sub == null ? null : Text(sub),
+          value: v,
+          onChanged: (on) {
+            save(key, '$on');
+            if (on) ref.read(localNotifierProvider).requestPermission();
+          },
+        );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Приложение')),
@@ -59,6 +75,40 @@ class AppSettingsPage extends ConsumerWidget {
                   onSelectionChanged: (s) =>
                       save(AppSettingKeys.theme, s.first.name),
                 ),
+              ),
+            ],
+          ),
+          SectionCard(
+            title: 'Уведомления',
+            footer:
+                'Приходят, пока приложение запущено (в том числе в фоне). '
+                'Звук и баннеры — в системных настройках уведомлений.',
+            children: [
+              alert(
+                'Личные сообщения',
+                null,
+                AppSettingKeys.notifyDirect,
+                alerts.direct,
+              ),
+              alert(
+                'Ответы на мои сообщения',
+                null,
+                AppSettingKeys.notifyReply,
+                alerts.reply,
+              ),
+              alert(
+                'Реакции на мои сообщения',
+                null,
+                AppSettingKeys.notifyReaction,
+                alerts.reaction,
+              ),
+              alert(
+                'Упоминания моей ноды',
+                myShort.isEmpty
+                    ? 'Короткое имя своей ноды в тексте канала'
+                    : '«$myShort» в тексте канала',
+                AppSettingKeys.notifyMention,
+                alerts.mention,
               ),
             ],
           ),

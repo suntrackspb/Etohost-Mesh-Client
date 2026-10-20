@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/keep_alive_provider.dart';
 import 'app/mqtt_providers.dart';
+import 'app/notify_providers.dart';
 import 'app/providers.dart';
 import 'app/router.dart';
 import 'core/radio/journal.dart';
@@ -74,6 +75,7 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     ref.listen(positionServiceProvider, (_, _) {});
     ref.listen(mqttProxyProvider, (_, _) {});
     ref.listen(keepAliveProvider, (_, _) {});
+    ref.listen(messageAlertsProvider, (_, _) {});
     return MaterialApp.router(
       title: 'Etohost Mesh',
       theme: buildTheme(Brightness.light),

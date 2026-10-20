@@ -30,6 +30,15 @@ abstract final class AppSettingKeys {
   /// выключить пересылку, не меняя настройку ноды.
   static const mqttProxyLocal = 'mqtt.proxyLocal';
 
+  /// Уведомления ('true'/'false', по умолчанию — включены).
+  static const notifyDirect = 'notify.direct';
+  static const notifyReaction = 'notify.reaction';
+  static const notifyReply = 'notify.reply';
+  static const notifyMention = 'notify.mention';
+
+  /// Разрешение на уведомления уже спрашивали ('true').
+  static const notifyAsked = 'notify.asked';
+
   /// Карта: разрешить вращение жестом ('true'/'false', по умолчанию — нет).
   static const mapRotate = 'map.rotate';
 

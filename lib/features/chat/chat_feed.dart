@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/notify_providers.dart';
 import '../../app/providers.dart';
 import '../../core/glyph_zip.dart';
 import '../../core/proto/mesh.dart';
@@ -48,10 +49,27 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
   /// Зеркало отдало всю историю (или её нет).
   bool _mirrorDone = false;
 
+  late final _openChats = ref.read(openChatsProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    _openChats.open(widget.id);
+  }
+
+  @override
+  void dispose() {
+    _openChats.close(widget.id);
+    super.dispose();
+  }
+
   @override
   void didUpdateWidget(ChatFeed old) {
     super.didUpdateWidget(old);
     if (old.id != widget.id) {
+      _openChats
+        ..close(old.id)
+        ..open(widget.id);
       _replyTo = null;
       _mirrorDone = false;
     }

@@ -193,6 +193,42 @@ def patch_apple():
     print("apple: ok")
 
 
+def patch_notifications():
+    """flutter_local_notifications: на Android нужен desugaring и иконка,
+    которую R8 не выкинет; на iOS — делегат центра уведомлений, иначе
+    уведомление не показывается, пока приложение на экране, и нажатие
+    на него не доходит до приложения."""
+    g = ROOT / "android/app/build.gradle.kts"
+    if g.exists():
+        s = orig = g.read_text()
+        if "isCoreLibraryDesugaringEnabled" not in s:
+            s = re.sub(r"(compileOptions\s*\{)", r"\1\n        isCoreLibraryDesugaringEnabled = true", s, count=1)
+        if "desugar_jdk_libs" not in s:
+            s = s.rstrip() + '\n\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n'
+        if s != orig:
+            g.write_text(s)
+        keep = ROOT / "android/app/src/main/res/raw/keep.xml"
+        if not keep.exists():
+            keep.parent.mkdir(parents=True, exist_ok=True)
+            keep.write_text(
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                '<resources xmlns:tools="http://schemas.android.com/tools"\n'
+                '    tools:keep="@mipmap/ic_launcher" />\n'
+            )
+    d = ROOT / "ios/Runner/AppDelegate.swift"
+    if d.exists():
+        s = orig = d.read_text()
+        if "UNUserNotificationCenter" not in s:
+            s = s.replace("import UIKit", "import UIKit\nimport UserNotifications", 1)
+            s = re.sub(
+                r"(didFinishLaunchingWithOptions[^{]*\{\n)",
+                r"\1    UNUserNotificationCenter.current().delegate = self\n",
+                s, count=1)
+        if s != orig:
+            d.write_text(s)
+    print("notifications: ok")
+
+
 COMPILE_SDK = 36
 
 
@@ -224,4 +260,5 @@ if __name__ == "__main__":
     patch_app_id()
     patch_android()
     patch_apple()
+    patch_notifications()
     patch_plugins()
