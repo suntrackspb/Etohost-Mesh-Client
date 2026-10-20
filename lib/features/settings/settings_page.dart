@@ -124,6 +124,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/serial'),
               ),
+              MeshTile(
+                title: 'Внешние уведомления',
+                leading: const Icon(Icons.notifications_active_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/external-notification'),
+              ),
             ],
           ),
           SectionCard(

@@ -5,6 +5,7 @@ import '../../../core/proto/mesh.dart';
 import '../../../data/settings/bluetooth_section.dart';
 import '../../../data/settings/device_section.dart';
 import '../../../data/settings/display_section.dart';
+import '../../../data/settings/external_notification_section.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/settings/lora_section.dart';
 import '../../../data/settings/mqtt_section.dart';
@@ -16,6 +17,7 @@ import '../../../data/settings/serial_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
 import 'fixed_position_tile.dart';
+import 'ringtone_tile.dart';
 import 'security_tiles.dart';
 
 /// Разделы Config своей ноды: логика — в `lib/data/settings/*_section.dart`.
@@ -187,4 +189,16 @@ final serialSpec = ConfigSectionSpec<ModuleConfig>(
   fields: (_) => SerialSection.fields(),
   read: (c) => SerialSection.read(c.serial),
   save: (admin, db, c, v, _) => SerialSection.save(admin, db, c.serial, v),
+);
+
+final externalNotificationSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'externalNotification',
+  title: ExternalNotificationSection.title,
+  confirm: ExternalNotificationSection.saveConfirm,
+  fields: (_) => ExternalNotificationSection.fields(),
+  read: (c) => ExternalNotificationSection.read(c.externalNotification),
+  save: (admin, db, c, v, _) =>
+      ExternalNotificationSection.save(admin, db, c.externalNotification, v),
+  extra: (context, ref, form, cfg) => [const RingtoneTile()],
 );

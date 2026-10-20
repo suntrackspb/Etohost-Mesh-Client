@@ -12,7 +12,8 @@ class AdminSettings {
   final int? Function() _myNum;
   final int Function() _nextId;
 
-  Future<bool> send(AdminMessage m) async {
+  /// [response] — просить ноду ответить (get_*_request).
+  Future<bool> send(AdminMessage m, {bool response = false}) async {
     final me = _myNum();
     if (me == null) throw StateError('нет соединения с нодой');
     final r = await _send(
@@ -21,7 +22,11 @@ class AdminSettings {
         to: me,
         wantAck: true,
         priority: MeshPacket_Priority.RELIABLE,
-        decoded: Data(portnum: PortNum.ADMIN_APP, payload: m.writeToBuffer()),
+        decoded: Data(
+          portnum: PortNum.ADMIN_APP,
+          payload: m.writeToBuffer(),
+          wantResponse: response,
+        ),
       ),
     );
     // Нода приняла команду и сразу ушла в перезагрузку, не успев ответить
