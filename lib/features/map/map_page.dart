@@ -117,15 +117,19 @@ class _MapPageState extends ConsumerState<MapPage> {
             children: [
               const OsmTiles(),
               if (area != null)
-                CircleLayer(
-                  circles: [
-                    CircleMarker(
-                      point: LatLng(area.center.lat, area.center.lon),
-                      radius: area.km * 1000,
-                      useRadiusInMeter: true,
-                      color: Colors.transparent,
-                      borderColor: scheme.primary.withValues(alpha: 0.6),
-                      borderStrokeWidth: 2,
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: [
+                        for (final p in circlePoints(
+                          area.center.lat,
+                          area.center.lon,
+                          area.km,
+                        ))
+                          LatLng(p.lat, p.lon),
+                      ],
+                      color: scheme.primary.withValues(alpha: 0.6),
+                      strokeWidth: 2,
                     ),
                   ],
                 ),
