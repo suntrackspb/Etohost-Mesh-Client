@@ -27,6 +27,7 @@ import '../mirror/mirror_config.dart';
 import '../mirror/mirror_models.dart';
 import '../mirror/mirror_realtime.dart';
 import 'position_service.dart';
+import '../data/radio_stats.dart';
 
 /// База данных приложения. В тестах подменяется на in-memory.
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -531,4 +532,13 @@ final positionServiceProvider = ChangeNotifierProvider<PositionService?>((ref) {
     interval: Duration(minutes: minutes),
   )..start();
   return service;
+});
+
+/// Сводка своей ноды: ноды в эфире, онлайн, каналы, батарея, загрузка эфира.
+final radioStatsProvider = Provider<RadioStats?>((ref) {
+  final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
+  if (me == null) return null;
+  final nodes = ref.watch(nodesProvider).value ?? const <Node>[];
+  final channels = ref.watch(channelsProvider).value ?? const <MeshChannel>[];
+  return RadioStats.of(nodes, channels, me: me);
 });

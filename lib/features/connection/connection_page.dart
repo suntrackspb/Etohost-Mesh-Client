@@ -13,6 +13,7 @@ import '../../core/radio/radio_session.dart';
 import '../../core/transport/ble_transport.dart';
 import '../../core/transport/serial_transport.dart';
 import '../../data/database.dart';
+import '../../data/radio_stats.dart';
 import '../../ui/kit/kit.dart';
 
 class ConnectionPage extends ConsumerStatefulWidget {
@@ -189,13 +190,14 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
   }
 }
 
-class _StatusCard extends StatelessWidget {
+class _StatusCard extends ConsumerWidget {
   const _StatusCard({required this.radio});
 
   final RadioSession radio;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stats = ref.watch(radioStatsProvider);
     final now = DateTime.now();
     final target = radio.target;
     return SectionCard(
@@ -235,6 +237,10 @@ class _StatusCard extends StatelessWidget {
                   if (target != null) Text('разрывов ${radio.disconnects}'),
                 ],
               ),
+              if (stats != null) ...[
+                const SizedBox(height: Tokens.s12),
+                _StatsGrid(stats),
+              ],
               if (target != null) ...[
                 const SizedBox(height: Tokens.s12),
                 Row(
@@ -389,6 +395,78 @@ class _RecentCard extends ConsumerWidget {
             onTap: () => onConnect(endpointOf(r).toTarget()),
           ),
       ],
+    );
+  }
+}
+
+String _pct(double? v) => v == null ? '—' : '${v.toStringAsFixed(1)}%';
+
+/// Плитки сводки, как в iOS-клиенте Etohost.
+class _StatsGrid extends StatelessWidget {
+  const _StatsGrid(this.s);
+
+  final RadioStats s;
+
+  @override
+  Widget build(BuildContext context) {
+    final b = s.battery;
+    final tiles = [
+      (Icons.cell_tower, Colors.lightBlue, '${s.onRadio}', 'Нод в эфире'),
+      (Icons.circle, Colors.green, '${s.online}', 'Онлайн'),
+      (Icons.tag, Colors.blue, '${s.channels}', 'Каналов'),
+      s.onPower
+          ? (Icons.power, Colors.green, 'Сеть', 'Батарея')
+          : (
+              Icons.battery_std,
+              Colors.orange,
+              b == null ? '—' : '$b%',
+              'Батарея',
+            ),
+      (
+        Icons.monitor_heart_outlined,
+        Colors.pink,
+        _pct(s.channelUtil),
+        'Загрузка канала',
+      ),
+      (Icons.upload_outlined, Colors.purple, _pct(s.airUtilTx), 'Эфир TX'),
+    ];
+    return LayoutBuilder(
+      builder: (context, c) {
+        const gap = Tokens.s8;
+        final w = (c.maxWidth - gap * 2) / 3;
+        final theme = Theme.of(context);
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final (icon, color, value, label) in tiles)
+              Container(
+                width: w,
+                padding: const EdgeInsets.all(Tokens.s12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(icon, color: color, size: 18),
+                    const SizedBox(height: Tokens.s4),
+                    FittedBox(
+                      child: Text(value, style: theme.textTheme.titleLarge),
+                    ),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
