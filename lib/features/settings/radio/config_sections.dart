@@ -25,6 +25,7 @@ import '../../../data/settings/serial_section.dart';
 import '../../../data/settings/store_forward_section.dart';
 import '../../../data/settings/tak_section.dart';
 import '../../../data/settings/telemetry_section.dart';
+import '../../../data/settings/traffic_management_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
 import 'fixed_position_tile.dart';
@@ -389,6 +390,28 @@ final takSpec = ConfigSectionSpec<ModuleConfig>(
     return [
       if (role != null && !TakSection.appliesTo(role))
         const WarningNote(TakSection.roleWarning),
+    ];
+  },
+);
+
+final trafficManagementSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'trafficManagement',
+  title: TrafficManagementSection.title,
+  confirm: TrafficManagementSection.saveConfirm,
+  fields: (d) => TrafficManagementSection.supported(d.firmware)
+      ? TrafficManagementSection.fields()
+      : const [],
+  adjust: TrafficManagementSection.adjust,
+  check: TrafficManagementSection.check,
+  read: (c) => TrafficManagementSection.read(c.trafficManagement),
+  save: (admin, db, c, v, _) =>
+      TrafficManagementSection.save(admin, db, c.trafficManagement, v),
+  extra: (context, ref, form, cfg) {
+    final fw = ref.watch(ownDeviceProvider).value?.firmware;
+    return [
+      if (fw != null && !TrafficManagementSection.supported(fw))
+        const WarningNote(TrafficManagementSection.needs28),
     ];
   },
 );

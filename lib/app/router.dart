@@ -126,6 +126,10 @@ final appRouter = GoRouter(
                 ),
                 _route('pax-counter', (_) => ConfigSectionPage(paxCounterSpec)),
                 _route('tak', (_) => ConfigSectionPage(takSpec)),
+                _route(
+                  'traffic-management',
+                  (_) => ConfigSectionPage(trafficManagementSpec),
+                ),
                 _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),

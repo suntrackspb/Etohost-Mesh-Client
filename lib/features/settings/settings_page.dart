@@ -196,6 +196,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/tak'),
               ),
+              MeshTile(
+                title: 'Управление движением',
+                leading: const Icon(Icons.traffic_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/traffic-management'),
+              ),
             ],
           ),
           SectionCard(

@@ -152,6 +152,37 @@ abstract final class Intervals {
     259200,
   ];
 
+  /// trafficPositionDedup (iOS): без нуля — его задаёт выключатель.
+  static const trafficPositionDedup = [
+    60,
+    300,
+    600,
+    900,
+    1800,
+    3600,
+    7200,
+    10800,
+    14400,
+    18000,
+    21600,
+    43200,
+    86400,
+  ];
+
+  /// trafficRateLimitWindow (iOS): окно подсчёта пакетов, без нуля.
+  static const trafficRateLimitWindow = [
+    10,
+    15,
+    30,
+    60,
+    120,
+    300,
+    600,
+    900,
+    1800,
+    3600,
+  ];
+
   /// rangeTestSender (iOS): 0 — не отправлять.
   static const rangeTestSender = [0, 15, 30, 45, 60, 300, 600, 900, 1800, 3600];
 
