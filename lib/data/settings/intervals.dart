@@ -58,6 +58,25 @@ abstract final class Intervals {
   /// waitBluetooth (iOS): 0 — по умолчанию прошивки (минута).
   static const waitBluetooth = [0, 15, 30, 60, 120, 300, 600, 900];
 
+  /// broadcastShort (iOS): телеметрия; 0 — по умолчанию прошивки.
+  static const broadcastShort = [
+    0,
+    1800,
+    3600,
+    7200,
+    10800,
+    14400,
+    18000,
+    21600,
+    43200,
+    64800,
+    86400,
+    129600,
+    172800,
+    259200,
+    never,
+  ];
+
   /// rangeTestSender (iOS): 0 — не отправлять.
   static const rangeTestSender = [0, 15, 30, 45, 60, 300, 600, 900, 1800, 3600];
 

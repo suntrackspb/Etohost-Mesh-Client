@@ -138,9 +138,10 @@ abstract final class UserSection {
 }
 
 /// Версия прошивки «2.7.23.d8f59ce» не ниже major.minor.
-bool firmwareAtLeast(String version, int major, int minor) {
+bool firmwareAtLeast(String version, int major, int minor, [int patch = 0]) {
   final p = version.split('.');
   final a = int.tryParse(p.isNotEmpty ? p[0] : '') ?? 0;
   final b = int.tryParse(p.length > 1 ? p[1] : '') ?? 0;
-  return a > major || (a == major && b >= minor);
+  final c = int.tryParse(p.length > 2 ? p[2] : '') ?? 0;
+  return a > major || (a == major && (b > minor || (b == minor && c >= patch)));
 }

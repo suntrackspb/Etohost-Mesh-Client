@@ -16,6 +16,7 @@ import '../../../data/settings/range_test_section.dart';
 import '../../../data/settings/security_section.dart';
 import '../../../data/settings/serial_section.dart';
 import '../../../data/settings/store_forward_section.dart';
+import '../../../data/settings/telemetry_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
 import 'fixed_position_tile.dart';
@@ -252,4 +253,15 @@ final rangeTestSpec = ConfigSectionSpec<ModuleConfig>(
         const WarningNote(RangeTestSection.publicChannel),
     ];
   },
+);
+
+final telemetrySpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'telemetry',
+  title: TelemetrySection.title,
+  confirm: TelemetrySection.saveConfirm,
+  fields: (d) => TelemetrySection.fields(firmware: d.firmware),
+  read: (c) => TelemetrySection.read(c.telemetry),
+  save: (admin, db, c, v, _) =>
+      TelemetrySection.save(admin, db, c.telemetry, v),
 );

@@ -142,6 +142,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/range-test'),
               ),
+              MeshTile(
+                title: 'Телеметрия',
+                leading: const Icon(Icons.query_stats),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/telemetry'),
+              ),
             ],
           ),
           SectionCard(
