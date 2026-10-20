@@ -142,8 +142,8 @@ class _MapPageState extends ConsumerState<MapPage> {
                       Marker(
                         key: ValueKey(p.num),
                         point: LatLng(p.lat, p.lon),
-                        width: 56,
-                        height: 32,
+                        width: _NodeMarker.size,
+                        height: _NodeMarker.size,
                         child: _NodeMarker(p, onTap: () => _open(p.num)),
                       ),
                   ],
@@ -195,8 +195,12 @@ class _MapPageState extends ConsumerState<MapPage> {
   }
 }
 
+/// Метка ноды: кружок в её цвет (как NodeAvatar в списке и чате). Своя —
+/// с кольцом акцентного цвета, избранная — с кольцом и звёздочкой.
 class _NodeMarker extends StatelessWidget {
   const _NodeMarker(this.p, {required this.onTap});
+
+  static const size = 40.0;
 
   final MapPoint p;
   final VoidCallback onTap;
@@ -204,39 +208,44 @@ class _NodeMarker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final bg = p.isMe
+    final ring = p.isMe
         ? scheme.tertiary
         : p.isFavorite
         ? scheme.secondary
-        : scheme.primary;
-    final fg = p.isMe
-        ? scheme.onTertiary
-        : p.isFavorite
-        ? scheme.onSecondary
-        : scheme.onPrimary;
+        : scheme.surface;
     return Tooltip(
       message: p.mirrorOnly ? '${p.title} (зеркало)' : p.title,
       child: GestureDetector(
         onTap: onTap,
         child: Opacity(
           opacity: p.stale ? 0.5 : 1,
-          child: Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: scheme.surface, width: 2),
-            ),
-            child: Text(
-              p.label,
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-              style: TextStyle(
-                color: fg,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: ring,
+                    width: p.isMe || p.isFavorite ? 3 : 2,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(blurRadius: 3, color: Color(0x55000000)),
+                  ],
+                ),
+                child: NodeAvatar(
+                  nodeNum: p.num,
+                  shortName: p.label,
+                  size: size - (p.isMe || p.isFavorite ? 6 : 4),
+                ),
               ),
-            ),
+              if (p.isFavorite)
+                Positioned(
+                  right: -4,
+                  top: -4,
+                  child: Icon(Icons.star, size: 16, color: scheme.secondary),
+                ),
+            ],
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show ThemeMode;
 import 'dart:io';
 
 import 'package:drift/drift.dart' show OrderingTerm;
@@ -486,6 +487,15 @@ Stream<String?> _setting(Ref ref, String key) =>
 
 Future<void> saveSetting(WidgetRef ref, String key, String value) =>
     ref.read(databaseProvider).setSetting(key, value);
+
+/// Тема приложения; неизвестное значение — как в системе.
+final themeModeProvider = StreamProvider<ThemeMode>(
+  (ref) => _setting(ref, AppSettingKeys.theme).map(
+    (v) =>
+        ThemeMode.values.where((m) => m.name == v).firstOrNull ??
+        ThemeMode.system,
+  ),
+);
 
 /// Вращение карты жестом (по умолчанию выключено — север всегда сверху).
 final mapRotateProvider = StreamProvider<bool>(

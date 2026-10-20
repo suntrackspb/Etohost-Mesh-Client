@@ -17,6 +17,7 @@ class AppSettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeModeProvider).value ?? ThemeMode.system;
     final rotate = ref.watch(mapRotateProvider).value ?? false;
     final areaOn = ref.watch(areaEnabledProvider).value ?? false;
     final km = ref.watch(areaRadiusProvider).value ?? defaultAreaRadiusKm;
@@ -31,6 +32,36 @@ class AppSettingsPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [
+          SectionCard(
+            title: 'Оформление',
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(Tokens.s16),
+                child: SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: ThemeMode.system,
+                      label: Text('Системная'),
+                      icon: Icon(Icons.brightness_auto),
+                    ),
+                    ButtonSegment(
+                      value: ThemeMode.light,
+                      label: Text('Светлая'),
+                      icon: Icon(Icons.light_mode_outlined),
+                    ),
+                    ButtonSegment(
+                      value: ThemeMode.dark,
+                      label: Text('Тёмная'),
+                      icon: Icon(Icons.dark_mode_outlined),
+                    ),
+                  ],
+                  selected: {theme},
+                  onSelectionChanged: (s) =>
+                      save(AppSettingKeys.theme, s.first.name),
+                ),
+              ),
+            ],
+          ),
           SectionCard(
             title: 'Карта',
             children: [

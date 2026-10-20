@@ -74,6 +74,7 @@ class _MeshAppState extends ConsumerState<MeshApp> {
       title: 'Etohost Mesh',
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
+      themeMode: ref.watch(themeModeProvider).value ?? ThemeMode.system,
       routerConfig: appRouter,
       debugShowCheckedModeBanner: false,
     );

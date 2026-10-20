@@ -23,6 +23,9 @@ abstract final class AppSettingKeys {
   static const mirrorAddress = 'mirror.address';
   static const glyphZipLevel = 'chat.glyphZipLevel';
 
+  /// Тема: 'system' / 'light' / 'dark' (по умолчанию — как в системе).
+  static const theme = 'app.theme';
+
   /// Карта: разрешить вращение жестом ('true'/'false', по умолчанию — нет).
   static const mapRotate = 'map.rotate';
 
