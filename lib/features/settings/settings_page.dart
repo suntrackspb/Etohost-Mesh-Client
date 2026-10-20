@@ -55,7 +55,12 @@ class SettingsPage extends ConsumerWidget {
           SectionCard(
             title: 'Конфигурация устройства',
             children: [
-              soon('Пользователь', Icons.person_outline),
+              MeshTile(
+                title: 'Пользователь',
+                leading: const Icon(Icons.person_outline),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/user'),
+              ),
               soon('Устройство', Icons.memory),
             ],
           ),

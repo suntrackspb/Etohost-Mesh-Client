@@ -10,6 +10,7 @@ import '../features/nodes/nodes_page.dart';
 import '../features/settings/app_settings_page.dart';
 import '../features/settings/area_picker_page.dart';
 import '../features/settings/mirror_settings_page.dart';
+import '../features/settings/radio/user_config_page.dart';
 import '../features/settings/settings_page.dart';
 import 'shell.dart';
 
@@ -80,6 +81,10 @@ final appRouter = GoRouter(
                       builder: (_, _) => const AreaPickerPage(),
                     ),
                   ],
+                ),
+                GoRoute(
+                  path: 'user',
+                  builder: (_, _) => const UserConfigPage(),
                 ),
                 GoRoute(
                   path: 'mirror',
