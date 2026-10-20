@@ -120,6 +120,10 @@ final appRouter = GoRouter(
                   'ambient-lighting',
                   (_) => ConfigSectionPage(ambientLightingSpec),
                 ),
+                _route(
+                  'detection-sensor',
+                  (_) => ConfigSectionPage(detectionSensorSpec),
+                ),
                 _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),

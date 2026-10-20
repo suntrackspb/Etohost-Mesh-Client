@@ -178,6 +178,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/ambient-lighting'),
               ),
+              MeshTile(
+                title: 'Датчик обнаружения',
+                leading: const Icon(Icons.sensors),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/detection-sensor'),
+              ),
             ],
           ),
           SectionCard(

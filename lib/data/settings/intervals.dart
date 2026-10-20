@@ -90,6 +90,50 @@ abstract final class Intervals {
     259200,
   ];
 
+  /// detectionSensorMinimum (iOS): 0 — по умолчанию прошивки.
+  static const detectionMinimum = [
+    0,
+    15,
+    30,
+    60,
+    120,
+    300,
+    600,
+    900,
+    1800,
+    3600,
+    7200,
+    10800,
+    14400,
+    18000,
+    21600,
+    43200,
+    64800,
+    86400,
+    129600,
+    172800,
+    259200,
+  ];
+
+  /// detectionSensorState (iOS): 0 — не рассылать состояние.
+  static const detectionState = [
+    0,
+    900,
+    1800,
+    3600,
+    7200,
+    10800,
+    14400,
+    18000,
+    21600,
+    43200,
+    64800,
+    86400,
+    129600,
+    172800,
+    259200,
+  ];
+
   /// rangeTestSender (iOS): 0 — не отправлять.
   static const rangeTestSender = [0, 15, 30, 45, 60, 300, 600, 900, 1800, 3600];
 

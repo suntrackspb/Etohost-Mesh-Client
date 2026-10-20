@@ -6,6 +6,7 @@ import '../../../data/settings/ambient_lighting_section.dart';
 import '../../../data/settings/audio_section.dart';
 import '../../../data/settings/bluetooth_section.dart';
 import '../../../data/settings/canned_message_section.dart';
+import '../../../data/settings/detection_sensor_section.dart';
 import '../../../data/settings/device_section.dart';
 import '../../../data/settings/display_section.dart';
 import '../../../data/settings/external_notification_section.dart';
@@ -349,4 +350,15 @@ final ambientLightingSpec = ConfigSectionSpec<ModuleConfig>(
       ),
     ),
   ],
+);
+
+final detectionSensorSpec = ConfigSectionSpec<ModuleConfig>(
+  source: moduleConfigProvider.call,
+  name: 'detectionSensor',
+  title: DetectionSensorSection.title,
+  confirm: DetectionSensorSection.saveConfirm,
+  fields: (_) => DetectionSensorSection.fields(),
+  read: (c) => DetectionSensorSection.read(c.detectionSensor),
+  save: (admin, db, c, v, _) =>
+      DetectionSensorSection.save(admin, db, c.detectionSensor, v),
 );
