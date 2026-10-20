@@ -11,6 +11,7 @@ import '../features/nodes/nodes_page.dart';
 import '../features/settings/app_settings_page.dart';
 import '../features/settings/area_picker_page.dart';
 import '../features/settings/mirror_settings_page.dart';
+import '../features/settings/radio/lora_config_page.dart';
 import '../features/settings/radio/user_config_page.dart';
 import '../features/settings/settings_page.dart';
 import 'shell.dart';
@@ -82,6 +83,7 @@ final appRouter = GoRouter(
                   ],
                 ),
                 _route('user', (_) => const UserConfigPage()),
+                _route('lora', (_) => const LoraConfigPage()),
                 _route('mirror', (_) => const MirrorSettingsPage()),
               ],
             ),

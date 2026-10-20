@@ -5,11 +5,22 @@ import 'fields.dart';
 /// Состояние формы: исходные значения, правки, ошибки. Без виджетов —
 /// внешний вид можно менять, не трогая логику.
 class SettingsForm extends ChangeNotifier {
-  SettingsForm(this.fields, Map<String, Object?> initial)
-    : _initial = Map.unmodifiable(initial),
-      _values = Map.of(initial);
+  SettingsForm(
+    this.fields,
+    Map<String, Object?> initial, {
+    this.adjust,
+    this.check,
+  }) : _initial = Map.unmodifiable(initial),
+       _values = Map.of(initial);
 
   final List<FieldSpec<Object?>> fields;
+
+  /// Согласовать связанные поля после правки (например, скорость кодирования
+  /// при смене пресета). Получает изменяемую копию значений.
+  final void Function(Map<String, Object?> v)? adjust;
+
+  /// Ошибка всей формы (недопустимое сочетание значений) или null.
+  final String? Function(Map<String, Object?> v)? check;
   Map<String, Object?> _initial;
   final Map<String, Object?> _values;
 
@@ -23,6 +34,7 @@ class SettingsForm extends ChangeNotifier {
   void set(String key, Object? v) {
     final spec = fields.firstWhere((f) => f.key == key);
     _values[key] = spec.normalize(v);
+    adjust?.call(_values);
     saveError = null;
     notifyListeners();
   }
@@ -34,7 +46,25 @@ class SettingsForm extends ChangeNotifier {
     return spec.validate(_values[key]);
   }
 
-  bool get valid => fields.every((f) => f.validate(_values[f.key]) == null);
+  /// Ошибка сочетания значений (показывается у кнопки сохранения).
+  String? get formError => check?.call(_values);
+
+  bool get valid =>
+      formError == null &&
+      fields.every(
+        (f) => !f.visible(_values) || f.validate(_values[f.key]) == null,
+      );
+
+  /// Видимые поля по группам, в порядке описания.
+  List<(String?, List<FieldSpec<Object?>>)> get groups {
+    final out = <(String?, List<FieldSpec<Object?>>)>[];
+    for (final f in fields) {
+      if (!f.visible(_values)) continue;
+      if (out.isEmpty || out.last.$1 != f.group) out.add((f.group, []));
+      out.last.$2.add(f);
+    }
+    return out;
+  }
 
   bool get canSave => dirty && valid && !saving;
 

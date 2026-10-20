@@ -47,7 +47,12 @@ class SettingsPage extends ConsumerWidget {
           SectionCard(
             title: 'Настройка радио',
             children: [
-              soon('LoRa', Icons.cell_tower),
+              MeshTile(
+                title: 'LoRa',
+                leading: const Icon(Icons.cell_tower),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/lora'),
+              ),
               soon('Каналы', Icons.swap_horiz),
               soon('Безопасность', Icons.shield_outlined),
             ],

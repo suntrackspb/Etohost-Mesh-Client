@@ -15,9 +15,23 @@ class SettingsFormView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: form,
-    builder: (context, _) => SectionCard(
-      title: title,
-      children: [for (final f in form.fields) _field(context, f)],
+    builder: (context, _) => Column(
+      children: [
+        for (final (group, fields) in form.groups)
+          SectionCard(
+            title: group ?? title,
+            children: [
+              for (final f in fields)
+                IgnorePointer(
+                  ignoring: !f.enabled(form.values),
+                  child: Opacity(
+                    opacity: f.enabled(form.values) ? 1 : 0.4,
+                    child: _field(context, f),
+                  ),
+                ),
+            ],
+          ),
+      ],
     ),
   );
 
@@ -74,19 +88,92 @@ class SettingsFormView extends StatelessWidget {
         ),
       ),
     ),
-    ChoiceFieldSpec(:final options) => MeshTile(
+    DoubleFieldSpec(:final min, :final max, :final unit) => MeshTile(
       title: f.label,
       subtitle: f.help,
-      trailing: DropdownButton<int>(
-        value: form.value<int>(f.key),
-        items: [
-          for (final o in options)
-            DropdownMenuItem(value: o.value, child: Text(o.label)),
-        ],
-        onChanged: form.saving ? null : (v) => form.set(f.key, v),
+      trailing: SizedBox(
+        width: 140,
+        child: _TextInput(
+          key: ValueKey(f.key),
+          value: _num(form.value<double>(f.key)),
+          suffix: unit,
+          number: true,
+          decimal: true,
+          onChanged: (v) {
+            final n = double.tryParse(v.replaceAll(',', '.'));
+            if (n != null) form.set(f.key, n.clamp(min, max));
+          },
+        ),
       ),
     ),
+    ChoiceFieldSpec() => _ChoiceTile(
+      label: f.label,
+      help: f.help,
+      value: form.value<int>(f.key),
+      options: f.choices(form.values),
+      onChanged: form.saving ? null : (v) => form.set(f.key, v),
+    ),
   };
+}
+
+/// Дробное без лишнего «.0».
+String _num(double v) => v == v.roundToDouble() ? v.toStringAsFixed(0) : '$v';
+
+/// Выбор из списка: подпись и справка сверху, список на всю ширину —
+/// длинные названия регионов и пресетов не помещаются справа.
+class _ChoiceTile extends StatelessWidget {
+  const _ChoiceTile({
+    required this.label,
+    this.help,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String? help;
+  final int value;
+  final List<Choice> options;
+  final ValueChanged<int?>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Tokens.s16,
+        vertical: Tokens.s8,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<int>(
+            initialValue: value,
+            key: ValueKey('$label/$value/${options.length}'),
+            isExpanded: true,
+            decoration: InputDecoration(labelText: label),
+            items: [
+              for (final o in options)
+                DropdownMenuItem(
+                  value: o.value,
+                  child: Text(o.label, overflow: TextOverflow.ellipsis),
+                ),
+            ],
+            onChanged: onChanged,
+          ),
+          if (help != null) ...[
+            const SizedBox(height: Tokens.s4),
+            Text(
+              help!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.outline,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 /// Поле ввода, которое показывает нормализованное значение формы
@@ -99,8 +186,11 @@ class _TextInput extends StatefulWidget {
     this.error,
     this.suffix,
     this.number = false,
+    this.decimal = false,
     required this.onChanged,
   });
+
+  final bool decimal;
 
   final String? label;
   final String value;
@@ -119,7 +209,12 @@ class _TextInputState extends State<_TextInput> {
   @override
   void didUpdateWidget(_TextInput old) {
     super.didUpdateWidget(old);
-    if (_c.text != widget.value) {
+    // Число: «869.» и «869» — одно значение, ввод не сбрасываем.
+    final same =
+        widget.number &&
+        double.tryParse(_c.text.replaceAll(',', '.')) ==
+            double.tryParse(widget.value);
+    if (_c.text != widget.value && !same) {
       _c.value = TextEditingValue(
         text: widget.value,
         selection: TextSelection.collapsed(offset: widget.value.length),
@@ -136,7 +231,9 @@ class _TextInputState extends State<_TextInput> {
   @override
   Widget build(BuildContext context) => TextField(
     controller: _c,
-    keyboardType: widget.number ? TextInputType.number : TextInputType.text,
+    keyboardType: widget.number
+        ? TextInputType.numberWithOptions(decimal: widget.decimal)
+        : TextInputType.text,
     textAlign: widget.number ? TextAlign.end : TextAlign.start,
     autocorrect: false,
     decoration: InputDecoration(
@@ -169,6 +266,14 @@ class SaveBar extends StatelessWidget {
     builder: (context, _) => Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (form.formError != null)
+          Padding(
+            padding: const EdgeInsets.all(Tokens.s8),
+            child: Text(
+              form.formError!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
         if (form.saveError != null)
           Padding(
             padding: const EdgeInsets.all(Tokens.s8),

@@ -202,6 +202,12 @@ class RadioSession extends ChangeNotifier {
     }
   }
 
+  /// Перечитать базу нод (после смены LoRa: 2.8 применяет её без
+  /// перезагрузки, как refreshNodeDatabaseAfterLoRaChange в iOS).
+  void refreshNodes() {
+    if (state == RadioState.ready) _wantConfig(nodesNonce, 'база нод');
+  }
+
   void _wantConfig(int nonce, String what) {
     _app('want_config: $what ($nonce)');
     send(ToRadio(wantConfigId: nonce)).catchError((Object e) {

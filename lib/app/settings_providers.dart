@@ -52,3 +52,11 @@ final moduleConfigProvider = StreamProvider.family<ModuleConfig?, String>((
       .watchSingleOrNull()
       .map((r) => r == null ? null : ModuleConfig.fromBuffer(r.data));
 });
+
+/// Сохранённый Config по имени варианта (`lora`, `device`…).
+final configProvider = StreamProvider.family<Config?, String>((ref, name) {
+  final db = ref.watch(databaseProvider);
+  return (db.select(db.configBlobs)..where((c) => c.key.equals('config.$name')))
+      .watchSingleOrNull()
+      .map((r) => r == null ? null : Config.fromBuffer(r.data));
+});
