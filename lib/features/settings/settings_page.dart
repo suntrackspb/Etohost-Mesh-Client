@@ -54,7 +54,12 @@ class SettingsPage extends ConsumerWidget {
                 onTap: () => context.go('/settings/lora'),
               ),
               soon('Каналы', Icons.swap_horiz),
-              soon('Безопасность', Icons.shield_outlined),
+              MeshTile(
+                title: 'Безопасность',
+                leading: const Icon(Icons.shield_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/security'),
+              ),
             ],
           ),
           SectionCard(

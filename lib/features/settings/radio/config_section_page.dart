@@ -61,6 +61,9 @@ typedef OwnDevice = ({
   int role,
   bool hasWifi,
   bool hasEthernet,
+
+  /// Подпись XEdDSA (metadata.has_xeddsa); null — нода не сообщила.
+  bool? xeddsa,
 });
 
 class ConfigSectionPage extends ConsumerStatefulWidget {
@@ -112,6 +115,7 @@ class _ConfigSectionPageState extends ConsumerState<ConfigSectionPage> {
           role: node?.role ?? 0,
           hasWifi: device.metadata?.hasWifi ?? false,
           hasEthernet: device.metadata?.hasEthernet ?? false,
+          xeddsa: device.metadata?.hasXeddsa,
         )),
         data,
         adjust: spec.adjust,

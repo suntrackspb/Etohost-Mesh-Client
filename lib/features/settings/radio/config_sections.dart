@@ -9,9 +9,11 @@ import '../../../data/settings/lora_section.dart';
 import '../../../data/settings/network_section.dart';
 import '../../../data/settings/position_section.dart';
 import '../../../data/settings/power_section.dart';
+import '../../../data/settings/security_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'config_section_page.dart';
 import 'fixed_position_tile.dart';
+import 'security_tiles.dart';
 
 /// Разделы Config своей ноды: логика — в `lib/data/settings/*_section.dart`.
 final loraSpec = ConfigSectionSpec(
@@ -110,4 +112,27 @@ final displaySpec = ConfigSectionSpec(
   fields: (_) => DisplaySection.fields(),
   read: (c) => DisplaySection.read(c.display),
   save: (admin, db, c, v) => DisplaySection.save(admin, db, c.display, v),
+);
+
+final securitySpec = ConfigSectionSpec(
+  name: 'security',
+  title: SecuritySection.title,
+  confirm: SecuritySection.saveConfirm,
+  fields: (d) => SecuritySection.fields(xeddsa: d.xeddsa),
+  read: (c) => SecuritySection.read(c.security),
+  save: (admin, db, c, v) => SecuritySection.save(admin, db, c.security, v),
+  adjust: SecuritySection.adjust,
+  extra: (context, ref, form, cfg) {
+    final xeddsa = ref.watch(ownDeviceProvider).value?.metadata?.hasXeddsa;
+    return [
+      if (xeddsa == null) const SecurityNote(SecuritySection.unknownXeddsa),
+      SecurityKeyTiles(form: form),
+      ListenableBuilder(
+        listenable: form,
+        builder: (_, _) => SecuritySection.hasAdminKey(form.values)
+            ? const SizedBox.shrink()
+            : const SecurityNote(SecuritySection.managedNeedsAdmin),
+      ),
+    ];
+  },
 );
