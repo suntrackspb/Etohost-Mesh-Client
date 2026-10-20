@@ -915,7 +915,7 @@ class _ComposerState extends ConsumerState<_Composer> {
           Tokens.s12,
           Tokens.s4,
           Tokens.s4,
-          Tokens.s8,
+          Tokens.s4,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -939,6 +939,24 @@ class _ComposerState extends ConsumerState<_Composer> {
                   ),
                 ],
               ),
+            // Счётчик над строкой: внутри поля он менял его высоту и
+            // сбивал выравнивание с кнопками.
+            if (bytes > 0)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: Tokens.s4,
+                    right: Tokens.s12,
+                  ),
+                  child: Text(
+                    '$bytes / $maxMessageBytes',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: over ? scheme.error : scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -960,17 +978,20 @@ class _ComposerState extends ConsumerState<_Composer> {
                             ? 'Сообщение'
                             : 'Подключитесь к ноде, чтобы писать',
                         border: InputBorder.none,
-                        counterText: bytes == 0
-                            ? null
-                            : '$bytes / $maxMessageBytes',
-                        counterStyle: over
-                            ? TextStyle(color: scheme.error)
-                            : null,
+                        // Одна строка — ровно высота кнопок (48), текст
+                        // по центру вровень с ними.
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                     ),
                   ),
                 ),
-                _ZipButton(level: zip),
+                SizedBox(
+                  height: _rowHeight,
+                  child: Center(child: _ZipButton(level: zip)),
+                ),
                 IconButton(
                   tooltip: 'Отправить',
                   icon: const Icon(Icons.send),
@@ -984,6 +1005,9 @@ class _ComposerState extends ConsumerState<_Composer> {
     );
   }
 }
+
+/// Высота строки ввода: как у IconButton.
+const _rowHeight = 48.0;
 
 /// Переключатель GlyphZip: цвет — уровень (серый, зелёный, жёлтый, красный).
 class _ZipButton extends ConsumerWidget {
@@ -1007,7 +1031,6 @@ class _ZipButton extends ConsumerWidget {
               '${(level + 1) % (GlyphZip.maxLevel + 1)}',
             ),
         child: Container(
-          margin: const EdgeInsets.only(bottom: Tokens.s8),
           padding: const EdgeInsets.symmetric(
             horizontal: Tokens.s8,
             vertical: Tokens.s4,
