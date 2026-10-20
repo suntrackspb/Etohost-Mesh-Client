@@ -110,33 +110,3 @@ class _PublicKey extends StatelessWidget {
     );
   }
 }
-
-/// Предупреждение под формой (оранжевое, как в iOS).
-class SecurityNote extends StatelessWidget {
-  const SecurityNote(this.text, {super.key});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: Tokens.s16,
-      vertical: Tokens.s4,
-    ),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Icon(Icons.warning_amber, size: 16, color: Colors.orange),
-        const SizedBox(width: Tokens.s8),
-        Expanded(
-          child: Text(
-            text,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Colors.orange),
-          ),
-        ),
-      ],
-    ),
-  );
-}

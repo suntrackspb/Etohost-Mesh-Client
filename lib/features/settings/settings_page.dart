@@ -110,6 +110,17 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           SectionCard(
+            title: 'Конфигурация модуля',
+            children: [
+              MeshTile(
+                title: 'MQTT',
+                leading: const Icon(Icons.dns_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/mqtt'),
+              ),
+            ],
+          ),
+          SectionCard(
             title: 'Поддержка',
             children: [
               MeshTile(

@@ -66,3 +66,25 @@ Future<void> storeConfig(AppDatabase db, String name, Config cfg) => db
         updated: DateTime.now(),
       ),
     );
+
+/// Отправить ModuleConfig своей ноде и после ACK записать в БД.
+Future<bool> saveModuleConfig(
+  AdminSettings admin,
+  AppDatabase db,
+  String name,
+  ModuleConfig cfg,
+) async {
+  final ok = await admin.send(AdminMessage(setModuleConfig: cfg));
+  if (ok) {
+    await db
+        .into(db.configBlobs)
+        .insertOnConflictUpdate(
+          ConfigBlobsCompanion.insert(
+            key: 'module.$name',
+            data: cfg.writeToBuffer(),
+            updated: DateTime.now(),
+          ),
+        );
+  }
+  return ok;
+}

@@ -92,6 +92,7 @@ final appRouter = GoRouter(
                 _route('network', (_) => ConfigSectionPage(networkSpec)),
                 _route('bluetooth', (_) => ConfigSectionPage(bluetoothSpec)),
                 _route('security', (_) => ConfigSectionPage(securitySpec)),
+                _route('mqtt', (_) => ConfigSectionPage(mqttSpec)),
                 _route('display', (_) => ConfigSectionPage(displaySpec)),
                 _route('mirror', (_) => const MirrorSettingsPage()),
                 _route('report', (_) => const ReportPage()),

@@ -68,6 +68,10 @@ abstract final class LoraSection {
   /// Регионы с ограничением рабочего цикла (dutyCycle 10% в iOS).
   static const _dutyCycleRegions = {2, 3, 14, 29, 30, 31, 32};
 
+  /// Рабочий цикл региона в процентах; null — без ограничения.
+  static int? dutyCycle(int region) =>
+      _dutyCycleRegions.contains(region) ? 10 : null;
+
   /// Названия пресетов — английские, как в iOS (смешанный ru-перевод
   /// Android выглядит непоследовательно).
   static const presets = <Choice>[

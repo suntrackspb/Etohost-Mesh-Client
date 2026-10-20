@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 
 import '../../../app/providers.dart';
 import '../../../app/settings_providers.dart';
-import '../../../core/proto/mesh.dart';
 import '../../../data/settings/admin_settings.dart';
 import '../../../data/database.dart';
 import '../../../data/settings/fields.dart';
@@ -12,9 +12,11 @@ import '../../../data/settings/settings_form.dart';
 import '../../../ui/kit/kit.dart';
 import 'settings_form_view.dart';
 
-/// Что нужно странице раздела Config: всё, кроме виджетов, — в разделе.
-class ConfigSectionSpec {
+/// Что нужно странице раздела Config или ModuleConfig ([C]): всё, кроме
+/// виджетов, — в разделе.
+class ConfigSectionSpec<C> {
   const ConfigSectionSpec({
+    required this.source,
     required this.name,
     required this.title,
     required this.confirm,
@@ -27,17 +29,21 @@ class ConfigSectionSpec {
     this.extra,
   });
 
-  /// Вариант Config (`lora`, `device`…).
+  /// Сохранённый конфиг по имени: `configProvider` или `moduleConfigProvider`.
+  final ProviderListenable<AsyncValue<C?>> Function(String name) source;
+
+  /// Вариант Config / ModuleConfig (`lora`, `mqtt`…).
   final String name;
   final String title;
   final String confirm;
   final List<FieldSpec<Object?>> Function(OwnDevice d) fields;
-  final Map<String, Object?> Function(Config c) read;
+  final Map<String, Object?> Function(C c) read;
   final Future<bool> Function(
     AdminSettings admin,
     AppDatabase db,
-    Config base,
+    C base,
     Map<String, Object?> v,
+    OwnDevice device,
   )
   save;
   final void Function(Map<String, Object?> v)? adjust;
@@ -49,7 +55,7 @@ class ConfigSectionSpec {
     BuildContext context,
     WidgetRef ref,
     SettingsForm form,
-    Config cfg,
+    C cfg,
   )?
   extra;
 }
@@ -66,16 +72,17 @@ typedef OwnDevice = ({
   bool? xeddsa,
 });
 
-class ConfigSectionPage extends ConsumerStatefulWidget {
+class ConfigSectionPage<C> extends ConsumerStatefulWidget {
   const ConfigSectionPage(this.spec, {super.key});
 
-  final ConfigSectionSpec spec;
+  final ConfigSectionSpec<C> spec;
 
   @override
-  ConsumerState<ConfigSectionPage> createState() => _ConfigSectionPageState();
+  ConsumerState<ConfigSectionPage<C>> createState() =>
+      _ConfigSectionPageState<C>();
 }
 
-class _ConfigSectionPageState extends ConsumerState<ConfigSectionPage> {
+class _ConfigSectionPageState<C> extends ConsumerState<ConfigSectionPage<C>> {
   SettingsForm? _form;
 
   @override
@@ -88,7 +95,7 @@ class _ConfigSectionPageState extends ConsumerState<ConfigSectionPage> {
   Widget build(BuildContext context) {
     final spec = widget.spec;
     final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
-    final cfgAsync = ref.watch(configProvider(spec.name));
+    final cfgAsync = ref.watch(spec.source(spec.name));
     final device = ref.watch(ownDeviceProvider).value;
     final node = ref.watch(ownNodeProvider).value;
     final canSend = ref.watch(canSendProvider);
@@ -108,15 +115,16 @@ class _ConfigSectionPageState extends ConsumerState<ConfigSectionPage> {
       body = const Center(child: CircularProgressIndicator());
     } else {
       final data = spec.read(cfg);
+      final own = (
+        firmware: device.firmware,
+        hwModel: node?.hwModel ?? 0,
+        role: node?.role ?? 0,
+        hasWifi: device.metadata?.hasWifi ?? false,
+        hasEthernet: device.metadata?.hasEthernet ?? false,
+        xeddsa: device.metadata?.hasXeddsa,
+      );
       final form = _form ??= SettingsForm(
-        spec.fields((
-          firmware: device.firmware,
-          hwModel: node?.hwModel ?? 0,
-          role: node?.role ?? 0,
-          hasWifi: device.metadata?.hasWifi ?? false,
-          hasEthernet: device.metadata?.hasEthernet ?? false,
-          xeddsa: device.metadata?.hasXeddsa,
-        )),
+        spec.fields(own),
         data,
         adjust: spec.adjust,
         check: spec.check,
@@ -141,7 +149,7 @@ class _ConfigSectionPageState extends ConsumerState<ConfigSectionPage> {
               final admin = ref.read(adminSettingsProvider);
               final db = ref.read(databaseProvider);
               final ok = await form.submit(
-                (v, _) => spec.save(admin, db, cfg, v),
+                (v, _) => spec.save(admin, db, cfg, v, own),
               );
               if (ok) spec.afterSave?.call(ref);
             },
