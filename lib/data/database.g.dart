@@ -2819,8 +2819,19 @@ class $ChannelsTable extends Channels
     type: DriftSqlType.blob,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _settingsMeta = const VerificationMeta(
+    'settings',
+  );
   @override
-  List<GeneratedColumn> get $columns => [index, name, role, psk];
+  late final GeneratedColumn<Uint8List> settings = GeneratedColumn<Uint8List>(
+    'settings',
+    aliasedName,
+    true,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [index, name, role, psk, settings];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2857,6 +2868,12 @@ class $ChannelsTable extends Channels
         psk.isAcceptableOrUnknown(data['psk']!, _pskMeta),
       );
     }
+    if (data.containsKey('settings')) {
+      context.handle(
+        _settingsMeta,
+        settings.isAcceptableOrUnknown(data['settings']!, _settingsMeta),
+      );
+    }
     return context;
   }
 
@@ -2882,6 +2899,10 @@ class $ChannelsTable extends Channels
         DriftSqlType.blob,
         data['${effectivePrefix}psk'],
       ),
+      settings: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}settings'],
+      ),
     );
   }
 
@@ -2896,11 +2917,16 @@ class MeshChannel extends DataClass implements Insertable<MeshChannel> {
   final String name;
   final int role;
   final Uint8List? psk;
+
+  /// ChannelSettings целиком (MQTT, точность позиции, mute, id) — для
+  /// редактирования; null — запись старше схемы 7.
+  final Uint8List? settings;
   const MeshChannel({
     required this.index,
     required this.name,
     required this.role,
     this.psk,
+    this.settings,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2911,6 +2937,9 @@ class MeshChannel extends DataClass implements Insertable<MeshChannel> {
     if (!nullToAbsent || psk != null) {
       map['psk'] = Variable<Uint8List>(psk);
     }
+    if (!nullToAbsent || settings != null) {
+      map['settings'] = Variable<Uint8List>(settings);
+    }
     return map;
   }
 
@@ -2920,6 +2949,9 @@ class MeshChannel extends DataClass implements Insertable<MeshChannel> {
       name: Value(name),
       role: Value(role),
       psk: psk == null && nullToAbsent ? const Value.absent() : Value(psk),
+      settings: settings == null && nullToAbsent
+          ? const Value.absent()
+          : Value(settings),
     );
   }
 
@@ -2933,6 +2965,7 @@ class MeshChannel extends DataClass implements Insertable<MeshChannel> {
       name: serializer.fromJson<String>(json['name']),
       role: serializer.fromJson<int>(json['role']),
       psk: serializer.fromJson<Uint8List?>(json['psk']),
+      settings: serializer.fromJson<Uint8List?>(json['settings']),
     );
   }
   @override
@@ -2943,6 +2976,7 @@ class MeshChannel extends DataClass implements Insertable<MeshChannel> {
       'name': serializer.toJson<String>(name),
       'role': serializer.toJson<int>(role),
       'psk': serializer.toJson<Uint8List?>(psk),
+      'settings': serializer.toJson<Uint8List?>(settings),
     };
   }
 
@@ -2951,11 +2985,13 @@ class MeshChannel extends DataClass implements Insertable<MeshChannel> {
     String? name,
     int? role,
     Value<Uint8List?> psk = const Value.absent(),
+    Value<Uint8List?> settings = const Value.absent(),
   }) => MeshChannel(
     index: index ?? this.index,
     name: name ?? this.name,
     role: role ?? this.role,
     psk: psk.present ? psk.value : this.psk,
+    settings: settings.present ? settings.value : this.settings,
   );
   MeshChannel copyWithCompanion(ChannelsCompanion data) {
     return MeshChannel(
@@ -2963,6 +2999,7 @@ class MeshChannel extends DataClass implements Insertable<MeshChannel> {
       name: data.name.present ? data.name.value : this.name,
       role: data.role.present ? data.role.value : this.role,
       psk: data.psk.present ? data.psk.value : this.psk,
+      settings: data.settings.present ? data.settings.value : this.settings,
     );
   }
 
@@ -2972,14 +3009,20 @@ class MeshChannel extends DataClass implements Insertable<MeshChannel> {
           ..write('index: $index, ')
           ..write('name: $name, ')
           ..write('role: $role, ')
-          ..write('psk: $psk')
+          ..write('psk: $psk, ')
+          ..write('settings: $settings')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(index, name, role, $driftBlobEquality.hash(psk));
+  int get hashCode => Object.hash(
+    index,
+    name,
+    role,
+    $driftBlobEquality.hash(psk),
+    $driftBlobEquality.hash(settings),
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2987,7 +3030,8 @@ class MeshChannel extends DataClass implements Insertable<MeshChannel> {
           other.index == this.index &&
           other.name == this.name &&
           other.role == this.role &&
-          $driftBlobEquality.equals(other.psk, this.psk));
+          $driftBlobEquality.equals(other.psk, this.psk) &&
+          $driftBlobEquality.equals(other.settings, this.settings));
 }
 
 class ChannelsCompanion extends UpdateCompanion<MeshChannel> {
@@ -2995,29 +3039,34 @@ class ChannelsCompanion extends UpdateCompanion<MeshChannel> {
   final Value<String> name;
   final Value<int> role;
   final Value<Uint8List?> psk;
+  final Value<Uint8List?> settings;
   const ChannelsCompanion({
     this.index = const Value.absent(),
     this.name = const Value.absent(),
     this.role = const Value.absent(),
     this.psk = const Value.absent(),
+    this.settings = const Value.absent(),
   });
   ChannelsCompanion.insert({
     this.index = const Value.absent(),
     this.name = const Value.absent(),
     this.role = const Value.absent(),
     this.psk = const Value.absent(),
+    this.settings = const Value.absent(),
   });
   static Insertable<MeshChannel> custom({
     Expression<int>? index,
     Expression<String>? name,
     Expression<int>? role,
     Expression<Uint8List>? psk,
+    Expression<Uint8List>? settings,
   }) {
     return RawValuesInsertable({
       if (index != null) 'index': index,
       if (name != null) 'name': name,
       if (role != null) 'role': role,
       if (psk != null) 'psk': psk,
+      if (settings != null) 'settings': settings,
     });
   }
 
@@ -3026,12 +3075,14 @@ class ChannelsCompanion extends UpdateCompanion<MeshChannel> {
     Value<String>? name,
     Value<int>? role,
     Value<Uint8List?>? psk,
+    Value<Uint8List?>? settings,
   }) {
     return ChannelsCompanion(
       index: index ?? this.index,
       name: name ?? this.name,
       role: role ?? this.role,
       psk: psk ?? this.psk,
+      settings: settings ?? this.settings,
     );
   }
 
@@ -3050,6 +3101,9 @@ class ChannelsCompanion extends UpdateCompanion<MeshChannel> {
     if (psk.present) {
       map['psk'] = Variable<Uint8List>(psk.value);
     }
+    if (settings.present) {
+      map['settings'] = Variable<Uint8List>(settings.value);
+    }
     return map;
   }
 
@@ -3059,7 +3113,8 @@ class ChannelsCompanion extends UpdateCompanion<MeshChannel> {
           ..write('index: $index, ')
           ..write('name: $name, ')
           ..write('role: $role, ')
-          ..write('psk: $psk')
+          ..write('psk: $psk, ')
+          ..write('settings: $settings')
           ..write(')'))
         .toString();
   }
@@ -6927,6 +6982,7 @@ typedef $$ChannelsTableCreateCompanionBuilder =
       Value<String> name,
       Value<int> role,
       Value<Uint8List?> psk,
+      Value<Uint8List?> settings,
     });
 typedef $$ChannelsTableUpdateCompanionBuilder =
     ChannelsCompanion Function({
@@ -6934,6 +6990,7 @@ typedef $$ChannelsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<int> role,
       Value<Uint8List?> psk,
+      Value<Uint8List?> settings,
     });
 
 class $$ChannelsTableFilterComposer
@@ -6962,6 +7019,11 @@ class $$ChannelsTableFilterComposer
 
   ColumnFilters<Uint8List> get psk => $composableBuilder(
     column: $table.psk,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<Uint8List> get settings => $composableBuilder(
+    column: $table.settings,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -6994,6 +7056,11 @@ class $$ChannelsTableOrderingComposer
     column: $table.psk,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<Uint8List> get settings => $composableBuilder(
+    column: $table.settings,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ChannelsTableAnnotationComposer
@@ -7016,6 +7083,9 @@ class $$ChannelsTableAnnotationComposer
 
   GeneratedColumn<Uint8List> get psk =>
       $composableBuilder(column: $table.psk, builder: (column) => column);
+
+  GeneratedColumn<Uint8List> get settings =>
+      $composableBuilder(column: $table.settings, builder: (column) => column);
 }
 
 class $$ChannelsTableTableManager
@@ -7053,11 +7123,13 @@ class $$ChannelsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> psk = const Value.absent(),
+                Value<Uint8List?> settings = const Value.absent(),
               }) => ChannelsCompanion(
                 index: index,
                 name: name,
                 role: role,
                 psk: psk,
+                settings: settings,
               ),
           createCompanionCallback:
               ({
@@ -7065,11 +7137,13 @@ class $$ChannelsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> psk = const Value.absent(),
+                Value<Uint8List?> settings = const Value.absent(),
               }) => ChannelsCompanion.insert(
                 index: index,
                 name: name,
                 role: role,
                 psk: psk,
+                settings: settings,
               ),
           withReferenceMapper: (p0) => p0
               .map(

@@ -128,22 +128,7 @@ class PacketRouter {
         );
   }
 
-  Future<void> _upsertChannel(Channel c) async {
-    await db
-        .into(db.channels)
-        .insertOnConflictUpdate(
-          ChannelsCompanion.insert(
-            index: Value(c.index),
-            name: Value(c.settings.name),
-            role: Value(c.role.value),
-            psk: Value(
-              c.settings.psk.isEmpty
-                  ? null
-                  : Uint8List.fromList(c.settings.psk),
-            ),
-          ),
-        );
-  }
+  Future<void> _upsertChannel(Channel c) => db.upsertChannel(c);
 
   Future<void> _onPacket(MeshPacket p) async {
     // Любой пакет — признак, что нода жива.

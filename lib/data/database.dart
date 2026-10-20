@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import '../core/proto/mesh.dart';
+
 part 'database.g.dart';
 
 /// Ключи [AppSettings].
@@ -168,6 +170,10 @@ class Channels extends Table {
   IntColumn get role => integer().withDefault(const Constant(0))();
   BlobColumn get psk => blob().nullable()();
 
+  /// ChannelSettings целиком (MQTT, точность позиции, mute, id) — для
+  /// редактирования; null — запись старше схемы 7.
+  BlobColumn get settings => blob().nullable()();
+
   @override
   Set<Column> get primaryKey => {index};
 }
@@ -286,7 +292,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -294,10 +300,13 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
       // С 5-й версии у тестеров уже есть данные — только добавляем колонки.
-      if (from == 5) {
-        await m.addColumn(nodes, nodes.hasXeddsaSigned);
-        await m.addColumn(messages, messages.xeddsaSigned);
-        await m.addColumn(messages, messages.ackProof);
+      if (from == 5 || from == 6) {
+        if (from == 5) {
+          await m.addColumn(nodes, nodes.hasXeddsaSigned);
+          await m.addColumn(messages, messages.xeddsaSigned);
+          await m.addColumn(messages, messages.ackProof);
+        }
+        await m.addColumn(channels, channels.settings);
         return;
       }
       for (final t in allTables) {
@@ -463,6 +472,20 @@ class AppDatabase extends _$AppDatabase {
   Future<void> setSetting(String key, String value) => into(
     appSettings,
   ).insertOnConflictUpdate(AppSettingsCompanion.insert(key: key, value: value));
+
+  /// Канал с ноды или после сохранения своей правки.
+  Future<void> upsertChannel(Channel c) =>
+      into(channels).insertOnConflictUpdate(
+        ChannelsCompanion.insert(
+          index: Value(c.index),
+          name: Value(c.settings.name),
+          role: Value(c.role.value),
+          psk: Value(
+            c.settings.psk.isEmpty ? null : Uint8List.fromList(c.settings.psk),
+          ),
+          settings: Value(c.settings.writeToBuffer()),
+        ),
+      );
 
   Stream<List<MeshChannel>> watchChannels() =>
       (select(channels)..orderBy([(c) => OrderingTerm.asc(c.index)])).watch();

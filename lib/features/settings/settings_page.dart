@@ -13,11 +13,6 @@ class SettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mirror = ref.watch(mirrorConfigProvider).value;
-    Widget soon(String title, IconData icon) => MeshTile(
-      title: title,
-      leading: Icon(icon),
-      trailing: const Text('скоро'),
-    );
     return Scaffold(
       appBar: AppBar(title: const Text('Настройки')),
       body: ListView(
@@ -53,7 +48,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/lora'),
               ),
-              soon('Каналы', Icons.swap_horiz),
+              MeshTile(
+                title: 'Каналы',
+                leading: const Icon(Icons.swap_horiz),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/channels'),
+              ),
               MeshTile(
                 title: 'Безопасность',
                 leading: const Icon(Icons.shield_outlined),

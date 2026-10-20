@@ -12,6 +12,7 @@ import '../features/nodes/nodes_page.dart';
 import '../features/settings/app_settings_page.dart';
 import '../features/settings/area_picker_page.dart';
 import '../features/settings/mirror_settings_page.dart';
+import '../features/settings/radio/channels_page.dart';
 import '../features/settings/radio/config_section_page.dart';
 import '../features/settings/radio/config_sections.dart';
 import '../features/settings/radio/user_config_page.dart';
@@ -86,6 +87,19 @@ final appRouter = GoRouter(
                 ),
                 _route('user', (_) => const UserConfigPage()),
                 _route('lora', (_) => ConfigSectionPage(loraSpec)),
+                _route(
+                  'channels',
+                  (_) => const ChannelsPage(),
+                  routes: [
+                    _route(
+                      ':index',
+                      (s) => ChannelEditPage(
+                        index: int.parse(s.pathParameters['index']!),
+                        isNew: s.uri.queryParameters['new'] == '1',
+                      ),
+                    ),
+                  ],
+                ),
                 _route('device', (_) => ConfigSectionPage(deviceSpec)),
                 _route('position', (_) => ConfigSectionPage(positionSpec)),
                 _route('power', (_) => ConfigSectionPage(powerSpec)),
