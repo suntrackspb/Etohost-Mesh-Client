@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../core/diagnostics/device_model.dart';
 import '../core/diagnostics/report_uploader.dart';
 import '../core/proto/mesh.dart';
 import '../data/diagnostics/report.dart';
@@ -53,7 +53,7 @@ Future<DiagnosticReport> collectReport(Ref ref) async {
       'system': {
         'platform': Platform.operatingSystem,
         'osVersion': Platform.operatingSystemVersion,
-        'device': await _deviceModel(),
+        'device': await deviceModel(),
         'locale': PlatformDispatcher.instance.locale.toLanguageTag(),
         'utcOffset': utcOffset(DateTime.now().timeZoneOffset),
       },
@@ -79,22 +79,6 @@ Future<DiagnosticReport> collectReport(Ref ref) async {
     },
     log: DiagnosticReport.tail(await ref.read(journalFileProvider).readAll()),
   );
-}
-
-Future<String?> _deviceModel() async {
-  try {
-    final d = DeviceInfoPlugin();
-    if (Platform.isIOS) {
-      final i = await d.iosInfo;
-      return '${i.utsname.machine} (${i.model})';
-    }
-    if (Platform.isAndroid) {
-      final a = await d.androidInfo;
-      return '${a.manufacturer} ${a.model}';
-    }
-    if (Platform.isMacOS) return (await d.macOsInfo).model;
-  } catch (_) {}
-  return null;
 }
 
 enum ReportStage { collecting, ready, sending, sent, failed }
