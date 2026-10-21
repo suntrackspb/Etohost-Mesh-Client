@@ -267,6 +267,19 @@ def patch_linux_icon():
     print("linux icon: ok")
 
 
+def patch_linux_warnings():
+    """tray_manager зовёт app_indicator_new, устаревший в свежих Ubuntu;
+    шаблон Flutter собирает плагины с -Werror — отключаем только это."""
+    f = ROOT / "linux/CMakeLists.txt"
+    if not f.exists():
+        return
+    s = f.read_text(encoding="utf-8")
+    flag = "-Wno-deprecated-declarations"
+    if flag not in s and "-Wall -Werror" in s:
+        f.write_text(s.replace("-Wall -Werror", f"-Wall -Werror {flag}"), encoding="utf-8")
+    print("linux warnings: ok")
+
+
 def patch_plugins():
     """usb_serial и flutter_libserialport устарели: вызывают jcenter() (убран в
     Gradle 9) и собираются под старый compileSdk (androidx требует >= 34).
@@ -333,5 +346,6 @@ if __name__ == "__main__":
     patch_apple()
     patch_notifications()
     patch_linux_icon()
+    patch_linux_warnings()
     patch_plugins()
     patch_icons_config()
