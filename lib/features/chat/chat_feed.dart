@@ -20,6 +20,7 @@ import '../../mirror/mirror_config.dart';
 import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
 import 'link_text.dart';
+import 'message_images.dart';
 import 'relay_map_sheet.dart';
 import 'scroll_to_item.dart';
 import 'swipe_to_reply.dart';
@@ -575,6 +576,7 @@ class _Bubble extends StatelessWidget {
                 child: _Quote(quoted, quotedAuthor),
               ),
             LinkText(message.body),
+            MessageImages(message.body),
             const SizedBox(height: Tokens.s4),
             // Слева источник (и хопы), по центру шлюзы, справа время.
             Row(

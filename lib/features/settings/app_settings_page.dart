@@ -24,6 +24,7 @@ class AppSettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeModeProvider).value ?? ThemeMode.system;
     final rotate = ref.watch(mapRotateProvider).value ?? false;
+    final images = ref.watch(showImagesProvider).value ?? true;
     final areaOn = ref.watch(areaEnabledProvider).value ?? false;
     final km = ref.watch(areaRadiusProvider).value ?? defaultAreaRadiusKm;
     final center = ref.watch(areaCenterProvider).value;
@@ -126,6 +127,19 @@ class AppSettingsPage extends ConsumerWidget {
                     : '«$myShort» в тексте канала',
                 AppSettingKeys.notifyMention,
                 alerts.mention,
+              ),
+            ],
+          ),
+          SectionCard(
+            title: 'Чат',
+            children: [
+              SwitchListTile(
+                title: const Text('Показывать картинки'),
+                subtitle: const Text(
+                  'Превью ссылок i.jab.su и img.etohost.ru прямо в ленте',
+                ),
+                value: images,
+                onChanged: (v) => save(AppSettingKeys.showImages, '$v'),
               ),
             ],
           ),

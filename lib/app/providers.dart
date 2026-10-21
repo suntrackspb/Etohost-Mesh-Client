@@ -502,6 +502,11 @@ final mapRotateProvider = StreamProvider<bool>(
   (ref) => _setting(ref, AppSettingKeys.mapRotate).map((v) => v == 'true'),
 );
 
+/// Превью картинок в ленте (по умолчанию включено).
+final showImagesProvider = StreamProvider<bool>(
+  (ref) => _setting(ref, AppSettingKeys.showImages).map((v) => v != 'false'),
+);
+
 final areaEnabledProvider = StreamProvider<bool>(
   (ref) => _setting(ref, AppSettingKeys.areaEnabled).map((v) => v == 'true'),
 );

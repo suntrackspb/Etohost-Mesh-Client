@@ -38,7 +38,7 @@ void main() {
             'id': 'Ab3dE5f',
             'url': 'https://i.jab.su/Ab3dE5f',
             'delete_token': 'tok',
-            'expires_at': ts + 72 * 3600,
+            'expires_at': '2026-10-24T01:55:10Z',
           }),
           201,
         );
@@ -55,6 +55,7 @@ void main() {
     expect(sent.headers['X-Sig'], knownSig);
     expect(img.url, 'https://i.jab.su/Ab3dE5f');
     expect(img.deleteToken, 'tok');
+    expect(img.expiresAt, DateTime.utc(2026, 10, 24, 1, 55, 10));
   });
 
   test('ошибка сервера — русский текст', () async {

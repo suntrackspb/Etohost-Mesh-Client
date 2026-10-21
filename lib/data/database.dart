@@ -42,6 +42,10 @@ abstract final class AppSettingKeys {
   /// Windows/Linux: крестик сворачивает в трей ('true'/'false', по умолчанию — да).
   static const closeToTray = 'app.closeToTray';
 
+  /// Показывать картинки i.jab.su и img.etohost.ru в ленте ('true'/'false',
+  /// по умолчанию — да).
+  static const showImages = 'chat.showImages';
+
   /// Свои загруженные картинки: JSON-список (id, url, токен удаления, срок).
   static const imageUploads = 'images.uploads';
 

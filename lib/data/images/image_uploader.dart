@@ -137,9 +137,7 @@ class UploadedImage {
     id: j['id']! as String,
     url: j['url']! as String,
     deleteToken: j['delete_token']! as String,
-    expiresAt: DateTime.fromMillisecondsSinceEpoch(
-      (j['expires_at']! as num).toInt() * 1000,
-    ),
+    expiresAt: DateTime.parse(j['expires_at']! as String),
   );
 
   final String id;
@@ -151,7 +149,7 @@ class UploadedImage {
     'id': id,
     'url': url,
     'delete_token': deleteToken,
-    'expires_at': expiresAt.millisecondsSinceEpoch ~/ 1000,
+    'expires_at': expiresAt.toUtc().toIso8601String(),
   };
 }
 
