@@ -1,3 +1,4 @@
+import 'node_log_lines.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -265,6 +266,8 @@ class RadioSession extends ChangeNotifier {
     });
   }
 
+  final _nodeLines = NodeLogLines();
+
   void _onLog(NodeLogChunk chunk) {
     lastRx = DateTime.now();
     switch (chunk) {
@@ -279,9 +282,7 @@ class RadioSession extends ChangeNotifier {
           );
         }
       case NodeLogText(:final text):
-        for (final l in text.split('\n')) {
-          if (l.trim().isEmpty) continue;
-          final s = l.trimRight();
+        for (final s in _nodeLines.add(text)) {
           journal.add(JournalKind.node, s, fileText: redactNodeLog(s));
         }
     }
