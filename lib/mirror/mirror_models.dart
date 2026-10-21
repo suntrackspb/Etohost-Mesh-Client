@@ -100,6 +100,7 @@ class MirrorNode {
     this.lastSeenAt,
     this.batteryLevel,
     this.lastSnr,
+    this.modemPreset,
     this.publicKey,
   });
 
@@ -117,6 +118,9 @@ class MirrorNode {
       lastSeenAt: parseMirrorDate(raw['last_seen_at'] as String?),
       batteryLevel: _int(raw['battery_level']),
       lastSnr: _double(raw['last_snr']),
+      modemPreset: raw['modem_preset'] is String
+          ? raw['modem_preset'] as String
+          : null,
       publicKey: raw['public_key'] as String?,
     );
   }
@@ -130,6 +134,7 @@ class MirrorNode {
   final DateTime? lastSeenAt;
   final int? batteryLevel;
   final double? lastSnr;
+  final String? modemPreset;
 
   /// Пока сервер не отдаёт — null; hex (64 символа) или base64 (32 байта).
   final String? publicKey;

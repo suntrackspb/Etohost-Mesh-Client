@@ -116,6 +116,7 @@ class MirrorIngest {
                   : const Value.absent(),
               batteryLevel: fill(n.batteryLevel, old?.batteryLevel),
               snr: fill(n.lastSnr, old?.snr),
+              modemPreset: fill(n.modemPreset, old?.modemPreset),
               publicKey: old?.publicKey == null && n.publicKeyBytes != null
                   ? Value(n.publicKeyBytes)
                   : const Value.absent(),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
+import '../../data/node_row_info.dart';
 import '../../ui/kit/kit.dart';
 import 'node_detail_page.dart';
 import 'node_filter_sheet.dart';
@@ -111,7 +112,7 @@ class _NodesPageState extends ConsumerState<NodesPage> {
   }
 }
 
-class _NodeTile extends StatelessWidget {
+class _NodeTile extends ConsumerWidget {
   const _NodeTile({
     required this.node,
     required this.onTap,
@@ -122,19 +123,86 @@ class _NodeTile extends StatelessWidget {
   final VoidCallback onTap;
   final bool selected;
 
+  static Color _qualityColor(SignalQuality q) => switch (q) {
+    SignalQuality.good => Colors.green,
+    SignalQuality.fair => Colors.amber.shade700,
+    SignalQuality.bad => Colors.deepOrange,
+    SignalQuality.none => Colors.red,
+  };
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final name = node.longName.isEmpty ? nodeIdString(node.num) : node.longName;
-    final parts = [
-      nodeIdString(node.num),
-      if (node.lastHeard != null) lastHeardText(node.lastHeard!),
+    final preset = nodePreset(node, ref.watch(presetNameProvider).value);
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final style = Theme.of(context).textTheme.bodySmall?.copyWith(color: muted);
+    final hasKey = node.publicKey?.isNotEmpty == true;
+
+    Widget item(IconData icon, String text, {Color? color}) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color ?? muted),
+        const SizedBox(width: 2),
+        Text(text, style: style?.copyWith(color: color)),
+      ],
+    );
+
+    final line3 = [
+      if (node.lastHeard != null)
+        Text(
+          lastHeardText(node.lastHeard!),
+          style: heardRecently(node.lastHeard)
+              ? style?.copyWith(color: Colors.green)
+              : style,
+        ),
       if (node.hopsAway != null)
-        node.hopsAway == 0 ? 'напрямую' : 'хопов ${node.hopsAway}',
-      if (node.viaMqtt) 'MQTT',
+        item(
+          Icons.alt_route,
+          node.hopsAway == 0 ? 'direct' : '${node.hopsAway}',
+        ),
+      if (node.latitude != null)
+        Tooltip(
+          message: 'Есть координаты',
+          child: Icon(Icons.location_on, size: 14, color: muted),
+        ),
+      if (node.snr != null)
+        item(
+          Icons.signal_cellular_alt,
+          '${node.snr!.toStringAsFixed(1)} dB',
+          color: _qualityColor(snrQuality(node.snr!, preset)),
+        ),
+      if (node.rssi != null)
+        item(
+          Icons.settings_input_antenna,
+          '${node.rssi} dBm',
+          color: _qualityColor(rssiQuality(node.rssi!)),
+        ),
+      if (node.viaMqtt) Text('MQTT', style: style),
     ];
+
     return MeshTile(
       title: name,
-      subtitle: parts.join(' · '),
+      titleExtra: Tooltip(
+        message: hasKey ? 'Есть публичный ключ' : 'Нет публичного ключа',
+        child: Icon(
+          Icons.key,
+          size: 14,
+          color: hasKey ? Colors.green : Colors.red,
+        ),
+      ),
+      subtitleWidget: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            [nodeIdString(node.num), roleName(node.role), ?preset].join(' · '),
+            style: style,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (line3.isNotEmpty)
+            Wrap(spacing: 8, runSpacing: 2, children: line3),
+        ],
+      ),
       selected: selected,
       leading: NodeAvatar(nodeNum: node.num, shortName: node.shortName),
       trailing: Row(
@@ -150,7 +218,8 @@ class _NodeTile extends StatelessWidget {
               message: 'Игнорируется',
               child: Icon(Icons.block, size: 18),
             ),
-          if (node.isFavorite) const Icon(Icons.star, size: 18),
+          if (node.isFavorite)
+            const Icon(Icons.star, size: 18, color: Colors.amber),
         ],
       ),
       onTap: onTap,

@@ -133,6 +133,12 @@ class Nodes extends Table {
   RealColumn get airUtilTx => real().nullable()();
   IntColumn get uptimeSeconds => integer().nullable()();
 
+  /// RSSI последнего пакета из эфира.
+  IntColumn get rssi => integer().nullable()();
+
+  /// Пресет модема по данным зеркала («MediumFast»).
+  TextColumn get modemPreset => text().nullable()();
+
   /// Слышали через свою ноду.
   BoolColumn get onRadio => boolean().withDefault(const Constant(false))();
 
@@ -327,7 +333,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -335,13 +341,15 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
       // С 5-й версии у тестеров уже есть данные — только добавляем колонки.
-      if (from == 5 || from == 6) {
+      if (from >= 5 && from <= 7) {
         if (from == 5) {
           await m.addColumn(nodes, nodes.hasXeddsaSigned);
           await m.addColumn(messages, messages.xeddsaSigned);
           await m.addColumn(messages, messages.ackProof);
         }
-        await m.addColumn(channels, channels.settings);
+        if (from <= 6) await m.addColumn(channels, channels.settings);
+        await m.addColumn(nodes, nodes.rssi);
+        await m.addColumn(nodes, nodes.modemPreset);
         return;
       }
       for (final t in allTables) {

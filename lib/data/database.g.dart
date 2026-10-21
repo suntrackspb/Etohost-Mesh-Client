@@ -278,6 +278,26 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _rssiMeta = const VerificationMeta('rssi');
+  @override
+  late final GeneratedColumn<int> rssi = GeneratedColumn<int>(
+    'rssi',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _modemPresetMeta = const VerificationMeta(
+    'modemPreset',
+  );
+  @override
+  late final GeneratedColumn<String> modemPreset = GeneratedColumn<String>(
+    'modem_preset',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _onRadioMeta = const VerificationMeta(
     'onRadio',
   );
@@ -333,6 +353,8 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     channelUtilization,
     airUtilTx,
     uptimeSeconds,
+    rssi,
+    modemPreset,
     onRadio,
     onMirror,
   ];
@@ -501,6 +523,21 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         ),
       );
     }
+    if (data.containsKey('rssi')) {
+      context.handle(
+        _rssiMeta,
+        rssi.isAcceptableOrUnknown(data['rssi']!, _rssiMeta),
+      );
+    }
+    if (data.containsKey('modem_preset')) {
+      context.handle(
+        _modemPresetMeta,
+        modemPreset.isAcceptableOrUnknown(
+          data['modem_preset']!,
+          _modemPresetMeta,
+        ),
+      );
+    }
     if (data.containsKey('on_radio')) {
       context.handle(
         _onRadioMeta,
@@ -614,6 +651,14 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         DriftSqlType.int,
         data['${effectivePrefix}uptime_seconds'],
       ),
+      rssi: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rssi'],
+      ),
+      modemPreset: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}modem_preset'],
+      ),
       onRadio: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}on_radio'],
@@ -660,6 +705,12 @@ class Node extends DataClass implements Insertable<Node> {
   final double? airUtilTx;
   final int? uptimeSeconds;
 
+  /// RSSI последнего пакета из эфира.
+  final int? rssi;
+
+  /// Пресет модема по данным зеркала («MediumFast»).
+  final String? modemPreset;
+
   /// Слышали через свою ноду.
   final bool onRadio;
 
@@ -689,6 +740,8 @@ class Node extends DataClass implements Insertable<Node> {
     this.channelUtilization,
     this.airUtilTx,
     this.uptimeSeconds,
+    this.rssi,
+    this.modemPreset,
     required this.onRadio,
     required this.onMirror,
   });
@@ -742,6 +795,12 @@ class Node extends DataClass implements Insertable<Node> {
     if (!nullToAbsent || uptimeSeconds != null) {
       map['uptime_seconds'] = Variable<int>(uptimeSeconds);
     }
+    if (!nullToAbsent || rssi != null) {
+      map['rssi'] = Variable<int>(rssi);
+    }
+    if (!nullToAbsent || modemPreset != null) {
+      map['modem_preset'] = Variable<String>(modemPreset);
+    }
     map['on_radio'] = Variable<bool>(onRadio);
     map['on_mirror'] = Variable<bool>(onMirror);
     return map;
@@ -794,6 +853,10 @@ class Node extends DataClass implements Insertable<Node> {
       uptimeSeconds: uptimeSeconds == null && nullToAbsent
           ? const Value.absent()
           : Value(uptimeSeconds),
+      rssi: rssi == null && nullToAbsent ? const Value.absent() : Value(rssi),
+      modemPreset: modemPreset == null && nullToAbsent
+          ? const Value.absent()
+          : Value(modemPreset),
       onRadio: Value(onRadio),
       onMirror: Value(onMirror),
     );
@@ -830,6 +893,8 @@ class Node extends DataClass implements Insertable<Node> {
       ),
       airUtilTx: serializer.fromJson<double?>(json['airUtilTx']),
       uptimeSeconds: serializer.fromJson<int?>(json['uptimeSeconds']),
+      rssi: serializer.fromJson<int?>(json['rssi']),
+      modemPreset: serializer.fromJson<String?>(json['modemPreset']),
       onRadio: serializer.fromJson<bool>(json['onRadio']),
       onMirror: serializer.fromJson<bool>(json['onMirror']),
     );
@@ -861,6 +926,8 @@ class Node extends DataClass implements Insertable<Node> {
       'channelUtilization': serializer.toJson<double?>(channelUtilization),
       'airUtilTx': serializer.toJson<double?>(airUtilTx),
       'uptimeSeconds': serializer.toJson<int?>(uptimeSeconds),
+      'rssi': serializer.toJson<int?>(rssi),
+      'modemPreset': serializer.toJson<String?>(modemPreset),
       'onRadio': serializer.toJson<bool>(onRadio),
       'onMirror': serializer.toJson<bool>(onMirror),
     };
@@ -890,6 +957,8 @@ class Node extends DataClass implements Insertable<Node> {
     Value<double?> channelUtilization = const Value.absent(),
     Value<double?> airUtilTx = const Value.absent(),
     Value<int?> uptimeSeconds = const Value.absent(),
+    Value<int?> rssi = const Value.absent(),
+    Value<String?> modemPreset = const Value.absent(),
     bool? onRadio,
     bool? onMirror,
   }) => Node(
@@ -920,6 +989,8 @@ class Node extends DataClass implements Insertable<Node> {
     uptimeSeconds: uptimeSeconds.present
         ? uptimeSeconds.value
         : this.uptimeSeconds,
+    rssi: rssi.present ? rssi.value : this.rssi,
+    modemPreset: modemPreset.present ? modemPreset.value : this.modemPreset,
     onRadio: onRadio ?? this.onRadio,
     onMirror: onMirror ?? this.onMirror,
   );
@@ -960,6 +1031,10 @@ class Node extends DataClass implements Insertable<Node> {
       uptimeSeconds: data.uptimeSeconds.present
           ? data.uptimeSeconds.value
           : this.uptimeSeconds,
+      rssi: data.rssi.present ? data.rssi.value : this.rssi,
+      modemPreset: data.modemPreset.present
+          ? data.modemPreset.value
+          : this.modemPreset,
       onRadio: data.onRadio.present ? data.onRadio.value : this.onRadio,
       onMirror: data.onMirror.present ? data.onMirror.value : this.onMirror,
     );
@@ -991,6 +1066,8 @@ class Node extends DataClass implements Insertable<Node> {
           ..write('channelUtilization: $channelUtilization, ')
           ..write('airUtilTx: $airUtilTx, ')
           ..write('uptimeSeconds: $uptimeSeconds, ')
+          ..write('rssi: $rssi, ')
+          ..write('modemPreset: $modemPreset, ')
           ..write('onRadio: $onRadio, ')
           ..write('onMirror: $onMirror')
           ..write(')'))
@@ -1022,6 +1099,8 @@ class Node extends DataClass implements Insertable<Node> {
     channelUtilization,
     airUtilTx,
     uptimeSeconds,
+    rssi,
+    modemPreset,
     onRadio,
     onMirror,
   ]);
@@ -1052,6 +1131,8 @@ class Node extends DataClass implements Insertable<Node> {
           other.channelUtilization == this.channelUtilization &&
           other.airUtilTx == this.airUtilTx &&
           other.uptimeSeconds == this.uptimeSeconds &&
+          other.rssi == this.rssi &&
+          other.modemPreset == this.modemPreset &&
           other.onRadio == this.onRadio &&
           other.onMirror == this.onMirror);
 }
@@ -1080,6 +1161,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
   final Value<double?> channelUtilization;
   final Value<double?> airUtilTx;
   final Value<int?> uptimeSeconds;
+  final Value<int?> rssi;
+  final Value<String?> modemPreset;
   final Value<bool> onRadio;
   final Value<bool> onMirror;
   const NodesCompanion({
@@ -1106,6 +1189,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.channelUtilization = const Value.absent(),
     this.airUtilTx = const Value.absent(),
     this.uptimeSeconds = const Value.absent(),
+    this.rssi = const Value.absent(),
+    this.modemPreset = const Value.absent(),
     this.onRadio = const Value.absent(),
     this.onMirror = const Value.absent(),
   });
@@ -1133,6 +1218,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.channelUtilization = const Value.absent(),
     this.airUtilTx = const Value.absent(),
     this.uptimeSeconds = const Value.absent(),
+    this.rssi = const Value.absent(),
+    this.modemPreset = const Value.absent(),
     this.onRadio = const Value.absent(),
     this.onMirror = const Value.absent(),
   });
@@ -1160,6 +1247,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Expression<double>? channelUtilization,
     Expression<double>? airUtilTx,
     Expression<int>? uptimeSeconds,
+    Expression<int>? rssi,
+    Expression<String>? modemPreset,
     Expression<bool>? onRadio,
     Expression<bool>? onMirror,
   }) {
@@ -1187,6 +1276,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
       if (channelUtilization != null) 'channel_utilization': channelUtilization,
       if (airUtilTx != null) 'air_util_tx': airUtilTx,
       if (uptimeSeconds != null) 'uptime_seconds': uptimeSeconds,
+      if (rssi != null) 'rssi': rssi,
+      if (modemPreset != null) 'modem_preset': modemPreset,
       if (onRadio != null) 'on_radio': onRadio,
       if (onMirror != null) 'on_mirror': onMirror,
     });
@@ -1216,6 +1307,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Value<double?>? channelUtilization,
     Value<double?>? airUtilTx,
     Value<int?>? uptimeSeconds,
+    Value<int?>? rssi,
+    Value<String?>? modemPreset,
     Value<bool>? onRadio,
     Value<bool>? onMirror,
   }) {
@@ -1243,6 +1336,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
       channelUtilization: channelUtilization ?? this.channelUtilization,
       airUtilTx: airUtilTx ?? this.airUtilTx,
       uptimeSeconds: uptimeSeconds ?? this.uptimeSeconds,
+      rssi: rssi ?? this.rssi,
+      modemPreset: modemPreset ?? this.modemPreset,
       onRadio: onRadio ?? this.onRadio,
       onMirror: onMirror ?? this.onMirror,
     );
@@ -1320,6 +1415,12 @@ class NodesCompanion extends UpdateCompanion<Node> {
     if (uptimeSeconds.present) {
       map['uptime_seconds'] = Variable<int>(uptimeSeconds.value);
     }
+    if (rssi.present) {
+      map['rssi'] = Variable<int>(rssi.value);
+    }
+    if (modemPreset.present) {
+      map['modem_preset'] = Variable<String>(modemPreset.value);
+    }
     if (onRadio.present) {
       map['on_radio'] = Variable<bool>(onRadio.value);
     }
@@ -1355,6 +1456,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
           ..write('channelUtilization: $channelUtilization, ')
           ..write('airUtilTx: $airUtilTx, ')
           ..write('uptimeSeconds: $uptimeSeconds, ')
+          ..write('rssi: $rssi, ')
+          ..write('modemPreset: $modemPreset, ')
           ..write('onRadio: $onRadio, ')
           ..write('onMirror: $onMirror')
           ..write(')'))
@@ -5802,6 +5905,8 @@ typedef $$NodesTableCreateCompanionBuilder =
       Value<double?> channelUtilization,
       Value<double?> airUtilTx,
       Value<int?> uptimeSeconds,
+      Value<int?> rssi,
+      Value<String?> modemPreset,
       Value<bool> onRadio,
       Value<bool> onMirror,
     });
@@ -5830,6 +5935,8 @@ typedef $$NodesTableUpdateCompanionBuilder =
       Value<double?> channelUtilization,
       Value<double?> airUtilTx,
       Value<int?> uptimeSeconds,
+      Value<int?> rssi,
+      Value<String?> modemPreset,
       Value<bool> onRadio,
       Value<bool> onMirror,
     });
@@ -5954,6 +6061,16 @@ class $$NodesTableFilterComposer extends Composer<_$AppDatabase, $NodesTable> {
 
   ColumnFilters<int> get uptimeSeconds => $composableBuilder(
     column: $table.uptimeSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rssi => $composableBuilder(
+    column: $table.rssi,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modemPreset => $composableBuilder(
+    column: $table.modemPreset,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6092,6 +6209,16 @@ class $$NodesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get rssi => $composableBuilder(
+    column: $table.rssi,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modemPreset => $composableBuilder(
+    column: $table.modemPreset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get onRadio => $composableBuilder(
     column: $table.onRadio,
     builder: (column) => ColumnOrderings(column),
@@ -6193,6 +6320,14 @@ class $$NodesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get rssi =>
+      $composableBuilder(column: $table.rssi, builder: (column) => column);
+
+  GeneratedColumn<String> get modemPreset => $composableBuilder(
+    column: $table.modemPreset,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get onRadio =>
       $composableBuilder(column: $table.onRadio, builder: (column) => column);
 
@@ -6251,6 +6386,8 @@ class $$NodesTableTableManager
                 Value<double?> channelUtilization = const Value.absent(),
                 Value<double?> airUtilTx = const Value.absent(),
                 Value<int?> uptimeSeconds = const Value.absent(),
+                Value<int?> rssi = const Value.absent(),
+                Value<String?> modemPreset = const Value.absent(),
                 Value<bool> onRadio = const Value.absent(),
                 Value<bool> onMirror = const Value.absent(),
               }) => NodesCompanion(
@@ -6277,6 +6414,8 @@ class $$NodesTableTableManager
                 channelUtilization: channelUtilization,
                 airUtilTx: airUtilTx,
                 uptimeSeconds: uptimeSeconds,
+                rssi: rssi,
+                modemPreset: modemPreset,
                 onRadio: onRadio,
                 onMirror: onMirror,
               ),
@@ -6305,6 +6444,8 @@ class $$NodesTableTableManager
                 Value<double?> channelUtilization = const Value.absent(),
                 Value<double?> airUtilTx = const Value.absent(),
                 Value<int?> uptimeSeconds = const Value.absent(),
+                Value<int?> rssi = const Value.absent(),
+                Value<String?> modemPreset = const Value.absent(),
                 Value<bool> onRadio = const Value.absent(),
                 Value<bool> onMirror = const Value.absent(),
               }) => NodesCompanion.insert(
@@ -6331,6 +6472,8 @@ class $$NodesTableTableManager
                 channelUtilization: channelUtilization,
                 airUtilTx: airUtilTx,
                 uptimeSeconds: uptimeSeconds,
+                rssi: rssi,
+                modemPreset: modemPreset,
                 onRadio: onRadio,
                 onMirror: onMirror,
               ),

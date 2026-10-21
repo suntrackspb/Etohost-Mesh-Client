@@ -18,6 +18,7 @@ import '../core/radio/radio_session.dart';
 import '../core/transport/serial_transport.dart';
 import '../core/update/update_checker.dart';
 import '../data/database.dart';
+import '../data/node_row_info.dart';
 import '../data/map_style.dart';
 import '../data/message_sender.dart';
 import '../data/map_points.dart';
@@ -165,9 +166,19 @@ final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {
   final f = ref.watch(nodeFilterProvider);
   final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
   final area = ref.watch(nodeAreaProvider);
+  final own = ref.watch(ownPresetProvider).value;
   return ref
       .watch(nodesProvider)
-      .whenData((l) => f.apply(l, me: me, area: area));
+      .whenData(
+        (l) => f.apply(
+          [
+            for (final n in l)
+              if (onOwnPreset(n, own)) n,
+          ],
+          me: me,
+          area: area,
+        ),
+      );
 });
 
 /// Ноды на карте: тот же фильтр, что и у списка.
@@ -180,6 +191,16 @@ final mapPointsProvider = Provider<List<MapPoint>>((ref) {
 final channelsProvider = StreamProvider<List<MeshChannel>>(
   (ref) => ref.watch(databaseProvider).watchChannels(),
 );
+
+/// Пресет своей ноды; null — конфиг ещё не получали.
+final ownPresetProvider = StreamProvider<String?>((ref) {
+  final db = ref.watch(databaseProvider);
+  return (db.select(
+    db.configBlobs,
+  )..where((b) => b.key.equals('config.lora'))).watchSingleOrNull().map(
+    (b) => b == null ? null : modemPresetName(Config.fromBuffer(b.data).lora),
+  );
+});
 
 /// Имя пресета модема своей ноды (для безымянного основного канала).
 final presetNameProvider = StreamProvider<String>((ref) {

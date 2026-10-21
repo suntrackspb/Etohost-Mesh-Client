@@ -308,6 +308,7 @@ class PacketRouter {
             num: Value(p.from),
             lastHeard: Value(_time(_rxTime(p))),
             snr: Value(p.rxSnr == 0 ? null : p.rxSnr),
+            rssi: Value(p.rxRssi == 0 ? null : p.rxRssi),
             viaMqtt: Value(p.viaMqtt),
             onRadio: const Value(true),
           ),
@@ -315,6 +316,7 @@ class PacketRouter {
             (_) => NodesCompanion(
               lastHeard: Value(_time(_rxTime(p))),
               snr: Value(p.rxSnr == 0 ? null : p.rxSnr),
+              rssi: Value(p.rxRssi == 0 ? null : p.rxRssi),
               viaMqtt: Value(p.viaMqtt),
               onRadio: const Value(true),
             ),

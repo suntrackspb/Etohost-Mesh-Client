@@ -80,6 +80,8 @@ class MeshTile extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
+    this.titleExtra,
+    this.subtitleWidget,
     this.leading,
     this.trailing,
     this.onTap,
@@ -88,6 +90,12 @@ class MeshTile extends StatelessWidget {
 
   final String title;
   final String? subtitle;
+
+  /// Значки сразу после заголовка.
+  final Widget? titleExtra;
+
+  /// Подзаголовок-виджет вместо [subtitle].
+  final Widget? subtitleWidget;
   final Widget? leading;
   final Widget? trailing;
   final VoidCallback? onTap;
@@ -95,10 +103,26 @@ class MeshTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListTile(
-    title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-    subtitle: subtitle == null
-        ? null
-        : Text(subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis),
+    title: titleExtra == null
+        ? Text(title, maxLines: 1, overflow: TextOverflow.ellipsis)
+        : Row(
+            children: [
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
+              titleExtra!,
+            ],
+          ),
+    subtitle:
+        subtitleWidget ??
+        (subtitle == null
+            ? null
+            : Text(subtitle!, maxLines: 2, overflow: TextOverflow.ellipsis)),
     leading: leading,
     trailing:
         trailing ?? (onTap != null ? const Icon(Icons.chevron_right) : null),
