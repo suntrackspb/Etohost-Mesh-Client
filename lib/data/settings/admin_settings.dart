@@ -57,8 +57,37 @@ Future<bool> saveConfig(
   Config cfg,
 ) async {
   final ok = await admin.send(AdminMessage(setConfig: cfg));
-  if (ok) await storeConfig(db, name, cfg);
+  if (ok) {
+    await storeConfig(db, name, cfg);
+    // Нода может поправить значения (смена региона урезает мощность) и не
+    // перезагрузиться — перечитываем раздел, ответ запишет PacketRouter.
+    final type = configTypeOf(cfg);
+    if (type != null) {
+      _refresh(admin, AdminMessage(getConfigRequest: type));
+    }
+  }
   return ok;
+}
+
+/// Тип запроса get_config для раздела (номера совпадают с порядком oneof).
+AdminMessage_ConfigType? configTypeOf(Config cfg) {
+  final v = cfg.whichPayloadVariant();
+  return v == Config_PayloadVariant.notSet
+      ? null
+      : AdminMessage_ConfigType.valueOf(v.index);
+}
+
+AdminMessage_ModuleConfigType? moduleTypeOf(ModuleConfig cfg) {
+  final v = cfg.whichPayloadVariant();
+  return v == ModuleConfig_PayloadVariant.notSet
+      ? null
+      : AdminMessage_ModuleConfigType.valueOf(v.index);
+}
+
+/// Запрос раздела в фоне; ошибки не важны — нода могла уйти в перезагрузку,
+/// тогда конфиг придёт при переподключении.
+void _refresh(AdminSettings admin, AdminMessage m) {
+  admin.send(m, response: true).catchError((Object _) => false);
 }
 
 /// Записать конфиг в БД под ключом `config.<name>`.
@@ -90,6 +119,10 @@ Future<bool> saveModuleConfig(
             updated: DateTime.now(),
           ),
         );
+    final type = moduleTypeOf(cfg);
+    if (type != null) {
+      _refresh(admin, AdminMessage(getModuleConfigRequest: type));
+    }
   }
   return ok;
 }

@@ -86,6 +86,23 @@ void main() {
       expect(nodeNumFromId(m.fromId), 0xabcd);
     });
 
+    test('relays строкой с JSON (realtime зеркала) — тоже разбираются', () {
+      final m = MirrorMessage.tryParse({
+        'id': 6,
+        'from_id': '!0000abcd',
+        'relays': '[{"node_id":"!1"}]',
+      })!;
+      expect(m.relays, hasLength(1));
+      expect(
+        MirrorMessage.tryParse({
+          'id': 7,
+          'from_id': '!0000abcd',
+          'relays': 'мусор',
+        })!.relays,
+        isEmpty,
+      );
+    });
+
     test('публичный ключ: hex и base64', () {
       final hex = List.filled(32, 'ab').join();
       expect(

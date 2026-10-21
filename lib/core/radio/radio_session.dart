@@ -73,6 +73,12 @@ class RadioSession extends ChangeNotifier {
   /// Номер нашей ноды (из MyNodeInfo), пока не подключены — null.
   int? myNodeNum;
 
+  /// Сведения о своей ноде при подключении (MyNodeInfo, своя User,
+  /// DeviceMetadata) — для экрана аппаратных идентификаторов.
+  MyNodeInfo? myInfo;
+  User? ownUser;
+  DeviceMetadata? metadata;
+
   final _packets = StreamController<FromRadio>.broadcast();
 
   /// Все FromRadio от ноды, включая базу нод при подключении.
@@ -165,7 +171,14 @@ class RadioSession extends ChangeNotifier {
     }
     packetCount++;
     lastRx = DateTime.now();
-    if (f.hasMyInfo()) myNodeNum = f.myInfo.myNodeNum;
+    if (f.hasMyInfo()) {
+      myInfo = f.myInfo;
+      myNodeNum = f.myInfo.myNodeNum;
+    }
+    if (f.hasMetadata()) metadata = f.metadata;
+    if (f.hasNodeInfo() && f.nodeInfo.num == myNodeNum) {
+      ownUser = f.nodeInfo.user;
+    }
     if (f.hasQueueStatus()) queue.onQueueStatus(f.queueStatus);
     if (f.hasPacket() && f.packet.hasDecoded()) {
       final d = f.packet.decoded;
@@ -336,6 +349,9 @@ class RadioSession extends ChangeNotifier {
     }
     await _teardown();
     myNodeNum = null;
+    myInfo = null;
+    ownUser = null;
+    metadata = null;
     _setState(RadioState.idle);
     if (wasActive && !quiet) _app('Отключено');
   }

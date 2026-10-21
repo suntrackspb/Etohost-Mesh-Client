@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../ui/kit/kit.dart';
 import 'about_section.dart';
+import 'hardware_ids_dialog.dart';
 
 /// Заготовка: структура разделов как в официальном клиенте. Наполнение — этапы 3 и 6.
 class SettingsPage extends ConsumerWidget {
@@ -223,6 +224,12 @@ class SettingsPage extends ConsumerWidget {
                 leading: const Icon(Icons.bug_report_outlined),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/report'),
+              ),
+              MeshTile(
+                title: 'Аппаратные id ноды',
+                subtitle: 'MAC и device_id подключённой ноды',
+                leading: const Icon(Icons.memory),
+                onTap: () => showHardwareIds(context),
               ),
             ],
           ),

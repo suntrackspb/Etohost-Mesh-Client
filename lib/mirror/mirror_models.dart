@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 /// Модели API зеркала (`/api/nodes`, `/api/chat/history`, WS `/ws`).
@@ -61,7 +62,7 @@ class MirrorMessage {
       longName: raw['long_name'] as String?,
       isBot: raw['is_bot'] == true,
       relays: [
-        for (final r in (raw['relays'] as List? ?? const []))
+        for (final r in _list(raw['relays']))
           if (r is Map<String, dynamic>) MirrorRelay.fromJson(r),
       ],
     );
@@ -224,3 +225,15 @@ int? nodeNumFromId(String id) {
 
 int? _int(Object? v) => v is int ? v : (v is num ? v.toInt() : null);
 double? _double(Object? v) => v is num ? v.toDouble() : null;
+
+/// Список из JSON; realtime зеркала бывает присылает его строкой с JSON.
+List<Object?> _list(Object? v) {
+  if (v is List) return v;
+  if (v is String && v.isNotEmpty) {
+    try {
+      final d = jsonDecode(v);
+      if (d is List) return d;
+    } catch (_) {}
+  }
+  return const [];
+}
