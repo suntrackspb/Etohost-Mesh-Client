@@ -86,29 +86,78 @@ class _Thumb extends StatelessWidget {
   }
 }
 
-/// Картинка на весь экран: масштаб пальцами, открыть в браузере.
-class _FullImage extends StatelessWidget {
+/// Картинка на весь экран: масштаб пальцами, свайп вниз — закрыть
+/// (когда не увеличена), открыть в браузере.
+class _FullImage extends StatefulWidget {
   const _FullImage(this.url);
 
   final Uri url;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.black,
-    appBar: AppBar(
-      backgroundColor: Colors.black,
-      foregroundColor: Colors.white,
-      actions: [
-        IconButton(
-          tooltip: 'Открыть в браузере',
-          icon: const Icon(Icons.open_in_browser),
-          onPressed: () => launchUrl(url, mode: LaunchMode.externalApplication),
+  State<_FullImage> createState() => _FullImageState();
+}
+
+class _FullImageState extends State<_FullImage> {
+  final _zoom = TransformationController();
+  var _zoomed = false;
+  var _dy = 0.0;
+
+  /// Сколько протянуть вниз, чтобы закрыть.
+  static const _closeAt = 120.0;
+
+  @override
+  void dispose() {
+    _zoom.dispose();
+    super.dispose();
+  }
+
+  void _onZoomEnd(ScaleEndDetails _) {
+    final z = _zoom.value.getMaxScaleOnAxis() > 1.01;
+    if (z != _zoomed) setState(() => _zoomed = z);
+  }
+
+  void _onDragEnd(DragEndDetails d) {
+    if (_dy > _closeAt || (d.primaryVelocity ?? 0) > 800) {
+      Navigator.of(context).pop();
+    } else {
+      setState(() => _dy = 0);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fade = (1 - _dy / 400).clamp(0.3, 1.0);
+    return Scaffold(
+      backgroundColor: Colors.black.withValues(alpha: fade),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: 'Открыть в браузере',
+            icon: const Icon(Icons.open_in_browser),
+            onPressed: () =>
+                launchUrl(widget.url, mode: LaunchMode.externalApplication),
+          ),
+        ],
+      ),
+      body: GestureDetector(
+        // Увеличенную картинку палец двигает, а не закрывает.
+        onVerticalDragUpdate: _zoomed
+            ? null
+            : (d) => setState(() => _dy = (_dy + d.delta.dy).clamp(0, 1e4)),
+        onVerticalDragEnd: _zoomed ? null : _onDragEnd,
+        child: Transform.translate(
+          offset: Offset(0, _dy),
+          child: InteractiveViewer(
+            transformationController: _zoom,
+            maxScale: 6,
+            panEnabled: _zoomed,
+            onInteractionEnd: _onZoomEnd,
+            child: Center(child: Image.network(widget.url.toString())),
+          ),
         ),
-      ],
-    ),
-    body: InteractiveViewer(
-      maxScale: 6,
-      child: Center(child: Image.network(url.toString())),
-    ),
-  );
+      ),
+    );
+  }
 }
