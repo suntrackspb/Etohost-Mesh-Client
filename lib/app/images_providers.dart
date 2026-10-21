@@ -3,11 +3,12 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:drift/drift.dart';
+
 import '../core/proto/mesh.dart';
 import '../data/database.dart';
 import '../data/images/image_uploader.dart';
 import 'providers.dart';
-import 'settings_providers.dart';
 
 /// Сервис картинок; null — сборка без IMAGES_URL, кнопки нет.
 final imageUploaderProvider = Provider<ImageUploader?>(
@@ -30,14 +31,28 @@ class ImageUploads {
 
   static const maxBytes = 10 * 1024 * 1024;
 
-  Future<UploadedImage> upload(Uint8List body) async {
+  /// Вся операция целиком: чтобы колесо не крутилось вечно.
+  static const timeout = Duration(minutes: 2);
+
+  Future<UploadedImage> upload(Uint8List body) => _upload(body).timeout(
+    timeout,
+    onTimeout: () => throw const ImageError('Сервис не ответил вовремя'),
+  );
+
+  Future<UploadedImage> _upload(Uint8List body) async {
     if (body.length > maxBytes) {
       throw const ImageError('Картинка больше 10 МБ');
     }
     final me = _ref.read(radioProvider).myNodeNum;
-    final key = (await _ref.read(
-      configProvider('security').future,
-    ))?.security.privateKey;
+    // Прямо из базы: `configProvider` без подписчиков в Riverpod 3 стоит
+    // на паузе, и его `.future` может не завершиться.
+    final db = _ref.read(databaseProvider);
+    final blob = await (db.select(
+      db.configBlobs,
+    )..where((c) => c.key.equals('config.security'))).getSingleOrNull();
+    final key = blob == null
+        ? null
+        : Config.fromBuffer(blob.data).security.privateKey;
     if (me == null || key == null || key.length != 32) {
       throw const ImageError('Нет ключа ноды — подключитесь к своей ноде');
     }

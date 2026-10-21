@@ -29,6 +29,10 @@ class ImageUploader {
   final http.Client _client;
 
   static const timeout = Duration(seconds: 90);
+
+  static Never _timedOut() => throw const ImageError(
+    'Сервис картинок не отвечает — проверьте интернет',
+  );
   static const _info = 'etohost-mesh-images v1';
 
   /// Ключ HMAC для пары (своя нода, сервис).
@@ -92,7 +96,7 @@ class ImageUploader {
           },
           body: body,
         )
-        .timeout(timeout);
+        .timeout(timeout, onTimeout: _timedOut);
     if (res.statusCode != 201) throw ImageError.fromResponse(res);
     return UploadedImage.fromJson(jsonDecode(res.body) as Map<String, Object?>);
   }
@@ -103,7 +107,7 @@ class ImageUploader {
           baseUrl.resolve('api/v1/$id'),
           headers: {'X-Delete-Token': deleteToken},
         )
-        .timeout(timeout);
+        .timeout(timeout, onTimeout: _timedOut);
     if (res.statusCode != 200 && res.statusCode != 404) {
       throw ImageError.fromResponse(res);
     }
@@ -116,7 +120,7 @@ class ImageUploader {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'reason': reason}),
         )
-        .timeout(timeout);
+        .timeout(timeout, onTimeout: _timedOut);
     if (res.statusCode != 200) throw ImageError.fromResponse(res);
   }
 }
