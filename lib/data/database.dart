@@ -55,6 +55,12 @@ abstract final class AppSettingKeys {
   /// Карта: разрешить вращение жестом ('true'/'false', по умолчанию — нет).
   static const mapRotate = 'map.rotate';
 
+  /// Группировать близкие ноды на карте: 'true'/'false', по умолчанию да.
+  static const mapCluster = 'map.cluster';
+
+  /// Подложка карты: [MapStyle].name, по умолчанию auto.
+  static const mapStyle = 'map.style';
+
   /// Скрывать ноды дальше радиуса от центра ('true'/'false', по умолчанию — нет).
   static const areaEnabled = 'nodes.area.enabled';
 

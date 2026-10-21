@@ -18,6 +18,7 @@ import '../core/radio/radio_session.dart';
 import '../core/transport/serial_transport.dart';
 import '../core/update/update_checker.dart';
 import '../data/database.dart';
+import '../data/map_style.dart';
 import '../data/message_sender.dart';
 import '../data/map_points.dart';
 import '../data/node_actions.dart';
@@ -509,6 +510,16 @@ final themeModeProvider = StreamProvider<ThemeMode>(
 /// Вращение карты жестом (по умолчанию выключено — север всегда сверху).
 final mapRotateProvider = StreamProvider<bool>(
   (ref) => _setting(ref, AppSettingKeys.mapRotate).map((v) => v == 'true'),
+);
+
+/// Группировка близких нод на карте (по умолчанию включена).
+final mapClusterProvider = StreamProvider<bool>(
+  (ref) => _setting(ref, AppSettingKeys.mapCluster).map((v) => v != 'false'),
+);
+
+/// Подложка карты.
+final mapStyleProvider = StreamProvider<MapStyle>(
+  (ref) => _setting(ref, AppSettingKeys.mapStyle).map(MapStyle.parse),
 );
 
 /// Превью картинок в ленте (по умолчанию включено).

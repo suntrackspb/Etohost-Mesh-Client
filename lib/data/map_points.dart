@@ -95,3 +95,38 @@ List<({double lat, double lon})> circlePoints(
       }(),
   ];
 }
+
+/// Точки, чьи метки на экране перекрывают метку [tapped] (включая её саму):
+/// [screen] переводит точку в экранные координаты, [radius] — в пикселях.
+/// Без группировки ноды в одной точке иначе не достать.
+List<MapPoint> overlappingPoints(
+  List<MapPoint> points,
+  MapPoint tapped,
+  ({double x, double y}) Function(MapPoint p) screen, {
+  double radius = 20,
+}) {
+  final c = screen(tapped);
+  return [
+    for (final p in points)
+      if (p.num == tapped.num ||
+          () {
+            final s = screen(p);
+            final dx = s.x - c.x, dy = s.y - c.y;
+            return dx * dx + dy * dy <= radius * radius;
+          }())
+        p,
+  ];
+}
+
+/// Поиск точки по имени, короткому имени и id (!9eeff120 или 9eeff120).
+List<MapPoint> searchPoints(List<MapPoint> points, String query) {
+  final q = query.trim().toLowerCase();
+  if (q.isEmpty) return const [];
+  return [
+    for (final p in points)
+      if (p.title.toLowerCase().contains(q) ||
+          p.label.toLowerCase().contains(q) ||
+          nodeIdString(p.num).contains(q))
+        p,
+  ];
+}

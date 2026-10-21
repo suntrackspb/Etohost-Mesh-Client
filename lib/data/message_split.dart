@@ -3,10 +3,10 @@ import 'message_sender.dart';
 /// Длинный текст — несколькими сообщениями с префиксом `[i/N] `.
 abstract final class MessageSplit {
   /// Больше частей не шлём: длинная «простыня» забивает эфир.
-  static const maxParts = 10;
+  static const maxParts = 5;
 
-  /// Пауза между частями.
-  static const delay = Duration(seconds: 3);
+  /// Пауза между частями: меньше — части накладываются в эфире.
+  static const delay = Duration(seconds: 4);
 
   static String prefix(int i, int n) => '[$i/$n] ';
 

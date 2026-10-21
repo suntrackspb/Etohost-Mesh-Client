@@ -25,4 +25,45 @@ void main() {
     expect(p.last.stale, isTrue);
     expect(p.last.label, '0003');
   });
+
+  test('ноды под меткой: в радиусе на экране, сама — всегда', () {
+    MapPoint pt(int num, double lat, double lon) => MapPoint(
+      num: num,
+      lat: lat,
+      lon: lon,
+      label: '$num',
+      title: '$num',
+      isMe: false,
+      isFavorite: false,
+      stale: false,
+      mirrorOnly: false,
+    );
+    final a = pt(1, 0, 0), b = pt(2, 0, 0), c = pt(3, 0, 15), d = pt(4, 0, 30);
+    // «Экран» — просто lon по x.
+    ({double x, double y}) screen(MapPoint p) => (x: p.lon, y: p.lat);
+    final all = [a, b, c, d];
+    expect(overlappingPoints(all, a, screen).map((p) => p.num), [1, 2, 3]);
+    expect(overlappingPoints(all, d, screen).map((p) => p.num), [3, 4]);
+    expect(overlappingPoints(all, d, screen, radius: 0).map((p) => p.num), [4]);
+  });
+
+  test('поиск по имени, короткому имени и id', () {
+    MapPoint pt(int num, String title, String label) => MapPoint(
+      num: num,
+      lat: 0,
+      lon: 0,
+      label: label,
+      title: title,
+      isMe: false,
+      isFavorite: false,
+      stale: false,
+      mirrorOnly: false,
+    );
+    final all = [pt(0x9eeff120, 'SUNo Base', 'SUNo'), pt(0x1, 'Другая', 'DR')];
+    expect(searchPoints(all, 'sunO').length, 1);
+    expect(searchPoints(all, 'f120').single.num, 0x9eeff120);
+    expect(searchPoints(all, '!9eef').single.num, 0x9eeff120);
+    expect(searchPoints(all, 'друг').single.num, 1);
+    expect(searchPoints(all, '  '), isEmpty);
+  });
 }

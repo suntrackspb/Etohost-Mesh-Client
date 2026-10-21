@@ -84,10 +84,12 @@ jobs:
         run: echo "VERSION_ARGS=--build-name=${GITHUB_REF_NAME#v} --build-number=${{ github.run_number }}" >> "$GITHUB_ENV"
       # Сервис картинок: переменные репозитория IMAGES_URL и IMAGES_KEY
       # (не секреты — адрес и публичный ключ). Пусто — кнопки «Картинка» нет.
+      # CARTO_KEY — тёмная подложка карты; пусто — только OSM.
       - run: |
           ${{ matrix.cmd }} $VERSION_ARGS \
             --dart-define=IMAGES_URL="${{ vars.IMAGES_URL }}" \
-            --dart-define=IMAGES_KEY="${{ vars.IMAGES_KEY }}"
+            --dart-define=IMAGES_KEY="${{ vars.IMAGES_KEY }}" \
+            --dart-define=CARTO_KEY="${{ vars.CARTO_KEY }}"
         shell: bash
 
       - name: Package
