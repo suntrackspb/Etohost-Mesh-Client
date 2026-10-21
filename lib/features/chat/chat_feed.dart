@@ -19,6 +19,7 @@ import '../../data/mirror_ingest.dart';
 import '../../mirror/mirror_config.dart';
 import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
+import '../nodes/open_node.dart';
 import 'link_text.dart';
 import 'message_images.dart';
 import 'relay_map_sheet.dart';
@@ -415,7 +416,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
               nameOf: (n) => _authorName(nodes, n),
               mirror: mirror,
               onMenu: () => _showMenu(context, ref, m),
-              onOpenNode: () => context.go('/nodes/${m.fromNum}'),
+              onOpenNode: () => openNode(context, m.fromNum),
               onOpenRelays: () {
                 final cfg = ref.read(mirrorConfigProvider).value;
                 final url = cfg == null || m.mirrorId == null

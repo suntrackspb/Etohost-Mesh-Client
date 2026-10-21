@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../app/providers.dart';
 import '../../data/map_points.dart';
 import '../../ui/kit/kit.dart';
+import '../nodes/open_node.dart';
 import '../nodes/node_filter_sheet.dart';
 import 'map_tiles.dart';
 
@@ -42,13 +42,7 @@ class _MapPageState extends ConsumerState<MapPage> {
     );
   }
 
-  void _open(int num) {
-    if (SplitView.isWide(context)) {
-      context.go('/nodes/$num');
-    } else {
-      context.push('/node/$num');
-    }
-  }
+  void _open(int num) => openNode(context, num);
 
   @override
   Widget build(BuildContext context) {
