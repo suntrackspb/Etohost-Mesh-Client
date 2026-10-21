@@ -125,7 +125,10 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                   Tokens.s16,
                   Tokens.s16,
                 ),
-                child: Row(
+                child: Wrap(
+                  spacing: Tokens.s12,
+                  runSpacing: Tokens.s8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     FilledButton(
                       onPressed:
@@ -138,7 +141,6 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                             : 'Проверить и включить',
                       ),
                     ),
-                    const SizedBox(width: Tokens.s12),
                     if (_checking)
                       const SizedBox(
                         width: 20,

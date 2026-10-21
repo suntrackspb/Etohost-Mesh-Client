@@ -26,6 +26,11 @@ class MapPage extends ConsumerStatefulWidget {
 
 class _MapPageState extends ConsumerState<MapPage> {
   final _map = MapController();
+
+  void _zoomBy(double delta) {
+    final cam = _map.camera;
+    _map.move(cam.center, (cam.zoom + delta).clamp(2, 19));
+  }
   bool _ready = false;
   bool _fitted = false;
 
@@ -269,6 +274,29 @@ class _MapPageState extends ConsumerState<MapPage> {
                 MarkerLayer(markers: markers),
               const OsmAttribution(),
             ],
+          ),
+          // Запасной способ масштаба: одной рукой, с мыши, в симуляторе.
+          Positioned(
+            right: Tokens.s16,
+            bottom: 56, // над строкой атрибуции OSM
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton.small(
+                  heroTag: 'zoomIn',
+                  tooltip: 'Приблизить',
+                  onPressed: () => _zoomBy(1),
+                  child: const Icon(Icons.add),
+                ),
+                const SizedBox(height: Tokens.s8),
+                FloatingActionButton.small(
+                  heroTag: 'zoomOut',
+                  tooltip: 'Отдалить',
+                  onPressed: () => _zoomBy(-1),
+                  child: const Icon(Icons.remove),
+                ),
+              ],
+            ),
           ),
           if (_rotation % 360 != 0)
             Positioned(

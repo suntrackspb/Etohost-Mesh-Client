@@ -194,6 +194,6 @@ const appTabs = [
   AppTab('Чат', Icons.chat_bubble_outline, Icons.chat_bubble),
   AppTab('Ноды', Icons.hub_outlined, Icons.hub),
   AppTab('Карта', Icons.map_outlined, Icons.map),
-  AppTab('Подключение', Icons.link, Icons.link),
+  AppTab('Связь', Icons.link, Icons.link),
   AppTab('Настройки', Icons.settings_outlined, Icons.settings),
 ];

@@ -16,12 +16,14 @@ import '../../data/message_meta.dart';
 import '../../data/message_sender.dart';
 import '../../data/message_split.dart';
 import '../../data/mirror_ingest.dart';
+import '../../data/reaction_groups.dart';
 import '../../mirror/mirror_config.dart';
 import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/open_node.dart';
 import 'link_text.dart';
 import 'message_images.dart';
+import 'reactions_sheet.dart';
 import 'relay_map_sheet.dart';
 import 'scroll_to_item.dart';
 import 'swipe_to_reply.dart';
@@ -412,8 +414,13 @@ class _MessageListState extends ConsumerState<_MessageList> {
               quotedAuthor: m.replyId == null || byPacket[m.replyId] == null
                   ? null
                   : _authorName(nodes, byPacket[m.replyId]!.fromNum),
-              reactions: reactions[m.packetId] ?? const [],
-              nameOf: (n) => _authorName(nodes, n),
+              reactions: groupReactions(reactions[m.packetId] ?? const []),
+              onOpenReactions: (groups, emoji) => showReactionsSheet(
+                context,
+                groups: groups,
+                nodes: nodes,
+                initial: emoji,
+              ),
               mirror: mirror,
               onMenu: () => _showMenu(context, ref, m),
               onOpenNode: () => openNode(context, m.fromNum),
@@ -514,7 +521,7 @@ class _Bubble extends StatelessWidget {
     required this.quoted,
     required this.quotedAuthor,
     required this.reactions,
-    required this.nameOf,
+    required this.onOpenReactions,
     required this.mirror,
     required this.onMenu,
     required this.onOpenNode,
@@ -526,8 +533,8 @@ class _Bubble extends StatelessWidget {
   final String? shortName;
   final Message? quoted;
   final String? quotedAuthor;
-  final List<Message> reactions;
-  final String Function(int num) nameOf;
+  final List<ReactionGroup> reactions;
+  final void Function(List<ReactionGroup> groups, String emoji) onOpenReactions;
   final bool mirror;
   final VoidCallback onMenu;
   final VoidCallback onOpenNode;
@@ -578,6 +585,15 @@ class _Bubble extends StatelessWidget {
               ),
             LinkText(message.body),
             MessageImages(message.body),
+            if (reactions.isNotEmpty)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: ReactionChips(
+                  groups: reactions,
+                  outgoing: out,
+                  onOpen: (e) => onOpenReactions(reactions, e),
+                ),
+              ),
             const SizedBox(height: Tokens.s4),
             // Слева источник (и хопы), по центру шлюзы, справа время.
             Row(
@@ -639,15 +655,7 @@ class _Bubble extends StatelessWidget {
               child: GestureDetector(
                 onLongPress: onMenu,
                 onSecondaryTap: onMenu,
-                child: Column(
-                  crossAxisAlignment: out
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-                  children: [
-                    bubble,
-                    if (reactions.isNotEmpty) _Reactions(reactions, nameOf),
-                  ],
-                ),
+                child: bubble,
               ),
             ),
           ),
@@ -680,45 +688,6 @@ class _Quote extends StatelessWidget {
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-      ),
-    );
-  }
-}
-
-class _Reactions extends StatelessWidget {
-  const _Reactions(this.reactions, this.nameOf);
-
-  final List<Message> reactions;
-  final String Function(int num) nameOf;
-
-  @override
-  Widget build(BuildContext context) {
-    // Эмодзи → кто поставил (без повторов, в порядке ленты).
-    final who = <String, List<String>>{};
-    for (final r in reactions) {
-      final names = who[r.body.trim()] ??= [];
-      final name = nameOf(r.fromNum);
-      if (!names.contains(name)) names.add(name);
-    }
-    return Padding(
-      padding: const EdgeInsets.only(top: Tokens.s4),
-      child: Wrap(
-        spacing: Tokens.s4,
-        children: [
-          for (final e in who.entries)
-            Tooltip(
-              message: e.value.join('\n'),
-              triggerMode: TooltipTriggerMode.tap,
-              showDuration: const Duration(seconds: 3),
-              child: Chip(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                label: Text(
-                  e.value.length > 1 ? '${e.key} ${e.value.length}' : e.key,
-                ),
-              ),
-            ),
-        ],
       ),
     );
   }

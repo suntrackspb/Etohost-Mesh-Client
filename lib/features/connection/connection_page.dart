@@ -505,10 +505,12 @@ class _RecentCard extends ConsumerWidget {
           MeshTile(
             title: r.name.isEmpty ? r.address : r.name,
             subtitle: [
-              EndpointKind.values.byName(r.kind).label,
-              if (r.name.isNotEmpty) r.address,
+              [
+                EndpointKind.values.byName(r.kind).label,
+                if (r.name.isNotEmpty) r.address,
+              ].join(' · '),
               if (r.nodeNum != null) nodeIdString(r.nodeNum!),
-            ].join(' · '),
+            ].join('\n'),
             leading: Icon(switch (EndpointKind.values.byName(r.kind)) {
               EndpointKind.ble => Icons.bluetooth,
               EndpointKind.tcp => Icons.wifi,
@@ -553,9 +555,9 @@ class _StatsGrid extends StatelessWidget {
         Icons.monitor_heart_outlined,
         Colors.pink,
         _pct(s.channelUtil),
-        'Загрузка канала',
+        'ChUtil',
       ),
-      (Icons.upload_outlined, Colors.purple, _pct(s.airUtilTx), 'Эфир TX'),
+      (Icons.upload_outlined, Colors.purple, _pct(s.airUtilTx), 'AirUtil'),
     ];
     return LayoutBuilder(
       builder: (context, c) {
