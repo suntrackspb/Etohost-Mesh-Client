@@ -290,6 +290,36 @@ def patch_plugins():
     print("plugins: ok")
 
 
+def patch_icons_config():
+    """flutter_launcher_icons падает на платформе без папки (CI создаёт только
+    свою). Пишем flutter_launcher_icons.yaml — его утилита берёт раньше
+    pubspec — только с существующими платформами; настройки из pubspec."""
+    lines = pathlib.Path("pubspec.yaml").read_text().splitlines()
+    start = lines.index("flutter_launcher_icons:")
+    section = ["flutter_launcher_icons:"]
+    for line in lines[start + 1:]:
+        if line and not line.startswith((" ", "#")):
+            break
+        section.append(line)
+    skip = None
+    out = []
+    for line in section:
+        m = re.match(r"  (\w+):", line)
+        if m:
+            key = m.group(1)
+            skip = key in ("ios", "macos", "windows", "android") and \
+                not pathlib.Path(key).is_dir()
+            if skip and key in ("ios", "android"):
+                out.append(f"  {key}: false")
+                continue
+        elif not line.startswith("    "):
+            skip = False
+        if not skip:
+            out.append(line)
+    pathlib.Path("flutter_launcher_icons.yaml").write_text("\n".join(out) + "\n")
+    print("icons config: ok")
+
+
 if __name__ == "__main__":
     patch_name()
     patch_app_id()
@@ -298,3 +328,4 @@ if __name__ == "__main__":
     patch_notifications()
     patch_linux_icon()
     patch_plugins()
+    patch_icons_config()

@@ -13,3 +13,6 @@ windows/
 linux/
 web/
 PLAN.md
+
+# Генерирует tool/patch_platforms.py
+flutter_launcher_icons.yaml
