@@ -11,6 +11,7 @@ import '../../core/proto/mesh.dart';
 import '../../core/radio/endpoint.dart';
 import '../../core/radio/radio_session.dart';
 import '../../core/transport/ble_transport.dart';
+import '../../core/transport/net_discovery.dart';
 import '../../core/transport/serial_transport.dart';
 import '../../data/database.dart';
 import '../../data/radio_stats.dart';
@@ -30,6 +31,9 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
   Timer? _tick;
   bool _scanning = false;
   String? _error;
+  final _net = NetDiscovery();
+  List<NetNode> _netNodes = const [];
+  String? _netError;
 
   @override
   void initState() {
@@ -44,6 +48,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
   void dispose() {
     _tick?.cancel();
     _scanSub?.cancel();
+    _net.stop();
     if (_scanning) UniversalBle.stopScan();
     _host.dispose();
     super.dispose();
@@ -76,11 +81,33 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
     }
   }
 
+  Future<void> _toggleNet() async {
+    if (_net.running) {
+      await _net.stop();
+      setState(() {});
+      return;
+    }
+    setState(() {
+      _netError = null;
+      _netNodes = const [];
+    });
+    try {
+      await _net.start((nodes) {
+        if (mounted) setState(() => _netNodes = nodes);
+      });
+      if (mounted) setState(() {});
+    } catch (e) {
+      await _net.stop();
+      if (mounted) setState(() => _netError = 'Поиск в сети: $e');
+    }
+  }
+
   Future<void> _connect(RadioTarget target) async {
     if (_scanning) {
       await UniversalBle.stopScan();
       setState(() => _scanning = false);
     }
+    if (_net.running) await _net.stop();
     await ref.read(radioProvider).connect(target);
   }
 
@@ -95,8 +122,8 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
   Widget build(BuildContext context) {
     final radio = ref.watch(radioProvider);
     final theme = Theme.of(context);
-    final devices = _devices.values.toList()
-      ..sort((a, b) => (b.rssi ?? -200).compareTo(a.rssi ?? -200));
+    // В порядке появления: RSSI скачет, сортировка по нему дёргает список.
+    final devices = _devices.values.toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Подключение')),
@@ -108,6 +135,41 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
           SectionCard(
             title: 'Wi-Fi (TCP)',
             children: [
+              if (netDiscoverySupported) ...[
+                MeshTile(
+                  title: _net.running
+                      ? 'Идёт поиск в сети…'
+                      : 'Найти ноды в локальной сети',
+                  leading: _net.running
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.wifi_find),
+                  trailing: TextButton(
+                    onPressed: _toggleNet,
+                    child: Text(_net.running ? 'Стоп' : 'Искать'),
+                  ),
+                ),
+                if (_netError != null)
+                  Padding(
+                    padding: const EdgeInsets.all(Tokens.s16),
+                    child: Text(
+                      _netError!,
+                      style: TextStyle(color: theme.colorScheme.error),
+                    ),
+                  ),
+                for (final n in _netNodes)
+                  MeshTile(
+                    title: n.name,
+                    subtitle: n.address,
+                    leading: const Icon(Icons.wifi),
+                    onTap: () => _connect(
+                      Endpoint(EndpointKind.tcp, n.address, n.name).toTarget(),
+                    ),
+                  ),
+              ],
               Padding(
                 padding: const EdgeInsets.all(Tokens.s16),
                 child: Row(
@@ -200,77 +262,142 @@ class _StatusCard extends ConsumerWidget {
     final stats = ref.watch(radioStatsProvider);
     final now = DateTime.now();
     final target = radio.target;
+    final theme = Theme.of(context);
+    final muted = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
     return SectionCard(
       title: 'Нода',
       children: [
         Padding(
-          padding: const EdgeInsets.all(Tokens.s16),
+          padding: const EdgeInsets.fromLTRB(
+            Tokens.s16,
+            Tokens.s12,
+            Tokens.s12,
+            Tokens.s12,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              StatusDot(
-                color: radioStateColor(radio.state),
-                label: radioStateLabel(radio.state),
+              Row(
+                children: [
+                  Icon(
+                    Icons.circle,
+                    size: 10,
+                    color: radioStateColor(radio.state),
+                  ),
+                  const SizedBox(width: Tokens.s8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          target?.title ?? radioStateLabel(radio.state),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        if (target != null)
+                          Text(
+                            [
+                              if (radio.myNodeNum != null)
+                                nodeIdString(radio.myNodeNum!),
+                              radioStateLabel(radio.state),
+                            ].join(' · '),
+                            style: muted,
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (target != null && radio.state == RadioState.idle)
+                    FilledButton(
+                      onPressed: radio.reconnect,
+                      child: const Text('Подключить'),
+                    )
+                  else if (target != null)
+                    OutlinedButton(
+                      onPressed: radio.disconnect,
+                      child: const Text('Отключить'),
+                    ),
+                ],
               ),
               if (target != null) ...[
                 const SizedBox(height: Tokens.s8),
-                Text(
-                  target.title,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-              if (radio.myNodeNum != null) Text(nodeIdString(radio.myNodeNum!)),
-              const SizedBox(height: Tokens.s8),
-              Wrap(
-                spacing: Tokens.s16,
-                runSpacing: Tokens.s4,
-                children: [
-                  if (radio.connectedSince != null)
-                    Text(
-                      'держится ${formatDuration(now.difference(radio.connectedSince!))}',
-                    ),
-                  if (radio.lastRx != null)
-                    Text(
-                      'пакет ${formatDuration(now.difference(radio.lastRx!))} назад',
-                    ),
-                  if (target != null) Text('пакетов ${radio.packetCount}'),
-                  if (target != null) Text('разрывов ${radio.disconnects}'),
-                ],
-              ),
-              if (stats != null) ...[
-                const SizedBox(height: Tokens.s12),
-                _StatsGrid(stats),
-              ],
-              if (target != null) ...[
-                const SizedBox(height: Tokens.s12),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: SwitchListTile.adaptive(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Автопереподключение'),
-                        value: radio.autoReconnect,
-                        onChanged: (v) => radio.autoReconnect = v,
-                      ),
+                    _Metric(
+                      Icons.timer_outlined,
+                      radio.connectedSince == null
+                          ? '—'
+                          : formatDuration(
+                              now.difference(radio.connectedSince!),
+                            ),
+                      'Соединение держится',
                     ),
-                    const SizedBox(width: Tokens.s12),
-                    if (radio.state == RadioState.idle)
-                      FilledButton(
-                        onPressed: radio.reconnect,
-                        child: const Text('Подключить'),
-                      )
-                    else
-                      OutlinedButton(
-                        onPressed: radio.disconnect,
-                        child: const Text('Отключить'),
-                      ),
+                    _Metric(
+                      Icons.south_west,
+                      radio.lastRx == null
+                          ? '—'
+                          : formatDuration(now.difference(radio.lastRx!)),
+                      'Последний пакет от ноды — столько назад',
+                    ),
+                    _Metric(
+                      Icons.swap_vert,
+                      '${radio.packetCount}',
+                      'Пакетов получено',
+                    ),
+                    _Metric(
+                      Icons.link_off,
+                      '${radio.disconnects}',
+                      'Разрывов соединения',
+                    ),
                   ],
                 ),
+              ],
+              if (stats != null) ...[
+                const SizedBox(height: Tokens.s8),
+                _StatsGrid(stats),
               ],
             ],
           ),
         ),
+        if (target != null)
+          SwitchListTile.adaptive(
+            dense: true,
+            title: const Text('Переподключение'),
+            subtitle: const Text('при обрыве связи'),
+            value: radio.autoReconnect,
+            onChanged: (v) => setAutoReconnect(ref, v),
+          ),
       ],
+    );
+  }
+}
+
+/// Счётчик соединения: иконка и значение, пояснение — в подсказке.
+class _Metric extends StatelessWidget {
+  const _Metric(this.icon, this.value, this.hint);
+
+  final IconData icon;
+  final String value;
+  final String hint;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.onSurfaceVariant;
+    return Tooltip(
+      message: hint,
+      triggerMode: TooltipTriggerMode.tap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: Tokens.s4),
+          Text(value, style: theme.textTheme.bodyMedium),
+        ],
+      ),
     );
   }
 }
@@ -442,7 +569,10 @@ class _StatsGrid extends StatelessWidget {
             for (final (icon, color, value, label) in tiles)
               Container(
                 width: w,
-                padding: const EdgeInsets.all(Tokens.s12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Tokens.s12,
+                  vertical: Tokens.s8,
+                ),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
@@ -450,10 +580,21 @@ class _StatsGrid extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(icon, color: color, size: 18),
-                    const SizedBox(height: Tokens.s4),
-                    FittedBox(
-                      child: Text(value, style: theme.textTheme.titleLarge),
+                    Row(
+                      children: [
+                        Icon(icon, color: color, size: 16),
+                        const SizedBox(width: Tokens.s4),
+                        Expanded(
+                          child: FittedBox(
+                            alignment: Alignment.centerLeft,
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              value,
+                              style: theme.textTheme.titleMedium,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     Text(
                       label,

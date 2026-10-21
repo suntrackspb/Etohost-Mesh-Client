@@ -54,6 +54,9 @@ final journalProvider = ChangeNotifierProvider<Journal>((ref) {
 /// Соединение с нодой. Пакеты сразу уходят в БД через [PacketRouter].
 final radioProvider = ChangeNotifierProvider<RadioSession>((ref) {
   final session = RadioSession(ref.read(journalProvider));
+  ref.read(databaseProvider).getSetting(AppSettingKeys.autoReconnect).then((v) {
+    if (v == 'false') session.autoReconnect = false;
+  });
   final router = PacketRouter(ref.read(databaseProvider));
   final sub = session.packets.asyncMap(router.handle).listen(null);
 
@@ -415,6 +418,12 @@ final autoConnectProvider = StreamProvider<bool>(
       .watchSetting(AppSettingKeys.autoConnect)
       .map((v) => v != 'false'),
 );
+
+/// Переподключение при обрыве: сразу в сессию и в настройки.
+void setAutoReconnect(WidgetRef ref, bool v) {
+  ref.read(radioProvider).autoReconnect = v;
+  ref.read(databaseProvider).setSetting(AppSettingKeys.autoReconnect, '$v');
+}
 
 Endpoint endpointOf(RecentConnection r) =>
     Endpoint(EndpointKind.values.byName(r.kind), r.address, r.name);

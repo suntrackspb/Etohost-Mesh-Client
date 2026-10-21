@@ -10,6 +10,9 @@ abstract final class AppSettingKeys {
   /// 'true'/'false'; по умолчанию включено.
   static const autoConnect = 'connection.autoConnect';
 
+  /// Переподключаться при обрыве: 'true'/'false', по умолчанию включено.
+  static const autoReconnect = 'connection.autoReconnect';
+
   /// Проверять новую версию на GitHub при запуске (по умолчанию — да).
   static const updateAutoCheck = 'update.autoCheck';
 

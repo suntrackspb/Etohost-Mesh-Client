@@ -41,6 +41,8 @@ def patch_android():
         '<uses-permission android:name="android.permission.WAKE_LOCK"/>',
         # connectedDevice по TCP: Android 14 требует одно из «сетевых» разрешений.
         '<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>',
+        # Поиск нод в локальной сети (mDNS _meshtastic._tcp).
+        '<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>',
     ]
     # Раньше геолокация была ограничена Android 11 — снимаем ограничение.
     s = re.sub(r'(android\.permission\.ACCESS_(?:FINE|COARSE)_LOCATION")\s+android:maxSdkVersion="30"', r"\1", s)
@@ -175,6 +177,13 @@ def patch_apple():
         "NSLocationWhenInUseUsageDescription": LOC_TEXT,
         "NSCameraUsageDescription": CAM_TEXT,
     })
+    # Поиск нод в локальной сети: iOS показывает только объявленные типы Bonjour.
+    for f in (ROOT / "ios/Runner/Info.plist", ROOT / "macos/Runner/Info.plist"):
+        if f.exists() and "NSBonjourServices" not in f.read_text():
+            s = re.sub(r"</dict>\s*</plist>\s*$",
+                       "\t<key>NSBonjourServices</key>\n\t<array>\n\t\t<string>_meshtastic._tcp</string>\n"
+                       "\t</array>\n</dict>\n</plist>\n", f.read_text())
+            f.write_text(s)
     plist_add(ROOT / "macos/Runner/Info.plist", {
         "NSBluetoothAlwaysUsageDescription": BT_TEXT,
         "NSLocationUsageDescription": LOC_TEXT,

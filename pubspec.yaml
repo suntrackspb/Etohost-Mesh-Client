@@ -28,6 +28,7 @@ dependencies:
   latlong2: ^0.9.1
   mobile_scanner: ^7.4.2
   mqtt_client: ^10.13.0
+  nsd: ^5.0.1
   package_info_plus: ^10.2.2
   path_provider: ^2.1.6
   protobuf: ^6.1.0
