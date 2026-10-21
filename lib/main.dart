@@ -9,6 +9,7 @@ import 'app/mqtt_providers.dart';
 import 'app/notify_providers.dart';
 import 'app/providers.dart';
 import 'app/router.dart';
+import 'core/desktop/linux_desktop_entry.dart';
 import 'core/radio/journal.dart';
 import 'ui/theme.dart';
 
@@ -28,6 +29,10 @@ void main() {
     journal.add(JournalKind.error, '$e\n$st');
     return false;
   };
+
+  installLinuxDesktopEntry().catchError(
+    (Object e) => journal.add(JournalKind.error, 'Ярлык Linux: $e'),
+  );
 
   runApp(
     UncontrolledProviderScope(container: container, child: const MeshApp()),

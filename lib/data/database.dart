@@ -339,6 +339,10 @@ class AppDatabase extends _$AppDatabase {
   // После релиза — нормальные пошаговые миграции.
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    // Первый запуск мог прерваться посреди createAll: таблицы есть
+    // (CREATE TABLE IF NOT EXISTS), user_version — 0, и повторный
+    // CREATE INDEX падает «already exists». Начинаем с чистой базы.
+    onCreate: _recreate,
     onUpgrade: (m, from, to) async {
       // С 5-й версии у тестеров уже есть данные — только добавляем колонки.
       if (from >= 5 && from <= 7) {
@@ -352,12 +356,23 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(nodes, nodes.modemPreset);
         return;
       }
-      for (final t in allTables) {
-        await m.deleteTable(t.actualTableName);
-      }
-      await m.createAll();
+      await _recreate(m);
     },
   );
+
+  /// Удаляет всё, что есть в файле (в том числе таблицы и индексы старых
+  /// схем), и создаёт схему заново.
+  Future<void> _recreate(Migrator m) async {
+    final rows = await customSelect(
+      "SELECT type, name FROM sqlite_master "
+      "WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%'",
+    ).get();
+    for (final r in rows) {
+      final type = r.read<String>('type') == 'view' ? 'VIEW' : 'TABLE';
+      await customStatement('DROP $type IF EXISTS "${r.read<String>('name')}"');
+    }
+    await m.createAll();
+  }
 
   static QueryExecutor _open() => driftDatabase(name: 'meshtastic');
 

@@ -85,8 +85,11 @@ jobs:
       # Сервис картинок: переменные репозитория IMAGES_URL и IMAGES_KEY
       # (не секреты — адрес и публичный ключ). Пусто — кнопки «Картинка» нет.
       # CARTO_KEY — тёмная подложка карты; пусто — только OSM.
+      # Отчёты: переменная REPORT_URL и секрет REPORT_KEY; пусто — отправки нет.
       - run: |
           ${{ matrix.cmd }} $VERSION_ARGS \
+            --dart-define=REPORT_URL="${{ vars.REPORT_URL }}" \
+            --dart-define=REPORT_KEY="${{ secrets.REPORT_KEY }}" \
             --dart-define=IMAGES_URL="${{ vars.IMAGES_URL }}" \
             --dart-define=IMAGES_KEY="${{ vars.IMAGES_KEY }}" \
             --dart-define=CARTO_KEY="${{ vars.CARTO_KEY }}"

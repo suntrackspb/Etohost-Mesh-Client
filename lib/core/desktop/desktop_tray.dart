@@ -36,7 +36,8 @@ class DesktopTray with WindowListener, TrayListener {
         await trayManager.setIcon(
           Platform.isWindows ? 'assets/tray/icon.ico' : 'assets/tray/icon.png',
         );
-        await trayManager.setToolTip('Etohost Mesh');
+        // На Linux (AppIndicator) подсказки нет — вызов бросает исключение.
+        if (Platform.isWindows) await trayManager.setToolTip('Etohost Mesh');
         await trayManager.setContextMenu(
           Menu(
             items: [
@@ -74,6 +75,7 @@ class DesktopTray with WindowListener, TrayListener {
     if (_shown) windowManager.hide();
   }
 
+  // На Linux щелчки по значку не приходят: AppIndicator сам показывает меню.
   @override
   void onTrayIconMouseDown() => _show();
 
