@@ -983,136 +983,146 @@ class _ComposerState extends ConsumerState<_Composer> {
     final progress = _progress;
     final reply = widget.replyTo;
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: scheme.outlineVariant)),
-        ),
-        padding: const EdgeInsets.fromLTRB(
-          Tokens.s12,
-          Tokens.s4,
-          Tokens.s4,
-          Tokens.s4,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (reply != null)
-              Row(
-                children: [
-                  Icon(Icons.reply, size: 16, color: scheme.primary),
-                  const SizedBox(width: Tokens.s8),
-                  Expanded(
+    // Свайп вниз по строке ввода прячет клавиатуру.
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onVerticalDragUpdate: (d) {
+        if (d.delta.dy > 4 && _focus.hasFocus) _focus.unfocus();
+      },
+      child: SafeArea(
+        top: false,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: scheme.outlineVariant)),
+          ),
+          padding: const EdgeInsets.fromLTRB(
+            Tokens.s12,
+            Tokens.s4,
+            Tokens.s4,
+            Tokens.s4,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (reply != null)
+                Row(
+                  children: [
+                    Icon(Icons.reply, size: 16, color: scheme.primary),
+                    const SizedBox(width: Tokens.s8),
+                    Expanded(
+                      child: Text(
+                        '${widget.replyAuthor}: ${reply.body}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Отменить ответ',
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: widget.onCancelReply,
+                    ),
+                  ],
+                ),
+              // Счётчик над строкой: внутри поля он менял его высоту и
+              // сбивал выравнивание с кнопками.
+              if (bytes > 0)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      top: Tokens.s4,
+                      right: Tokens.s12,
+                    ),
                     child: Text(
-                      '${widget.replyAuthor}: ${reply.body}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      parts <= 1
+                          ? '$bytes / $maxMessageBytes'
+                          : over
+                          ? 'Слишком длинно: больше ${MessageSplit.maxParts} сообщений'
+                          : '$bytes байт · уйдёт $parts сообщениями',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: over ? scheme.error : scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
-                  IconButton(
-                    tooltip: 'Отменить ответ',
-                    icon: const Icon(Icons.close, size: 18),
-                    onPressed: widget.onCancelReply,
+                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: CallbackShortcuts(
+                      bindings: {
+                        const SingleActivator(LogicalKeyboardKey.enter):
+                            _submit,
+                        const SingleActivator(LogicalKeyboardKey.numpadEnter):
+                            _submit,
+                      },
+                      child: TextField(
+                        controller: _text,
+                        focusNode: _focus,
+                        minLines: 1,
+                        maxLines: 5,
+                        keyboardType: TextInputType.multiline,
+                        decoration: InputDecoration(
+                          hintText: canSend
+                              ? 'Сообщение'
+                              : 'Подключитесь к ноде, чтобы писать',
+                          border: InputBorder.none,
+                          // Одна строка — ровно высота кнопок (48), текст
+                          // по центру вровень с ними.
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
+                  if (images != null)
+                    _uploading
+                        ? const SizedBox(
+                            width: _rowHeight,
+                            height: _rowHeight,
+                            child: Center(
+                              child: SizedBox.square(
+                                dimension: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                          )
+                        : IconButton(
+                            tooltip: 'Картинка',
+                            icon: const Icon(Icons.image_outlined),
+                            onPressed: canSend
+                                ? () => _attachImage(images)
+                                : null,
+                          ),
+                  SizedBox(
+                    height: _rowHeight,
+                    child: Center(child: _ZipButton(level: zip)),
+                  ),
+                  if (progress != null)
+                    SizedBox(
+                      width: _rowHeight,
+                      height: _rowHeight,
+                      child: Center(
+                        child: Text(
+                          '${progress.$1}/${progress.$2}',
+                          style: Theme.of(context).textTheme.labelMedium,
+                        ),
+                      ),
+                    )
+                  else
+                    IconButton(
+                      tooltip: 'Отправить',
+                      icon: const Icon(Icons.send),
+                      onPressed: canSend && _valid(zip) ? _submit : null,
+                    ),
                 ],
               ),
-            // Счётчик над строкой: внутри поля он менял его высоту и
-            // сбивал выравнивание с кнопками.
-            if (bytes > 0)
-              Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: Tokens.s4,
-                    right: Tokens.s12,
-                  ),
-                  child: Text(
-                    parts <= 1
-                        ? '$bytes / $maxMessageBytes'
-                        : over
-                        ? 'Слишком длинно: больше ${MessageSplit.maxParts} сообщений'
-                        : '$bytes байт · уйдёт $parts сообщениями',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: over ? scheme.error : scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: CallbackShortcuts(
-                    bindings: {
-                      const SingleActivator(LogicalKeyboardKey.enter): _submit,
-                      const SingleActivator(LogicalKeyboardKey.numpadEnter):
-                          _submit,
-                    },
-                    child: TextField(
-                      controller: _text,
-                      focusNode: _focus,
-                      minLines: 1,
-                      maxLines: 5,
-                      keyboardType: TextInputType.multiline,
-                      decoration: InputDecoration(
-                        hintText: canSend
-                            ? 'Сообщение'
-                            : 'Подключитесь к ноде, чтобы писать',
-                        border: InputBorder.none,
-                        // Одна строка — ровно высота кнопок (48), текст
-                        // по центру вровень с ними.
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                if (images != null)
-                  _uploading
-                      ? const SizedBox(
-                          width: _rowHeight,
-                          height: _rowHeight,
-                          child: Center(
-                            child: SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                        )
-                      : IconButton(
-                          tooltip: 'Картинка',
-                          icon: const Icon(Icons.image_outlined),
-                          onPressed: canSend
-                              ? () => _attachImage(images)
-                              : null,
-                        ),
-                SizedBox(
-                  height: _rowHeight,
-                  child: Center(child: _ZipButton(level: zip)),
-                ),
-                if (progress != null)
-                  SizedBox(
-                    width: _rowHeight,
-                    height: _rowHeight,
-                    child: Center(
-                      child: Text(
-                        '${progress.$1}/${progress.$2}',
-                        style: Theme.of(context).textTheme.labelMedium,
-                      ),
-                    ),
-                  )
-                else
-                  IconButton(
-                    tooltip: 'Отправить',
-                    icon: const Icon(Icons.send),
-                    onPressed: canSend && _valid(zip) ? _submit : null,
-                  ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
