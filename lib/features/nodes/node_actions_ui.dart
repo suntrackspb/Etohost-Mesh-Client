@@ -115,6 +115,24 @@ List<Widget> nodeActionButtons(BuildContext context, WidgetRef ref, Node n) {
   ];
 }
 
+/// Действия в карточке своей ноды.
+List<Widget> ownNodeActionButtons(BuildContext context, WidgetRef ref) {
+  if (!ref.watch(canSendProvider)) return const [];
+  final a = ref.read(nodeActionsProvider);
+  return [
+    PopupMenuButton<void Function()>(
+      onSelected: (f) => f(),
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: () =>
+              _run(context, a.broadcastNodeInfo, 'NodeInfo отправлена в сеть'),
+          child: const Text('Отправить Nodeinfo'),
+        ),
+      ],
+    ),
+  ];
+}
+
 /// Откуда данные о ноде: эфир приоритетнее зеркала.
 String nodeSourceText(Node n) => switch ((n.onRadio, n.onMirror)) {
   (true, true) => 'эфир (зеркало дополняет)',

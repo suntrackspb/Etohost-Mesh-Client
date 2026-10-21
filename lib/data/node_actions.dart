@@ -89,13 +89,35 @@ class NodeActions {
     return (id, r);
   }
 
-  /// Отправить свою NodeInfo и попросить ответную (ключ, имя).
-  Future<DeliveryResult> exchangeNodeInfo(int num) async {
+  Future<User> _ownUser() async {
     final me = _me();
     final own = await (db.select(
       db.nodes,
     )..where((n) => n.num.equals(me))).getSingleOrNull();
     if (own == null) throw StateError('своя нода ещё не загружена');
+    return ownUser(own);
+  }
+
+  /// Разослать свою NodeInfo всем — чтобы новую ноду быстрее узнали сеть
+  /// и зеркало (без этого сервис картинок её не пускает). Без подтверждения:
+  /// у широковещательного пакета его некому дать.
+  Future<DeliveryResult> broadcastNodeInfo() async {
+    final user = await _ownUser();
+    return _send(
+      MeshPacket(
+        id: _nextId(),
+        to: 0xffffffff,
+        decoded: Data(
+          portnum: PortNum.NODEINFO_APP,
+          payload: user.writeToBuffer(),
+        ),
+      ),
+    );
+  }
+
+  /// Отправить свою NodeInfo и попросить ответную (ключ, имя).
+  Future<DeliveryResult> exchangeNodeInfo(int num) async {
+    final user = await _ownUser();
     return _send(
       MeshPacket(
         id: _nextId(),
@@ -103,7 +125,7 @@ class NodeActions {
         wantAck: true,
         decoded: Data(
           portnum: PortNum.NODEINFO_APP,
-          payload: ownUser(own).writeToBuffer(),
+          payload: user.writeToBuffer(),
           wantResponse: true,
         ),
       ),

@@ -54,7 +54,9 @@ class NodeDetailPage extends ConsumerWidget {
                   : null,
             ),
           if (node.value != null && num != me)
-            ...nodeActionButtons(context, ref, node.value!),
+            ...nodeActionButtons(context, ref, node.value!)
+          else if (num == me)
+            ...ownNodeActionButtons(context, ref),
         ],
       ),
       body: node.when(

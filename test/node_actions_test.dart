@@ -74,6 +74,17 @@ void main() {
     expect(User.fromBuffer(sent[1].decoded.payload).longName, 'n170');
   });
 
+  test('рассылка своей NodeInfo — всем, без ответа и hop_limit', () async {
+    await actions().broadcastNodeInfo();
+    final p = sent.single;
+    expect(p.to, 0xffffffff);
+    expect(p.wantAck, isFalse);
+    expect(p.decoded.wantResponse, isFalse);
+    expect(p.hopLimit, 0);
+    expect(p.decoded.portnum, PortNum.NODEINFO_APP);
+    expect(User.fromBuffer(p.decoded.payload).longName, 'n170');
+  });
+
   test('разбор трассировки: SNR ×4, неизвестный — null', () {
     final rd = RouteDiscovery(
       route: [0x10],
