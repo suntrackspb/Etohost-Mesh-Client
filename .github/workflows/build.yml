@@ -72,7 +72,7 @@ jobs:
             --project-name etohost_mesh --org ru.etohost
           rm -f test/widget_test.dart
           python3 tool/patch_platforms.py || python tool/patch_platforms.py
-          dart run flutter_launcher_icons
+          if [ -f flutter_launcher_icons.yaml ]; then dart run flutter_launcher_icons; fi
 
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings

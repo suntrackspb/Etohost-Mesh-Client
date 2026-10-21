@@ -294,7 +294,7 @@ def patch_icons_config():
     """flutter_launcher_icons падает на платформе без папки (CI создаёт только
     свою). Пишем flutter_launcher_icons.yaml — его утилита берёт раньше
     pubspec — только с существующими платформами; настройки из pubspec."""
-    lines = pathlib.Path("pubspec.yaml").read_text().splitlines()
+    lines = pathlib.Path("pubspec.yaml").read_text(encoding="utf-8").splitlines()
     start = lines.index("flutter_launcher_icons:")
     section = ["flutter_launcher_icons:"]
     for line in lines[start + 1:]:
@@ -316,7 +316,13 @@ def patch_icons_config():
             skip = False
         if not skip:
             out.append(line)
-    pathlib.Path("flutter_launcher_icons.yaml").write_text("\n".join(out) + "\n")
+    cfg = pathlib.Path("flutter_launcher_icons.yaml")
+    # Linux: иконку кладёт patch_linux_icon, утилите делать нечего.
+    if not any(pathlib.Path(p).is_dir() for p in ("android", "ios", "macos", "windows")):
+        cfg.unlink(missing_ok=True)
+        print("icons config: нет платформ для утилиты")
+        return
+    cfg.write_text("\n".join(out) + "\n", encoding="utf-8")
     print("icons config: ok")
 
 
