@@ -40,11 +40,16 @@ final _etohostFile = RegExp(
 
 /// Ссылка на картинку, которую можно показать прямо в ленте: только свои
 /// сервисы (i.jab.su и img.etohost.ru), чужие адреса не грузим — иначе
-/// любой собеседник узнает IP по запросу к своему серверу.
+/// любой собеседник узнает IP по запросу к своему серверу. Ссылку http
+/// грузим по https: оба сервиса его отдают, а iOS http без исключений не
+/// пускает.
 Uri? imagePreview(Uri link) {
-  if (link.scheme != 'https' || link.hasQuery || link.hasFragment) {
+  if (!const {'http', 'https'}.contains(link.scheme) ||
+      link.hasQuery ||
+      link.hasFragment) {
     return null;
   }
+  link = link.replace(scheme: 'https');
   return switch (link.host.toLowerCase()) {
     'i.jab.su' when _jabId.hasMatch(link.path) => link,
     'img.etohost.ru' when _etohostFile.hasMatch(link.path) => link,

@@ -16,13 +16,19 @@ void main() {
       'https://i.jab.su/',
       'https://i.jab.su/api/v1/health',
       'https://i.jab.su/V1LVzGN?x=1',
-      'http://i.jab.su/V1LVzGN',
+      'ftp://i.jab.su/V1LVzGN',
       'https://img.etohost.ru/8315uyb.mp4',
       'https://evil.example/a.png',
       'https://i.jab.su.evil.example/V1LVzGN',
     ]) {
       expect(imagePreviews(t), isEmpty, reason: t);
     }
+  });
+
+  test('http грузится по https', () {
+    expect(imagePreviews('http://img.etohost.ru/ggw1abc.jpg'), [
+      Uri.parse('https://img.etohost.ru/ggw1abc.jpg'),
+    ]);
   });
 
   test('повторы схлопываются, не больше трёх', () {
