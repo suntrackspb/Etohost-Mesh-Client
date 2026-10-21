@@ -59,7 +59,10 @@ class DesktopTray with WindowListener, TrayListener {
     await windowManager.setPreventClose(_shown);
   }
 
-  Future<void> _show() async {
+  /// Вывести окно на передний план: из трея, из свёрнутого, из-под других.
+  Future<void> bringToFront() async {
+    if (!_ready) return;
+    if (await windowManager.isMinimized()) await windowManager.restore();
     await windowManager.show();
     await windowManager.focus();
   }
@@ -77,7 +80,7 @@ class DesktopTray with WindowListener, TrayListener {
 
   // На Linux щелчки по значку не приходят: AppIndicator сам показывает меню.
   @override
-  void onTrayIconMouseDown() => _show();
+  void onTrayIconMouseDown() => bringToFront();
 
   @override
   void onTrayIconRightMouseDown() => trayManager.popUpContextMenu();
@@ -86,7 +89,7 @@ class DesktopTray with WindowListener, TrayListener {
   void onTrayMenuItemClick(MenuItem menuItem) {
     switch (menuItem.key) {
       case 'show':
-        _show();
+        bringToFront();
       case 'exit':
         _exit();
     }

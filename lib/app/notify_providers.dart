@@ -10,6 +10,7 @@ import '../data/notify/alert_watcher.dart';
 import '../data/notify/message_alerts.dart';
 import '../data/notify/open_chats.dart';
 import '../features/chat/chat_page.dart';
+import 'desktop_tray_provider.dart';
 import 'providers.dart';
 import 'router.dart';
 
@@ -57,9 +58,11 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
         ),
   );
 
-  final taps = notifier.taps.listen(
-    (chat) => appRouter.go(ChatPage.location(chat)),
-  );
+  final taps = notifier.taps.listen((chat) {
+    appRouter.go(ChatPage.location(chat));
+    // Десктоп: окно могло быть в трее или свёрнуто.
+    ref.read(desktopTrayProvider)?.bringToFront();
+  });
   () async {
     await notifier.init();
     // Разрешение спрашиваем один раз, при первом запуске.

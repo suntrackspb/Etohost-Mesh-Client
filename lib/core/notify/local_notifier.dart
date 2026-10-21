@@ -62,7 +62,10 @@ class LocalNotifier {
         if (p != null && p.isNotEmpty) _taps.add(p);
       },
     );
-    // Приложение запустили нажатием на уведомление.
+    // Приложение запустили нажатием на уведомление. На Linux плагин
+    // этого не умеет (UnimplementedError) — и без проверки init падал,
+    // а с ним и все уведомления.
+    if (Platform.isLinux) return;
     final launch = await _p.getNotificationAppLaunchDetails();
     final p = launch?.notificationResponse?.payload;
     if ((launch?.didNotificationLaunchApp ?? false) && p != null) {
