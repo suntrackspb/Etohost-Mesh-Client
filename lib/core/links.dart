@@ -62,3 +62,9 @@ List<Uri> imagePreviews(String text, {int max = 3}) {
   }
   return out;
 }
+
+/// id картинки сервиса i.jab.su (там есть удаление и жалобы), иначе null.
+String? jabImageId(Uri link) =>
+    link.host.toLowerCase() == 'i.jab.su' && imagePreview(link) != null
+    ? link.path.substring(1)
+    : null;

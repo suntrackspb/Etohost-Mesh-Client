@@ -36,4 +36,10 @@ void main() {
       hasLength(3),
     );
   });
+
+  test('id картинки только у i.jab.su', () {
+    expect(jabImageId(Uri.parse('https://i.jab.su/V1LVzGN')), 'V1LVzGN');
+    expect(jabImageId(Uri.parse('https://img.etohost.ru/ggw1abc.jpg')), isNull);
+    expect(jabImageId(Uri.parse('https://i.jab.su/api/v1/health')), isNull);
+  });
 }

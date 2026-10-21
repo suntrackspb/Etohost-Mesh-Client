@@ -75,23 +75,36 @@ class ImageUploader {
   static String hex(List<int> b) =>
       b.map((x) => x.toRadixString(16).padLeft(2, '0')).join();
 
+  /// Заголовки подписи ноды для тела запроса.
+  Future<Map<String, String>> _signed(
+    List<int> body,
+    String node,
+    List<int> nodePrivateKey,
+    DateTime? now,
+  ) async {
+    final n = node.toLowerCase();
+    final ts = (now ?? DateTime.now()).millisecondsSinceEpoch ~/ 1000;
+    final sha = hex(await sha256(body));
+    final key = await hmacKey(nodePrivateKey, servicePublicKey);
+    return {
+      'X-Node': n,
+      'X-Ts': '$ts',
+      'X-Sha256': sha,
+      'X-Sig': await sign(key, n, ts, sha),
+    };
+  }
+
   Future<UploadedImage> upload({
     required Uint8List body,
     required String node,
     required List<int> nodePrivateKey,
     DateTime? now,
   }) async {
-    final ts = (now ?? DateTime.now()).millisecondsSinceEpoch ~/ 1000;
-    final sha = hex(await sha256(body));
-    final key = await hmacKey(nodePrivateKey, servicePublicKey);
     final res = await _client
         .post(
           baseUrl.resolve('api/v1/upload'),
           headers: {
-            'X-Node': node.toLowerCase(),
-            'X-Ts': '$ts',
-            'X-Sha256': sha,
-            'X-Sig': await sign(key, node.toLowerCase(), ts, sha),
+            ...await _signed(body, node, nodePrivateKey, now),
             'Content-Type': 'application/octet-stream',
           },
           body: body,
@@ -113,12 +126,24 @@ class ImageUploader {
     }
   }
 
-  Future<void> report(String id, String reason) async {
+  /// Жалоба подписана нодой, как загрузка (без ноды сервис жалобу не примет).
+  /// Повторная жалоба той же ноды на ту же картинку — тоже успех.
+  Future<void> report(
+    String id,
+    String reason, {
+    required String node,
+    required List<int> nodePrivateKey,
+    DateTime? now,
+  }) async {
+    final body = utf8.encode(jsonEncode({'reason': reason}));
     final res = await _client
         .post(
           baseUrl.resolve('api/v1/$id/report'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'reason': reason}),
+          headers: {
+            ...await _signed(body, node, nodePrivateKey, now),
+            'Content-Type': 'application/json',
+          },
+          body: body,
         )
         .timeout(timeout, onTimeout: _timedOut);
     if (res.statusCode != 200) throw ImageError.fromResponse(res);
@@ -177,7 +202,8 @@ class ImageError implements Exception {
         'Подпись не принята — ключ ноды изменился? Попробуйте позже',
     'stale_ts': 'Неверное время на устройстве',
     'banned': 'Загрузка картинок для вас заблокирована',
-    'rate_limited': 'Слишком много картинок, попробуйте позже',
+    'rate_limited': 'Слишком часто, попробуйте позже',
+    'not_found': 'Картинки уже нет',
     'too_large': 'Картинка слишком большая',
     'bad_image': 'Файл не похож на картинку',
     'keys_unavailable': 'Сервис временно недоступен',

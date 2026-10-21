@@ -74,4 +74,29 @@ void main() {
       throwsA(isA<ImageError>().having((e) => e.code, 'code', 'node_unknown')),
     );
   });
+
+  test('жалоба подписана нодой', () async {
+    late http.Request sent;
+    final up = ImageUploader(
+      Uri.parse('https://i.jab.su/'),
+      svcPub,
+      client: MockClient((r) async {
+        sent = r;
+        return http.Response('{"ok":true}', 200);
+      }),
+    );
+    await up.report(
+      'Ab3dE5f',
+      'спам',
+      node: node,
+      nodePrivateKey: nodePriv,
+      now: DateTime.fromMillisecondsSinceEpoch(ts * 1000),
+    );
+    expect(sent.url.toString(), 'https://i.jab.su/api/v1/Ab3dE5f/report');
+    expect(jsonDecode(sent.body), {'reason': 'спам'});
+    final sha = ImageUploader.hex(await ImageUploader.sha256(sent.bodyBytes));
+    expect(sent.headers['X-Sha256'], sha);
+    final key = await ImageUploader.hmacKey(nodePriv, svcPub);
+    expect(sent.headers['X-Sig'], await ImageUploader.sign(key, node, ts, sha));
+  });
 }

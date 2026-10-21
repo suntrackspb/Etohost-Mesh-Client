@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../app/images_providers.dart';
 import '../../app/providers.dart';
 import '../../core/links.dart';
+import '../../data/images/image_uploader.dart';
 import '../../ui/kit/kit.dart';
 
 /// Превью картинок из ссылок сообщения (только свои сервисы, см.
@@ -15,6 +17,9 @@ class MessageImages extends ConsumerWidget {
 
   static const _w = 240.0;
   static const _h = 180.0;
+
+  /// Превью декодируется в эту ширину (×3 под плотные экраны).
+  static const cacheWidth = 720;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -64,7 +69,7 @@ class _Thumb extends StatelessWidget {
           height: MessageImages._h,
           fit: BoxFit.cover,
           // Декодируем в размер превью, а не в полный (до 2048 px).
-          cacheWidth: (MessageImages._w * 3).round(),
+          cacheWidth: MessageImages.cacheWidth,
           loadingBuilder: (_, child, p) => p == null
               ? child
               : box(
@@ -88,22 +93,146 @@ class _Thumb extends StatelessWidget {
 
 /// Картинка на весь экран: масштаб пальцами, свайп вниз — закрыть
 /// (когда не увеличена), открыть в браузере.
-class _FullImage extends StatefulWidget {
+class _FullImage extends ConsumerStatefulWidget {
   const _FullImage(this.url);
 
   final Uri url;
 
   @override
-  State<_FullImage> createState() => _FullImageState();
+  ConsumerState<_FullImage> createState() => _FullImageState();
 }
 
-class _FullImageState extends State<_FullImage> {
+class _FullImageState extends ConsumerState<_FullImage> {
   final _zoom = TransformationController();
   var _zoomed = false;
   var _dy = 0.0;
 
   /// Сколько протянуть вниз, чтобы закрыть.
   static const _closeAt = 120.0;
+
+  /// Своя картинка i.jab.su (есть токен удаления); null — чужая или не знаем.
+  UploadedImage? _own;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final id = jabImageId(widget.url);
+    final images = ref.read(imageUploadsProvider);
+    if (id != null && images != null) {
+      images.own(id).then((v) {
+        if (mounted) setState(() => _own = v);
+      });
+    }
+  }
+
+  Future<void> _run(Future<void> Function() action, String done) async {
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      await action();
+      messenger.showSnackBar(SnackBar(content: Text(done)));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('$e')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _delete(ImageUploads images, UploadedImage img) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Удалить картинку?'),
+        content: const Text(
+          'Ссылка в отправленных сообщениях перестанет открываться.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final nav = Navigator.of(context);
+    await _run(() async {
+      await images.delete(img);
+      // Превью в ленте взято из кэша — убрать, чтобы показалось «недоступна».
+      final u = widget.url.toString();
+      NetworkImage(u).evict();
+      ResizeImage(NetworkImage(u), width: MessageImages.cacheWidth).evict();
+      nav.pop();
+    }, 'Картинка удалена');
+  }
+
+  Future<void> _report(ImageUploads images, String id) async {
+    final reason = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Пожаловаться на картинку?'),
+        content: TextField(
+          controller: reason,
+          maxLength: 200,
+          decoration: const InputDecoration(
+            hintText: 'Что не так (необязательно)',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Пожаловаться'),
+          ),
+        ],
+      ),
+    );
+    final text = reason.text.trim();
+    reason.dispose();
+    if (ok != true || !mounted) return;
+    await _run(() => images.report(id, text), 'Жалоба отправлена');
+  }
+
+  List<Widget> _actions() {
+    final images = ref.watch(imageUploadsProvider);
+    final id = jabImageId(widget.url);
+    if (images == null || id == null) return const [];
+    if (_busy) {
+      return const [
+        Padding(
+          padding: EdgeInsets.all(14),
+          child: SizedBox.square(
+            dimension: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ];
+    }
+    final own = _own;
+    return [
+      if (own != null)
+        IconButton(
+          tooltip: 'Удалить',
+          icon: const Icon(Icons.delete_outline),
+          onPressed: () => _delete(images, own),
+        )
+      else
+        IconButton(
+          tooltip: 'Пожаловаться',
+          icon: const Icon(Icons.flag_outlined),
+          onPressed: () => _report(images, id),
+        ),
+    ];
+  }
 
   @override
   void dispose() {
@@ -133,6 +262,7 @@ class _FullImageState extends State<_FullImage> {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         actions: [
+          ..._actions(),
           IconButton(
             tooltip: 'Открыть в браузере',
             icon: const Icon(Icons.open_in_browser),

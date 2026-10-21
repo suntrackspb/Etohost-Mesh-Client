@@ -39,10 +39,8 @@ class ImageUploads {
     onTimeout: () => throw const ImageError('Сервис не ответил вовремя'),
   );
 
-  Future<UploadedImage> _upload(Uint8List body) async {
-    if (body.length > maxBytes) {
-      throw const ImageError('Картинка больше 10 МБ');
-    }
+  /// Своя нода и её приватный ключ — ими подписываются запросы.
+  Future<(String, List<int>)> _me() async {
     final me = _ref.read(radioProvider).myNodeNum;
     // Прямо из базы: `configProvider` без подписчиков в Riverpod 3 стоит
     // на паузе, и его `.future` может не завершиться.
@@ -56,11 +54,15 @@ class ImageUploads {
     if (me == null || key == null || key.length != 32) {
       throw const ImageError('Нет ключа ноды — подключитесь к своей ноде');
     }
-    final img = await _up.upload(
-      body: body,
-      node: nodeIdString(me),
-      nodePrivateKey: key,
-    );
+    return (nodeIdString(me), key);
+  }
+
+  Future<UploadedImage> _upload(Uint8List body) async {
+    if (body.length > maxBytes) {
+      throw const ImageError('Картинка больше 10 МБ');
+    }
+    final (node, key) = await _me();
+    final img = await _up.upload(body: body, node: node, nodePrivateKey: key);
     await _save([...await _list(), img]);
     return img;
   }
@@ -107,5 +109,8 @@ class ImageUploads {
     ]);
   }
 
-  Future<void> report(String id, String reason) => _up.report(id, reason);
+  Future<void> report(String id, String reason) async {
+    final (node, key) = await _me();
+    await _up.report(id, reason, node: node, nodePrivateKey: key);
+  }
 }
