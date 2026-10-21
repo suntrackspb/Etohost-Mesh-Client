@@ -1,9 +1,11 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/images_providers.dart';
 import '../../app/notify_providers.dart';
 import '../../app/providers.dart';
 import '../../core/glyph_zip.dart';
@@ -941,10 +943,36 @@ class _ComposerState extends ConsumerState<_Composer> {
     _focus.requestFocus();
   }
 
+  bool _uploading = false;
+
+  /// Выбрать картинку, загрузить и вставить ссылку в поле.
+  Future<void> _attachImage(ImageUploads images) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final files = await FilePicker.pickFiles(type: FileType.image);
+      if (files.isEmpty) return;
+      setState(() => _uploading = true);
+      final img = await images.upload(await files.first.readAsBytes());
+      final t = _text.text;
+      final sep = t.isEmpty || t.endsWith(' ') || t.endsWith('\n') ? '' : ' ';
+      _text.text = '$t$sep${img.url}';
+      _text.selection = TextSelection.collapsed(offset: _text.text.length);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Картинка загружена, хранится 3 дня')),
+      );
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('$e')));
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+    _focus.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final canSend = ref.watch(canSendProvider);
+    final images = ref.watch(imageUploadsProvider);
     final zip = ref.watch(glyphZipLevelProvider).value ?? 0;
     final bytes = messageBytes(_outgoing(zip));
     final parts = _parts(zip).length;
@@ -1039,6 +1067,25 @@ class _ComposerState extends ConsumerState<_Composer> {
                     ),
                   ),
                 ),
+                if (images != null)
+                  _uploading
+                      ? const SizedBox(
+                          width: _rowHeight,
+                          height: _rowHeight,
+                          child: Center(
+                            child: SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        )
+                      : IconButton(
+                          tooltip: 'Картинка',
+                          icon: const Icon(Icons.image_outlined),
+                          onPressed: canSend
+                              ? () => _attachImage(images)
+                              : null,
+                        ),
                 SizedBox(
                   height: _rowHeight,
                   child: Center(child: _ZipButton(level: zip)),

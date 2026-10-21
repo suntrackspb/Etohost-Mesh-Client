@@ -82,7 +82,12 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: echo "VERSION_ARGS=--build-name=${GITHUB_REF_NAME#v} --build-number=${{ github.run_number }}" >> "$GITHUB_ENV"
-      - run: ${{ matrix.cmd }} $VERSION_ARGS
+      # Сервис картинок: переменные репозитория IMAGES_URL и IMAGES_KEY
+      # (не секреты — адрес и публичный ключ). Пусто — кнопки «Картинка» нет.
+      - run: |
+          ${{ matrix.cmd }} $VERSION_ARGS \
+            --dart-define=IMAGES_URL="${{ vars.IMAGES_URL }}" \
+            --dart-define=IMAGES_KEY="${{ vars.IMAGES_KEY }}"
         shell: bash
 
       - name: Package

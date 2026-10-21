@@ -42,6 +42,9 @@ abstract final class AppSettingKeys {
   /// Windows/Linux: крестик сворачивает в трей ('true'/'false', по умолчанию — да).
   static const closeToTray = 'app.closeToTray';
 
+  /// Свои загруженные картинки: JSON-список (id, url, токен удаления, срок).
+  static const imageUploads = 'images.uploads';
+
   /// Карта: разрешить вращение жестом ('true'/'false', по умолчанию — нет).
   static const mapRotate = 'map.rotate';
 
