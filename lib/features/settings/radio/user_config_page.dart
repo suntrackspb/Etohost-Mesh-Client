@@ -9,6 +9,7 @@ import '../../../data/settings/settings_form.dart';
 import '../../../data/settings/user_section.dart';
 import '../../../ui/kit/kit.dart';
 import 'settings_form_view.dart';
+import '../../../app/link_badge.dart';
 
 /// Настройки пользователя своей ноды.
 class UserConfigPage extends ConsumerStatefulWidget {
@@ -112,7 +113,10 @@ class _UserConfigPageState extends ConsumerState<UserConfigPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: const Text(UserSection.title)),
+      appBar: AppBar(
+        title: const Text(UserSection.title),
+        actions: const [LinkBadge()],
+      ),
       body: body,
     );
   }

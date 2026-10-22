@@ -10,6 +10,7 @@ import '../../../data/settings/channel_edit.dart';
 import '../../../data/settings/settings_form.dart';
 import '../../../ui/kit/kit.dart';
 import 'settings_form_view.dart';
+import '../../../app/link_badge.dart';
 
 /// Список каналов своей ноды (Channels.swift, iOS): 8 слотов, свободный —
 /// «Добавить канал».
@@ -26,7 +27,10 @@ class ChannelsPage extends ConsumerWidget {
     final preset = ref.watch(presetNameProvider).value ?? 'LongFast';
     final free = ChannelEdit.nextFreeIndex(rows);
     return Scaffold(
-      appBar: AppBar(title: const Text(ChannelEdit.title)),
+      appBar: AppBar(
+        title: const Text(ChannelEdit.title),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [
@@ -121,7 +125,10 @@ class _ChannelEditPageState extends ConsumerState<ChannelEditPage> {
     final row = rows.value!.where((c) => c.index == widget.index).firstOrNull;
     final form = _form ??= _make(row);
     return Scaffold(
-      appBar: AppBar(title: Text('Канал ${widget.index}')),
+      appBar: AppBar(
+        title: Text('Канал ${widget.index}'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [

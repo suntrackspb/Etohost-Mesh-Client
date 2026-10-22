@@ -8,6 +8,7 @@ import '../../core/proto/mesh.dart';
 import '../../data/node_db_store.dart';
 import '../../data/node_dbs.dart';
 import '../../ui/kit/kit.dart';
+import '../../app/link_badge.dart';
 
 /// Настройки → Данные: базы нод (у каждой своя), экспорт, импорт, удаление.
 class DataSettingsPage extends ConsumerWidget {
@@ -17,7 +18,7 @@ class DataSettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dbs = ref.watch(nodeDbListProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Данные')),
+      appBar: AppBar(title: const Text('Данные'), actions: const [LinkBadge()]),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [

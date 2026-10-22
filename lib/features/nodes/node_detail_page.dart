@@ -10,6 +10,7 @@ import '../chat/chat_page.dart';
 import '../../ui/kit/kit.dart';
 import 'node_actions_ui.dart';
 import 'nodes_page.dart';
+import '../../app/link_badge.dart';
 
 final _nodeProvider = StreamProvider.family<Node?, int>((ref, id) {
   final db = ref.watch(databaseProvider);
@@ -57,6 +58,7 @@ class NodeDetailPage extends ConsumerWidget {
             ...nodeActionButtons(context, ref, node.value!)
           else if (num == me)
             ...ownNodeActionButtons(context, ref),
+          const LinkBadge(),
         ],
       ),
       body: node.when(

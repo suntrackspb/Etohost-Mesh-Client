@@ -12,6 +12,7 @@ import '../../../app/settings_providers.dart';
 import '../../../data/database.dart';
 import '../../../data/settings/channel_url.dart';
 import '../../../ui/kit/kit.dart';
+import '../../../app/link_badge.dart';
 
 /// mobile_scanner есть только на Android, iOS и macOS.
 final _canScan = Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
@@ -52,7 +53,10 @@ class _ChannelSharePageState extends ConsumerState<ChannelSharePage> {
         ? null
         : ChannelLink.encode(set, add: !_replace);
     return Scaffold(
-      appBar: AppBar(title: const Text('Поделиться QR-кодом')),
+      appBar: AppBar(
+        title: const Text('Поделиться QR-кодом'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [
@@ -158,7 +162,10 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
         : ChannelImport.plan(link.set, rows, lora, add: add);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Импортировать')),
+      appBar: AppBar(
+        title: const Text('Импортировать'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [
@@ -342,7 +349,10 @@ class _ChannelScanPageState extends State<ChannelScanPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Сканировать QR-код общих каналов')),
+    appBar: AppBar(
+      title: const Text('Сканировать QR-код общих каналов'),
+      actions: const [LinkBadge()],
+    ),
     body: MobileScanner(
       controller: _controller,
       onDetect: _onDetect,

@@ -8,6 +8,7 @@ import '../../app/providers.dart';
 import '../../core/geo/geo.dart';
 import '../../data/database.dart';
 import '../map/map_tiles.dart';
+import '../../app/link_badge.dart';
 
 /// Выбор центра области на карте: центр — под перекрестием.
 class AreaPickerPage extends ConsumerStatefulWidget {
@@ -49,6 +50,7 @@ class _AreaPickerPageState extends ConsumerState<AreaPickerPage> {
             },
             child: const Text('Готово'),
           ),
+          const LinkBadge(),
         ],
       ),
       body: Stack(

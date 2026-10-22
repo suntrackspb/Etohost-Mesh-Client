@@ -16,6 +16,7 @@ import '../../core/transport/serial_transport.dart';
 import '../../data/database.dart';
 import '../../data/radio_stats.dart';
 import '../../ui/kit/kit.dart';
+import '../../app/link_badge.dart';
 
 class ConnectionPage extends ConsumerStatefulWidget {
   const ConnectionPage({super.key});
@@ -126,7 +127,10 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
     final devices = _devices.values.toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Подключение')),
+      appBar: AppBar(
+        title: const Text('Подключение'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [

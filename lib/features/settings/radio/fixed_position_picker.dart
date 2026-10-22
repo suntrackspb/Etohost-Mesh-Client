@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../../../data/position_sharer.dart';
 import '../../../ui/kit/kit.dart';
 import '../../map/map_tiles.dart';
+import '../../../app/link_badge.dart';
 
 /// «Установить вручную»: метку двигают пальцем, координаты и высоту
 /// можно поправить в полях. Возвращает [Fix] или null (отмена).
@@ -93,7 +94,10 @@ class _FixedPositionPickerState extends State<FixedPositionPicker> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Установить вручную'),
-        actions: [TextButton(onPressed: _save, child: const Text('Сохранить'))],
+        actions: [
+          TextButton(onPressed: _save, child: const Text('Сохранить')),
+          const LinkBadge(),
+        ],
       ),
       body: Column(
         children: [

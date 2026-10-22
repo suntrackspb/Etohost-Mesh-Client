@@ -12,6 +12,7 @@ import '../../../data/settings/range_test_section.dart';
 import '../../../data/settings/settings_form.dart';
 import '../../../ui/kit/kit.dart';
 import 'settings_form_view.dart';
+import '../../../app/link_badge.dart';
 
 /// Что нужно странице раздела Config или ModuleConfig ([C]): всё, кроме
 /// виджетов, — в разделе.
@@ -185,7 +186,7 @@ class _ConfigSectionPageState<C> extends ConsumerState<ConfigSectionPage<C>> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(spec.title)),
+      appBar: AppBar(title: Text(spec.title), actions: const [LinkBadge()]),
       body: body,
     );
   }

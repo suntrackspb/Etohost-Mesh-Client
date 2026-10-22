@@ -7,6 +7,7 @@ import '../../mirror/mirror_api.dart';
 import '../../mirror/mirror_config.dart';
 import '../../mirror/mirror_realtime.dart';
 import '../../ui/kit/kit.dart';
+import '../../app/link_badge.dart';
 
 /// Настройки → Зеркало. По умолчанию выключено и без адреса;
 /// включить можно только после успешной проверки адреса.
@@ -76,7 +77,10 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
     final hidden = ref.watch(hiddenChannelsProvider).value ?? const {};
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Зеркало')),
+      appBar: AppBar(
+        title: const Text('Зеркало'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [

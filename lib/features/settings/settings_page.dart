@@ -6,6 +6,7 @@ import '../../app/providers.dart';
 import '../../ui/kit/kit.dart';
 import 'about_section.dart';
 import 'hardware_ids_dialog.dart';
+import '../../app/link_badge.dart';
 
 /// Заготовка: структура разделов как в официальном клиенте. Наполнение — этапы 3 и 6.
 class SettingsPage extends ConsumerWidget {
@@ -15,7 +16,10 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mirror = ref.watch(mirrorConfigProvider).value;
     return Scaffold(
-      appBar: AppBar(title: const Text('Настройки')),
+      appBar: AppBar(
+        title: const Text('Настройки'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [
@@ -212,6 +216,7 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           SectionCard(
+            title: 'Обслуживание',
             children: [
               MeshTile(
                 title: 'Администрирование',

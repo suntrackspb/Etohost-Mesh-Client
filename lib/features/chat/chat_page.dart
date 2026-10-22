@@ -8,6 +8,7 @@ import '../../data/database.dart';
 import '../../data/message_sender.dart';
 import '../../ui/kit/kit.dart';
 import 'chat_feed.dart';
+import '../../app/link_badge.dart';
 
 /// Каналы и личные диалоги. Каналы — по имени: так эфир склеивается с зеркалом.
 class ChatPage extends ConsumerWidget {
@@ -37,6 +38,7 @@ class ChatPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Чат'),
         automaticallyImplyLeading: !wide,
+        actions: const [LinkBadge()],
       ),
       body: channels.when(
         loading: () => const Center(child: CircularProgressIndicator()),

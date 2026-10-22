@@ -6,6 +6,7 @@ import '../../../app/providers.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/settings/device_actions.dart';
 import '../../../ui/kit/kit.dart';
+import '../../../app/link_badge.dart';
 
 /// «Администрирование» (AdministrationScreen, Android): перезагрузка,
 /// выключение, сбросы. Подписи — iOS ru, иначе Android ru.
@@ -37,7 +38,10 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Администрирование')),
+      appBar: AppBar(
+        title: const Text('Администрирование'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [

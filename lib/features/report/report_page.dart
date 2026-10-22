@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/toasts.dart';
 import '../../app/diagnostics_providers.dart';
 import '../../ui/kit/kit.dart';
+import '../../app/link_badge.dart';
 
 /// «Отправить отчёт»: что уходит и чего нет, предпросмотр, комментарий,
 /// после отправки — номер отчёта для связи с разработчиком.
@@ -35,13 +36,19 @@ class _ReportPageState extends ConsumerState<ReportPage> {
 
     if (flow.stage == ReportStage.sent) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Отчёт отправлен')),
+        appBar: AppBar(
+          title: const Text('Отчёт отправлен'),
+          actions: const [LinkBadge()],
+        ),
         body: _SentView(id: flow.reportId!),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Отправить отчёт')),
+      appBar: AppBar(
+        title: const Text('Отправить отчёт'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [
@@ -264,7 +271,10 @@ class _LogView extends StatelessWidget {
       context,
     ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace');
     return Scaffold(
-      appBar: AppBar(title: const Text('Журнал для отчёта')),
+      appBar: AppBar(
+        title: const Text('Журнал для отчёта'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView.builder(
         padding: const EdgeInsets.all(Tokens.s8),
         itemCount: lines.length,

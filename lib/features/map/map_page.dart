@@ -6,6 +6,7 @@ import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../app/link_badge.dart';
 import '../../app/providers.dart';
 import '../../data/database.dart';
 import '../../data/map_points.dart';
@@ -178,39 +179,8 @@ class _MapPageState extends ConsumerState<MapPage> {
             ),
             onPressed: () => NodeFilterSheet.show(context),
           ),
-          if (mapStylesAvailable)
-            PopupMenuButton<MapStyle>(
-              tooltip: 'Подложка',
-              icon: const Icon(Icons.layers_outlined),
-              initialValue: ref.watch(mapStyleProvider).value ?? MapStyle.auto,
-              onSelected: (v) => ref
-                  .read(databaseProvider)
-                  .setSetting(AppSettingKeys.mapStyle, v.name),
-              itemBuilder: (_) => [
-                for (final s in MapStyle.values)
-                  PopupMenuItem(value: s, child: Text(s.label)),
-              ],
-            ),
-          IconButton(
-            tooltip: cluster ? 'Не группировать ноды' : 'Группировать ноды',
-            icon: Icon(
-              cluster ? Icons.workspaces : Icons.scatter_plot_outlined,
-            ),
-            onPressed: () => ref
-                .read(databaseProvider)
-                .setSetting(AppSettingKeys.mapCluster, '${!cluster}'),
-          ),
-          if (me != null)
-            IconButton(
-              tooltip: 'Моя нода',
-              icon: const Icon(Icons.my_location),
-              onPressed: () => _map.move(LatLng(me.lat, me.lon), 14),
-            ),
-          IconButton(
-            tooltip: 'Показать все',
-            icon: const Icon(Icons.zoom_out_map),
-            onPressed: points.isEmpty ? null : () => _fitAll(points),
-          ),
+          _LayersMenu(cluster: cluster),
+          const LinkBadge(),
         ],
       ),
       body: Stack(
@@ -283,6 +253,22 @@ class _MapPageState extends ConsumerState<MapPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (me != null) ...[
+                  FloatingActionButton.small(
+                    heroTag: 'myNode',
+                    tooltip: 'Моя нода',
+                    onPressed: () => _map.move(LatLng(me.lat, me.lon), 14),
+                    child: const Icon(Icons.my_location),
+                  ),
+                  const SizedBox(height: Tokens.s8),
+                ],
+                FloatingActionButton.small(
+                  heroTag: 'fitAll',
+                  tooltip: 'Показать все',
+                  onPressed: points.isEmpty ? null : () => _fitAll(points),
+                  child: const Icon(Icons.zoom_out_map),
+                ),
+                const SizedBox(height: Tokens.s16),
                 FloatingActionButton.small(
                   heroTag: 'zoomIn',
                   tooltip: 'Приблизить',
@@ -462,6 +448,41 @@ class _SearchSheetState extends State<_SearchSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// «Слои»: подложка и группировка нод — то, что меняют редко.
+class _LayersMenu extends ConsumerWidget {
+  const _LayersMenu({required this.cluster});
+  final bool cluster;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final style = ref.watch(mapStyleProvider).value ?? MapStyle.auto;
+    final db = ref.read(databaseProvider);
+    return PopupMenuButton<Object>(
+      tooltip: 'Слои',
+      icon: const Icon(Icons.layers_outlined),
+      onSelected: (v) => v is MapStyle
+          ? db.setSetting(AppSettingKeys.mapStyle, v.name)
+          : db.setSetting(AppSettingKeys.mapCluster, '${!cluster}'),
+      itemBuilder: (_) => [
+        if (mapStylesAvailable) ...[
+          for (final s in MapStyle.values)
+            CheckedPopupMenuItem<Object>(
+              value: s,
+              checked: s == style,
+              child: Text(s.label),
+            ),
+          const PopupMenuDivider(),
+        ],
+        CheckedPopupMenuItem<Object>(
+          value: #cluster,
+          checked: cluster,
+          child: const Text('Группировать ноды'),
+        ),
+      ],
     );
   }
 }

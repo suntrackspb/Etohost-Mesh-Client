@@ -9,6 +9,7 @@ import '../../../core/proto/mesh.dart';
 import '../../../data/settings/device_profile.dart';
 import '../../../data/settings/profile_store.dart';
 import '../../../ui/kit/kit.dart';
+import '../../../app/link_badge.dart';
 
 /// «Резервная копия и восстановление»: конфигурация ноды в файл `.cfg`
 /// (DeviceProfile, совместим с iOS/Android) и обратно.
@@ -29,7 +30,10 @@ class _BackupPageState extends ConsumerState<BackupPage> {
     final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
     final enabled = me != null && !_busy;
     return Scaffold(
-      appBar: AppBar(title: const Text('Резервная копия и восстановление')),
+      appBar: AppBar(
+        title: const Text('Резервная копия и восстановление'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [

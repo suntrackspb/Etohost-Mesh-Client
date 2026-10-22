@@ -15,6 +15,7 @@ import '../../data/notify/message_alerts.dart';
 import '../../data/position_sharer.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/nodes_page.dart';
+import '../../app/link_badge.dart';
 
 /// Настройки приложения: карта, дальние ноды, позиция телефона.
 class AppSettingsPage extends ConsumerWidget {
@@ -47,7 +48,10 @@ class AppSettingsPage extends ConsumerWidget {
         );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Приложение')),
+      appBar: AppBar(
+        title: const Text('Приложение'),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(Tokens.s16),
         children: [

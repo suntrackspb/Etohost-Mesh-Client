@@ -8,6 +8,7 @@ import '../../app/providers.dart';
 import '../../core/links.dart';
 import '../../data/images/image_uploader.dart';
 import '../../ui/kit/kit.dart';
+import '../../app/link_badge.dart';
 
 /// Превью картинок из ссылок сообщения (только свои сервисы, см.
 /// [imagePreview]). Размер фиксированный — лента не прыгает при загрузке.
@@ -269,6 +270,7 @@ class _FullImageState extends ConsumerState<_FullImage> {
             onPressed: () =>
                 launchUrl(widget.url, mode: LaunchMode.externalApplication),
           ),
+          const LinkBadge(),
         ],
       ),
       body: GestureDetector(

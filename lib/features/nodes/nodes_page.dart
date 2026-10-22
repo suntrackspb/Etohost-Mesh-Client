@@ -9,6 +9,7 @@ import '../../data/node_row_info.dart';
 import '../../ui/kit/kit.dart';
 import 'node_detail_page.dart';
 import 'node_filter_sheet.dart';
+import '../../app/link_badge.dart';
 
 /// Список нод; на широком экране справа — карточка выбранной.
 class NodesPage extends ConsumerStatefulWidget {
@@ -48,6 +49,7 @@ class _NodesPageState extends ConsumerState<NodesPage> {
             ),
             onPressed: () => NodeFilterSheet.show(context),
           ),
+          const LinkBadge(),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),

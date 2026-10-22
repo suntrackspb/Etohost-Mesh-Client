@@ -7,6 +7,7 @@ import '../../app/toasts.dart';
 import '../../app/providers.dart';
 import '../../core/radio/journal.dart';
 import '../../ui/kit/kit.dart';
+import '../../app/link_badge.dart';
 
 /// Журнал соединения — наследник экрана прототипа.
 class JournalPage extends ConsumerStatefulWidget {
@@ -74,6 +75,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
             icon: const Icon(Icons.delete_outline),
             onPressed: journal.clear,
           ),
+          const LinkBadge(),
         ],
       ),
       body: Column(
