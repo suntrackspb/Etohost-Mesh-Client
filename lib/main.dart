@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +16,9 @@ import 'ui/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Общая база и база ноды — один класс AppDatabase на разных файлах;
+  // предупреждение drift про «несколько экземпляров» здесь ложное.
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   final container = ProviderContainer();
   final journal = container.read(journalProvider);
   journal.add(JournalKind.app, 'Запуск приложения');
