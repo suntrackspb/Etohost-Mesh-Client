@@ -34,6 +34,16 @@ const accents = [
   Accent('orange', 'Оранжевый', Color(0xFFE67E22)),
 ];
 
+/// Подсветка обращений ко мне: значение настройки «без подсветки».
+const mentionOff = 'off';
+
+/// Цвет пузыря с обращением ко мне — из той же палитры, что акцент;
+/// null — без подсветки. По умолчанию зелёный, как было раньше.
+Accent? parseMentionColor(String? id) => id == mentionOff
+    ? null
+    : accents.where((a) => a.id == id).firstOrNull ??
+          accents.firstWhere((a) => a.id == 'green');
+
 /// Неизвестный id — первый (бирюзовый).
 Accent parseAccent(String? id) =>
     accents.where((a) => a.id == id).firstOrNull ?? accents.first;

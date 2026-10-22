@@ -33,4 +33,19 @@ void main() {
     final b = buildTheme(Brightness.light, seed: parseAccent('pink').color);
     expect(a.colorScheme.primary, isNot(b.colorScheme.primary));
   });
+
+  test('mention colour: green by default, off, any accent', () {
+    expect(parseMentionColor(null)!.id, 'green');
+    expect(parseMentionColor('мусор')!.id, 'green');
+    expect(parseMentionColor(mentionOff), isNull);
+    expect(parseMentionColor('blue')!.id, 'blue');
+  });
+
+  test('mention bubble equals own bubble when colours match', () {
+    final seed = parseAccent('blue').color;
+    expect(
+      mentionBubble(seed, Brightness.dark),
+      buildTheme(Brightness.dark, seed: seed).colorScheme.primaryContainer,
+    );
+  });
 }

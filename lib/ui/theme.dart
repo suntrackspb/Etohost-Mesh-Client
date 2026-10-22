@@ -3,6 +3,14 @@ import 'package:swipeable_page_route/swipeable_page_route.dart';
 
 import 'tokens.dart';
 
+/// Пузырь с обращением ко мне: такой же насыщенности, как свой пузырь
+/// (primaryContainer), но из своего цвета. При цвете, равном акценту,
+/// совпадает со своим пузырём.
+Color mentionBubble(Color color, Brightness brightness) => ColorScheme.fromSeed(
+  seedColor: color,
+  brightness: brightness,
+).primaryContainer;
+
 /// [black] — тёмная тема с чистым чёрным фоном (экономия батареи на OLED):
 /// экраны, шапка и нижнее меню #000, карточки и поля — очень тёмно-серые,
 /// акценты остаются цветными.

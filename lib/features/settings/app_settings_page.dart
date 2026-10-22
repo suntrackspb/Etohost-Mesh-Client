@@ -26,6 +26,10 @@ class AppSettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(appThemeProvider).value ?? AppTheme.system;
     final accent = ref.watch(accentProvider).value ?? accents.first;
+    final mentionAv = ref.watch(mentionColorProvider);
+    final mention = mentionAv.hasValue
+        ? mentionAv.value
+        : parseMentionColor(null);
     final rotate = ref.watch(mapRotateProvider).value ?? false;
     final images = ref.watch(showImagesProvider).value ?? true;
     final areaOn = ref.watch(areaEnabledProvider).value ?? false;
@@ -101,6 +105,36 @@ class AppSettingsPage extends ConsumerWidget {
                             selected: a.id == accent.id,
                             onTap: () => save(AppSettingKeys.accent, a.id),
                           ),
+                      ],
+                    ),
+                    const SizedBox(height: Tokens.s16),
+                    Text(
+                      'Обращения ко мне',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    Text(
+                      'Цвет сообщений с упоминанием или ответом на ваше',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: Tokens.s8),
+                    Wrap(
+                      spacing: Tokens.s8,
+                      runSpacing: Tokens.s8,
+                      children: [
+                        for (final a in accents)
+                          _AccentDot(
+                            accent: a,
+                            selected: a.id == mention?.id,
+                            onTap: () =>
+                                save(AppSettingKeys.mentionColor, a.id),
+                          ),
+                        _AccentDot(
+                          selected: mention == null,
+                          onTap: () =>
+                              save(AppSettingKeys.mentionColor, mentionOff),
+                        ),
                       ],
                     ),
                   ],
@@ -290,46 +324,49 @@ class _ShareStatus extends ConsumerWidget {
   }
 }
 
-/// Кружок цвета акцента; выбранный — с галочкой.
+/// Кружок цвета; выбранный — с галочкой. Без [accent] — «без подсветки».
 class _AccentDot extends StatelessWidget {
-  const _AccentDot({
-    required this.accent,
-    required this.selected,
-    required this.onTap,
-  });
+  const _AccentDot({this.accent, required this.selected, required this.onTap});
 
-  final Accent accent;
+  final Accent? accent;
   final bool selected;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Tooltip(
-    message: accent.title,
-    child: Semantics(
-      button: true,
-      selected: selected,
-      label: accent.title,
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: accent.color,
-            shape: BoxShape.circle,
-            border: selected
-                ? Border.all(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    width: 2,
-                  )
+  Widget build(BuildContext context) {
+    final a = accent;
+    final scheme = Theme.of(context).colorScheme;
+    final title = a?.title ?? 'Без подсветки';
+    return Tooltip(
+      message: title,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: title,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: a?.color,
+              shape: BoxShape.circle,
+              border: selected || a == null
+                  ? Border.all(
+                      color: selected ? scheme.onSurface : scheme.outline,
+                      width: selected ? 2 : 1,
+                    )
+                  : null,
+            ),
+            child: a == null
+                ? Icon(Icons.block, color: scheme.onSurfaceVariant, size: 20)
+                : selected
+                ? const Icon(Icons.check, color: Colors.white, size: 20)
                 : null,
           ),
-          child: selected
-              ? const Icon(Icons.check, color: Colors.white, size: 20)
-              : null,
         ),
       ),
-    ),
-  );
+    );
+  }
 }

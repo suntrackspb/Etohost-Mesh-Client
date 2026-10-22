@@ -738,6 +738,11 @@ final appThemeProvider = StreamProvider<AppTheme>(
   (ref) => _setting(ref, AppSettingKeys.theme).map(AppTheme.parse),
 );
 
+/// Цвет пузыря с обращением ко мне; null — без подсветки.
+final mentionColorProvider = StreamProvider<Accent?>(
+  (ref) => _setting(ref, AppSettingKeys.mentionColor).map(parseMentionColor),
+);
+
 /// Цвет акцента, из которого строится тема.
 final accentProvider = StreamProvider<Accent>(
   (ref) => _setting(ref, AppSettingKeys.accent).map(parseAccent),

@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/appearance.dart';
+import '../../ui/theme.dart';
 import '../../app/toasts.dart';
 import '../../app/images_providers.dart';
 import '../../app/notify_providers.dart';
@@ -578,6 +580,13 @@ class _MessageListState extends ConsumerState<_MessageList> {
       w.nodes,
     );
     final (canWrite, onReply) = (w.canWrite, w.onReply);
+    final mentionColor = ref.watch(mentionColorProvider);
+    final mc = mentionColor.hasValue
+        ? mentionColor.value
+        : parseMentionColor(null);
+    final mentionFill = mc == null
+        ? null
+        : mentionBubble(mc.color, Theme.of(context).brightness);
     final mirror = ref.watch(mirrorActiveProvider);
     final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
     final myShort = me == null ? '' : nodes[me]?.shortName ?? '';
@@ -656,7 +665,9 @@ class _MessageListState extends ConsumerState<_MessageList> {
             child: _Bubble(
               key: _keyFor(m.packetId),
               pos: positions[i],
-              mention: !m.isOutgoing && _toMe(m, byPacket, me, myShort),
+              mention: !m.isOutgoing && _toMe(m, byPacket, me, myShort)
+                  ? mentionFill
+                  : null,
               highlighted: _highlight == m.packetId,
               onOpenQuote: m.replyId == null || byPacket[m.replyId] == null
                   ? null
@@ -868,9 +879,9 @@ class _Bubble extends StatelessWidget {
   /// Место в серии сообщений одного автора.
   final BubblePos pos;
 
-  /// Обращено ко мне: упомянуто короткое имя своей ноды или ответ
-  /// с цитатой на моё сообщение.
-  final bool mention;
+  /// Обращено ко мне (упомянуто короткое имя своей ноды или ответ
+  /// с цитатой на моё сообщение) — цвет пузыря; null — обычный.
+  final Color? mention;
   final String author;
   final String? shortName;
   final Message? quoted;
@@ -930,14 +941,9 @@ class _Bubble extends StatelessWidget {
             ? scheme.tertiaryContainer
             : out
             ? scheme.primaryContainer
-            : mention
-            // Обращение ко мне: лёгкий зеленоватый оттенок вместо рамки —
-            // рамка рвёт склеенную серию.
-            ? Color.alphaBlend(
-                Colors.green.withValues(alpha: 0.12),
-                scheme.surfaceContainerHigh,
-              )
-            : scheme.surfaceContainerHigh,
+            // Обращение ко мне — цветом пузыря, а не рамкой: рамка рвёт
+            // склеенную серию.
+            : mention ?? scheme.surfaceContainerHigh,
         borderRadius: _radius(out),
       ),
       child: IntrinsicWidth(
