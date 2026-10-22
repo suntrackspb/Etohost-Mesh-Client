@@ -674,17 +674,13 @@ class _MessageListState extends ConsumerState<_MessageList> {
                 groups: groups,
                 nodes: nodes,
                 initial: emoji,
+                mirror: mirror,
+                onOpenRelays: _openRelays,
               ),
               mirror: mirror,
               onMenu: () => _showMenu(context, ref, m),
               onOpenNode: () => openNode(context, m.fromNum),
-              onOpenRelays: () {
-                final cfg = ref.read(mirrorConfigProvider).value;
-                final url = cfg == null || m.mirrorId == null
-                    ? null
-                    : relayMapUrl(cfg, m.mirrorId!);
-                if (url != null) showRelayMap(context, url);
-              },
+              onOpenRelays: () => _openRelays(m),
             ),
           );
           // Первое сообщение дня — плашка с датой над ним; первое
@@ -722,6 +718,15 @@ class _MessageListState extends ConsumerState<_MessageList> {
           ),
       ],
     );
+  }
+
+  /// Карта шлюзов зеркала, принявших сообщение (или реакцию).
+  void _openRelays(Message m) {
+    final cfg = ref.read(mirrorConfigProvider).value;
+    final url = cfg == null || m.mirrorId == null
+        ? null
+        : relayMapUrl(cfg, m.mirrorId!);
+    if (url != null) showRelayMap(context, url);
   }
 
   void _showMenu(BuildContext context, WidgetRef ref, Message m) {
@@ -979,7 +984,7 @@ class _Bubble extends StatelessWidget {
                 const Spacer(),
                 if (showRelays(message, mirror: mirror)) ...[
                   const SizedBox(width: Tokens.s8),
-                  _RelayChip(count: message.relayCount, onTap: onOpenRelays),
+                  RelayChip(count: message.relayCount, onTap: onOpenRelays),
                   const SizedBox(width: Tokens.s8),
                   const Spacer(),
                 ] else
@@ -1216,8 +1221,8 @@ class _SourceIcons extends StatelessWidget {
 }
 
 /// Сколько шлюзов зеркала приняли сообщение; нажатие — карта ретрансляций.
-class _RelayChip extends StatelessWidget {
-  const _RelayChip({required this.count, required this.onTap});
+class RelayChip extends StatelessWidget {
+  const RelayChip({super.key, required this.count, required this.onTap});
 
   final int count;
   final VoidCallback onTap;

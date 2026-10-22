@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 
 import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
+import '../../data/message_meta.dart';
 import '../../data/reaction_groups.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/open_node.dart';
+import 'chat_feed.dart' show RelayChip;
 
 /// Чипы реакций внутри пузыря; нажатие — панель «кто поставил».
 class ReactionChips extends StatelessWidget {
@@ -83,6 +85,8 @@ Future<void> showReactionsSheet(
   required List<ReactionGroup> groups,
   required Map<int, Node> nodes,
   String? initial,
+  bool mirror = false,
+  ValueChanged<Message>? onOpenRelays,
 }) {
   final tabs = <(String, List<Message>)>[
     if (groups.length > 1) ('Все', allReactions(groups)),
@@ -134,6 +138,13 @@ Future<void> showReactionsSheet(
                       items: items,
                       nodes: nodes,
                       showEmoji: groups.length > 1,
+                      mirror: mirror,
+                      onOpenRelays: onOpenRelays == null
+                          ? null
+                          : (r) {
+                              Navigator.pop(ctx);
+                              onOpenRelays(r);
+                            },
                       onOpenNode: (nodeNum) {
                         Navigator.pop(ctx);
                         openNode(context, nodeNum);
@@ -158,12 +169,18 @@ class _ReactionList extends StatelessWidget {
     required this.nodes,
     required this.showEmoji,
     required this.onOpenNode,
+    this.mirror = false,
+    this.onOpenRelays,
   });
 
   final List<Message> items;
   final Map<int, Node> nodes;
   final bool showEmoji;
   final ValueChanged<int> onOpenNode;
+  final bool mirror;
+
+  /// Шлюзы зеркала, принявшие реакцию: она — отдельный пакет.
+  final ValueChanged<Message>? onOpenRelays;
 
   @override
   Widget build(BuildContext context) {
@@ -198,9 +215,23 @@ class _ReactionList extends StatelessWidget {
                   [if (name != id) id, time, ?source].join(' · '),
                   style: text.bodySmall?.copyWith(color: muted),
                 ),
-                trailing: showEmoji
-                    ? Text(r.body.trim(), style: const TextStyle(fontSize: 22))
-                    : const Icon(Icons.chevron_right),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (onOpenRelays != null && showRelays(r, mirror: mirror))
+                      RelayChip(
+                        count: r.relayCount,
+                        onTap: () => onOpenRelays!(r),
+                      ),
+                    const SizedBox(width: Tokens.s8),
+                    showEmoji
+                        ? Text(
+                            r.body.trim(),
+                            style: const TextStyle(fontSize: 22),
+                          )
+                        : const Icon(Icons.chevron_right),
+                  ],
+                ),
               );
             },
           ),
