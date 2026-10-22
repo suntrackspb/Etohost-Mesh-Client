@@ -47,7 +47,7 @@ final loraSpec = ConfigSectionSpec<Config>(
   adjust: LoraSection.adjust,
   check: LoraSection.check,
   // 2.8 применяет LoRa без перезагрузки — перечитать базу нод.
-  afterSave: (ref) => ref.read(radioProvider).refreshNodes(),
+  afterSave: (c) => c.read(radioProvider).refreshNodes(),
 );
 
 final deviceSpec = ConfigSectionSpec<Config>(

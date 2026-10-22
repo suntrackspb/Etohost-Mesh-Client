@@ -2,6 +2,21 @@ import '../../core/proto/mesh.dart';
 import '../../core/radio/send_queue.dart';
 import '../database.dart';
 
+/// Ошибка сохранения — текст для пользователя (форма показывает `$e`).
+class SaveError implements Exception {
+  const SaveError(this.message);
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+/// Связь пропала посреди сохранения: чаще всего нода применила настройки
+/// и ушла в перезагрузку (LoRa на 2.7, владелец, сеть).
+const rebooting =
+    'Связь с нодой пропала — похоже, она перезагружается и применяет '
+    'настройки. После переподключения проверьте значения.';
+
 /// Отправка админ-команд настроек своей ноде (как saveUser/saveConfig в iOS):
 /// RELIABLE, want_ack, без сессионного ключа (он нужен только для удалённых нод).
 /// hop_limit не задаём.
@@ -15,7 +30,7 @@ class AdminSettings {
   /// [response] — просить ноду ответить (get_*_request).
   Future<bool> send(AdminMessage m, {bool response = false}) async {
     final me = _myNum();
-    if (me == null) throw StateError('нет соединения с нодой');
+    if (me == null) throw const SaveError('Нет соединения с нодой');
     final r = await _send(
       MeshPacket(
         id: _nextId(),
@@ -32,8 +47,11 @@ class AdminSettings {
     // Нода приняла команду и сразу ушла в перезагрузку, не успев ответить
     // ACK (смена LoRa на 2.7, владельца и т. п.) — изменение применено.
     if (r.status == DeliveryStatus.disconnected && r.accepted) return true;
+    if (r.status == DeliveryStatus.disconnected) {
+      throw const SaveError(rebooting);
+    }
     if (r.status == DeliveryStatus.failed) {
-      throw StateError('ошибка ноды: ${r.error?.name}');
+      throw SaveError('Ошибка ноды: ${r.error?.name}');
     }
     return r.status == DeliveryStatus.acked;
   }

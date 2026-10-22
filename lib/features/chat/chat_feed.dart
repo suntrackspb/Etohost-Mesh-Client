@@ -15,12 +15,14 @@ import '../../data/delivery.dart';
 import '../../data/message_meta.dart';
 import '../../data/message_sender.dart';
 import '../../data/message_split.dart';
+import '../../data/ping_guard.dart';
 import '../../data/mirror_ingest.dart';
 import '../../data/reaction_groups.dart';
 import '../../mirror/mirror_config.dart';
 import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/open_node.dart';
+import 'chat_page.dart';
 import 'link_text.dart';
 import 'message_images.dart';
 import 'reactions_sheet.dart';
@@ -215,7 +217,19 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
                   ? null
                   : _authorName(nodes, _replyTo!.fromNum),
               onCancelReply: () => setState(() => _replyTo = null),
-              onSend: (text) {
+              onSend: (text, {required first}) async {
+                // Цитата — только у первой части. Следующие уходят с паузой,
+                // и за это время могли выбрать «ответить» на другое
+                // сообщение: та цитата — уже для следующей отправки.
+                if (!first) return _send(text);
+                switch (await _pingChoice(text)) {
+                  case _PingChoice.cancel:
+                    return false;
+                  case _PingChoice.services:
+                    return _sendToServices(text);
+                  case _PingChoice.send:
+                    break;
+                }
                 final r = _replyTo;
                 setState(() => _replyTo = null);
                 return _send(text, replyTo: r);
@@ -224,6 +238,61 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
         ],
       ),
     );
+  }
+
+  ChatChannel? _channel(String key) => ref
+      .read(chatChannelsProvider)
+      .value
+      ?.where((c) => c.key == key)
+      .firstOrNull;
+
+  /// Пинг в основном канале: предложить сервисный канал.
+  Future<_PingChoice> _pingChoice(String text) async {
+    final target = ChatTarget.parse(widget.id);
+    final primary =
+        target is ChannelTarget && (_channel(target.key)?.primary ?? false);
+    if (!PingGuard.shouldAsk(text, primary: primary)) return _PingChoice.send;
+    final services = _channel(PingGuard.servicesKey)?.index != null;
+    final choice = await showDialog<_PingChoice>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Отправить пинг в Services?'),
+        content: Text(
+          'Пинги принято отправлять в сервисный канал, там отвечают боты.'
+          '${services ? '' : '\n\nКанала Services на ноде нет — добавьте '
+                    'его в настройках каналов.'}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, _PingChoice.cancel),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, _PingChoice.send),
+            child: const Text('Всё равно отправить'),
+          ),
+          if (services)
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, _PingChoice.services),
+              child: const Text('Отправить в Services'),
+            ),
+        ],
+      ),
+    );
+    return choice ?? _PingChoice.cancel;
+  }
+
+  /// Отправить в сервисный канал и перейти в него.
+  Future<bool> _sendToServices(String text) async {
+    final c = _channel(PingGuard.servicesKey);
+    if (c?.index == null) return false;
+    setState(() => _replyTo = null);
+    final sending = ref
+        .read(messageSenderProvider)
+        .sendToChannel(channel: c!.index!, channelKey: c.key, text: text);
+    sending.catchError((Object e) => _error(e));
+    if (mounted) context.go(ChatPage.location(c.key));
+    return true;
   }
 
   Future<bool> _send(
@@ -274,6 +343,8 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
     ).showSnackBar(SnackBar(content: Text('Не отправлено: $e')));
   }
 }
+
+enum _PingChoice { services, send, cancel }
 
 String _authorName(Map<int, Node> nodes, int num) {
   final n = nodes[num];
@@ -748,7 +819,15 @@ class _SourceIcons extends StatelessWidget {
           label(CupertinoIcons.arrow_branch, '$hops', 'Хопов: $hops'),
         if (signal != null) Text(signal, style: style),
       ] else if (mirror && message.heardOnMirror)
-        label(CupertinoIcons.globe, 'MQTT', 'Из зеркала'),
+        // Своё сообщение ушло через свою ноду: зеркало лишь услышало его
+        // эфир. «NET», а не «MQTT»: это зеркало, а не прямой MQTT.
+        message.isOutgoing
+            ? label(
+                CupertinoIcons.dot_radiowaves_right,
+                'TX',
+                'Отправлено в эфир',
+              )
+            : label(CupertinoIcons.globe, 'NET', 'Из зеркала'),
     ];
     // Row, а не Wrap: Wrap не учитывает spacing в intrinsic-ширине,
     // и пузырь (IntrinsicWidth) получался уже футера.
@@ -842,7 +921,9 @@ class _Composer extends ConsumerStatefulWidget {
   final Message? replyTo;
   final String? replyAuthor;
   final VoidCallback onCancelReply;
-  final Future<bool> Function(String text) onSend;
+
+  /// [first] — первая часть сообщения (только она несёт цитату).
+  final Future<bool> Function(String text, {required bool first}) onSend;
 
   @override
   ConsumerState<_Composer> createState() => _ComposerState();
@@ -899,7 +980,7 @@ class _ComposerState extends ConsumerState<_Composer> {
     setState(() => _progress = (0, parts.length));
     for (final part in parts) {
       if (sent > 0) await Future<void>.delayed(MessageSplit.delay);
-      if (!mounted || !await widget.onSend(part)) break;
+      if (!mounted || !await widget.onSend(part, first: sent == 0)) break;
       sent++;
       if (mounted) setState(() => _progress = (sent, parts.length));
     }

@@ -49,7 +49,7 @@ class ConfigSectionSpec<C> {
   save;
   final void Function(Map<String, Object?> v)? adjust;
   final String? Function(Map<String, Object?> v)? check;
-  final void Function(WidgetRef ref)? afterSave;
+  final void Function(ProviderContainer c)? afterSave;
 
   /// Дополнительные элементы под формой (кнопки и т. п.).
   final List<Widget> Function(
@@ -156,10 +156,16 @@ class _ConfigSectionPageState<C> extends ConsumerState<ConfigSectionPage<C>> {
             onSave: () async {
               final admin = ref.read(adminSettingsProvider);
               final db = ref.read(databaseProvider);
+              // Экран могут закрыть, пока ждём ноду: после await `ref`
+              // уже нельзя трогать, контейнер провайдеров — можно.
+              final container = ProviderScope.containerOf(
+                context,
+                listen: false,
+              );
               final ok = await form.submit(
                 (v, _) => spec.save(admin, db, cfg, v, own),
               );
-              if (ok) spec.afterSave?.call(ref);
+              if (ok) spec.afterSave?.call(container);
             },
           ),
         ],

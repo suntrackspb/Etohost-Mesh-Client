@@ -148,4 +148,27 @@ void main() {
       expect(sent.single.setModuleConfig.statusmessage.nodeStatus, 'На связи');
     },
   );
+
+  test(
+    'связь пропала при сохранении — понятный текст без «Bad state»',
+    () async {
+      final db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      await db
+          .into(db.nodes)
+          .insert(NodesCompanion.insert(num: const Value(0xAA)));
+      final admin = AdminSettings(
+        (p) async => const DeliveryResult(DeliveryStatus.disconnected),
+        () => 0xAA,
+        () => 1,
+      );
+      final e = await UserSection.save(admin, db, 0xAA, {
+        'longName': 'X',
+        'shortName': 'X',
+        'isUnmessagable': false,
+      }).then<Object?>((_) => null, onError: (Object e) => e);
+      expect(e, isA<SaveError>());
+      expect('$e', rebooting);
+    },
+  );
 }

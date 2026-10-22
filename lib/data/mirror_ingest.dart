@@ -144,11 +144,25 @@ class MirrorIngest {
             shortName: Value(m.shortName ?? ''),
             onMirror: const Value(true),
           ),
-          onConflict: DoUpdate(
-            (_) => const NodesCompanion(onMirror: Value(true)),
+          // Есть строка без имён (пакет по радио без NodeInfo) — заполняем
+          // пустое; непустые имена не трогаем.
+          onConflict: DoUpdate.withExcluded(
+            (old, ex) => NodesCompanion.custom(
+              onMirror: const Constant(true),
+              longName: _orFill(old.longName, ex.longName),
+              shortName: _orFill(old.shortName, ex.shortName),
+            ),
           ),
         );
   }
+
+  static Expression<String> _orFill(
+    Expression<String> old,
+    Expression<String> ex,
+  ) => CaseWhenExpression(
+    cases: [CaseWhen(old.equals(''), then: ex)],
+    orElse: old,
+  );
 
   static Expression<int> _max(Expression<int> a, Expression<int> b) =>
       CaseWhenExpression(

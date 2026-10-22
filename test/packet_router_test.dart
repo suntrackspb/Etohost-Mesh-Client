@@ -30,6 +30,25 @@ void main() {
     expect(nodes.single.longName, 'Test node');
   });
 
+  test('NodeInfo без user не затирает известное имя', () async {
+    await db
+        .into(db.nodes)
+        .insert(
+          NodesCompanion.insert(
+            num: const Value(0x1234),
+            longName: const Value('enot 7afd'),
+            shortName: const Value('7afd'),
+          ),
+        );
+    await router.handle(
+      FromRadio(nodeInfo: NodeInfo(num: 0x1234, lastHeard: 1700000000)),
+    );
+    final n = (await db.watchNodes().first).single;
+    expect(n.longName, 'enot 7afd');
+    expect(n.shortName, '7afd');
+    expect(n.lastHeard, isNotNull);
+  });
+
   test(
     'текстовое сообщение пишется один раз (дубликаты игнорируются)',
     () async {

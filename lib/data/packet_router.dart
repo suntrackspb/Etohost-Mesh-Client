@@ -62,20 +62,25 @@ class PacketRouter {
     final pos = n.hasPosition() ? n.position : null;
     final hasPos = pos != null && pos.latitudeI != 0 && pos.longitudeI != 0;
     final m = n.hasDeviceMetrics() ? n.deviceMetrics : null;
+    // Ноду, от которой своя нода слышала пакеты, но не NodeInfo, прошивка
+    // отдаёт с пустым user — не затираем им имя и ключ (например, из зеркала).
+    final known =
+        n.hasUser() && (u.longName.isNotEmpty || u.shortName.isNotEmpty);
+    Value<T> user<T>(T v) => known ? Value(v) : const Value.absent();
     await db
         .into(db.nodes)
         .insertOnConflictUpdate(
           NodesCompanion.insert(
             num: Value(n.num),
-            userId: Value(u.id),
-            longName: Value(u.longName),
-            shortName: Value(u.shortName),
-            hwModel: Value(u.hwModel.value),
-            role: Value(u.role.value),
-            publicKey: Value(
-              u.publicKey.isEmpty ? null : Uint8List.fromList(u.publicKey),
-            ),
-            isUnmessagable: Value(u.isUnmessagable),
+            userId: user(u.id),
+            longName: user(u.longName),
+            shortName: user(u.shortName),
+            hwModel: user(u.hwModel.value),
+            role: user(u.role.value),
+            publicKey: u.publicKey.isEmpty
+                ? const Value.absent()
+                : Value(Uint8List.fromList(u.publicKey)),
+            isUnmessagable: user(u.isUnmessagable),
             lastHeard: Value(n.lastHeard == 0 ? null : _time(n.lastHeard)),
             snr: Value(n.snr == 0 ? null : n.snr),
             hopsAway: Value(n.hasHopsAway() ? n.hopsAway : null),
@@ -113,9 +118,9 @@ class PacketRouter {
         .insert(
           user.copyWith(
             num: Value(num),
-            publicKey: Value(
-              u.publicKey.isEmpty ? null : Uint8List.fromList(u.publicKey),
-            ),
+            publicKey: u.publicKey.isEmpty
+                ? const Value.absent()
+                : Value(Uint8List.fromList(u.publicKey)),
           ),
           onConflict: DoUpdate(
             // Пустой ключ в пакете не стирает известный.
