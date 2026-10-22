@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/images_providers.dart';
 import '../../app/notify_providers.dart';
 import '../../app/providers.dart';
+import '../../app/settings_providers.dart';
 import '../../core/glyph_zip.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/bubble_groups.dart';
@@ -205,6 +206,15 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
             icon: const Icon(Icons.search),
             onPressed: () => _search(nodes),
           ),
+          // Какая нода подключена — не уходя из чата во вкладку «Связь».
+          if (ref.watch(ownNodeProvider).value?.shortName case final n?
+              when n.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: Tokens.s16),
+              child: Center(
+                child: Text(n, style: Theme.of(context).textTheme.labelLarge),
+              ),
+            ),
         ],
       ),
       body: Column(
