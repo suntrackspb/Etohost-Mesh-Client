@@ -214,7 +214,19 @@ class SplitView extends StatelessWidget {
     if (!isWide(context)) return list;
     return Row(
       children: [
-        SizedBox(width: Tokens.listPaneWidth, child: list),
+        // Телефон в альбоме — список поуже, больше места переписке.
+        SizedBox(
+          width: (MediaQuery.sizeOf(context).width * 0.3).clamp(
+            260.0,
+            Tokens.listPaneWidth,
+          ),
+          // Правый вырез экрана — забота правой панели, не списка.
+          child: MediaQuery.removePadding(
+            context: context,
+            removeRight: true,
+            child: list,
+          ),
+        ),
         const VerticalDivider(width: 1),
         Expanded(child: detail ?? placeholder ?? const SizedBox()),
       ],

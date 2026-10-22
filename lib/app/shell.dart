@@ -78,7 +78,14 @@ class AdaptiveShell extends ConsumerWidget {
             ],
           ),
           const VerticalDivider(width: 1),
-          Expanded(child: shell),
+          // Отступ под «чёлку» слева уже взяла боковая панель.
+          Expanded(
+            child: MediaQuery.removePadding(
+              context: context,
+              removeLeft: true,
+              child: shell,
+            ),
+          ),
         ],
       ),
     );

@@ -20,6 +20,7 @@ import '../features/settings/radio/config_section_page.dart';
 import '../features/settings/radio/config_sections.dart';
 import '../features/settings/radio/user_config_page.dart';
 import '../features/settings/settings_page.dart';
+import '../ui/kit/kit.dart';
 import 'shell.dart';
 
 final appRouter = GoRouter(
@@ -37,6 +38,7 @@ final appRouter = GoRouter(
                 _route(
                   ':id',
                   (s) => ChatPage(selected: s.pathParameters['id']),
+                  split: true,
                 ),
               ],
             ),
@@ -52,6 +54,7 @@ final appRouter = GoRouter(
                   ':num',
                   (s) =>
                       NodesPage(selected: int.parse(s.pathParameters['num']!)),
+                  split: true,
                 ),
               ],
             ),
@@ -178,9 +181,15 @@ GoRoute _route(
   String path,
   Widget Function(GoRouterState s) build, {
   List<RouteBase> routes = const [],
+  bool split = false,
 }) => GoRoute(
   path: path,
-  pageBuilder: (_, s) => MaterialPage(key: s.pageKey, child: build(s)),
+  // [split] — правая панель SplitView: на широком экране список остаётся
+  // на месте, поэтому страница без анимации (иначе въезжает и моргает
+  // весь экран вместе со списком).
+  pageBuilder: (context, s) => split && SplitView.isWide(context)
+      ? NoTransitionPage(key: s.pageKey, child: build(s))
+      : MaterialPage(key: s.pageKey, child: build(s)),
   routes: routes,
 );
 

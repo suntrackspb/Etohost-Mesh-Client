@@ -33,7 +33,11 @@ class ChatPage extends ConsumerWidget {
     };
 
     final list = Scaffold(
-      appBar: AppBar(title: const Text('Чат')),
+      // На широком экране список — левая панель, «назад» ему не нужен.
+      appBar: AppBar(
+        title: const Text('Чат'),
+        automaticallyImplyLeading: !wide,
+      ),
       body: channels.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => EmptyState(icon: Icons.error_outline, text: '$e'),

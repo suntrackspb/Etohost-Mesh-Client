@@ -30,6 +30,7 @@ class _NodesPageState extends ConsumerState<NodesPage> {
 
     final list = Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !wide,
         title: Text(
           'Ноды${!nodes.hasValue
               ? ''
