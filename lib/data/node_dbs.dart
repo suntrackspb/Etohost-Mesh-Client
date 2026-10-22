@@ -71,17 +71,23 @@ Future<int> migrateToNodeDbs(
 
   if (hasData) {
     final path = fileFor(num);
-    final file = File(path);
-    if (file.existsSync()) file.deleteSync();
+    // Остаток прерванной прошлой попытки — с журналами SQLite.
+    deleteDbFiles(path);
     // Копия целиком (со схемой и user_version) — без закрытия базы.
+    // VACUUM INTO внутри транзакции нельзя; копия до неё безопасна:
+    // упадём — следующий запуск скопирует заново.
     await app.customStatement('VACUUM INTO ?', [path]);
-    await app.transaction(() async {
+  }
+  // Очистка и запись реестра вместе: иначе падение между ними оставит
+  // файл с данными, о котором приложение не знает.
+  await app.transaction(() async {
+    if (hasData) {
       for (final t in tables) {
         await app.customStatement('DELETE FROM "$t"');
       }
-    });
-  }
-  await app.setSetting(AppSettingKeys.nodeDbs, encodeNodeDbs([num]));
+    }
+    await app.setSetting(AppSettingKeys.nodeDbs, encodeNodeDbs([num]));
+  });
   return num;
 }
 

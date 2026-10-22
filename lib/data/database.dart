@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
@@ -365,23 +366,47 @@ class AppDatabase extends _$AppDatabase {
     // Первый запуск мог прерваться посреди createAll: таблицы есть
     // (CREATE TABLE IF NOT EXISTS), user_version — 0, и повторный
     // CREATE INDEX падает «already exists». Начинаем с чистой базы.
-    onCreate: _recreate,
-    onUpgrade: (m, from, to) async {
-      // С 5-й версии у тестеров уже есть данные — только добавляем колонки.
-      if (from >= 5 && from <= 7) {
-        if (from == 5) {
-          await m.addColumn(nodes, nodes.hasXeddsaSigned);
-          await m.addColumn(messages, messages.xeddsaSigned);
-          await m.addColumn(messages, messages.ackProof);
-        }
-        if (from <= 6) await m.addColumn(channels, channels.settings);
-        await m.addColumn(nodes, nodes.rssi);
-        await m.addColumn(nodes, nodes.modemPreset);
-        return;
+    onCreate: (m) => _atomically(() => _recreate(m)),
+    onUpgrade: (m, from, to) => _atomically(() async {
+      // Схема новее нашей (открыли старой сборкой) — не трогаем: лишние
+      // колонки старому коду не мешают, стирать данные нельзя.
+      // ОГРАНИЧЕНИЕ: верно, пока версии только добавляют. Версия, которая
+      // переименует или удалит колонку/таблицу, уронит старую сборку на
+      // запросах — тогда здесь нужен отказ с понятным сообщением или
+      // перенос файла в .bak.
+      if (from > to) return;
+      // До 5-й версии данных у тестеров не было.
+      if (from < 5) return _recreate(m);
+      for (var v = from + 1; v <= to; v++) {
+        await upgradeSteps[v]!(m);
       }
-      await _recreate(m);
-    },
+    }),
   );
+
+  /// Шаг миграции к версии (ключ) с предыдущей. Новая версия — новый шаг,
+  /// снимок схемы в drift_schemas и проверка в test/migration_test.dart.
+  @visibleForTesting
+  Map<int, Future<void> Function(Migrator m)> get upgradeSteps => {
+    6: (m) async {
+      await m.addColumn(nodes, nodes.hasXeddsaSigned);
+      await m.addColumn(messages, messages.xeddsaSigned);
+      await m.addColumn(messages, messages.ackProof);
+    },
+    7: (m) => m.addColumn(channels, channels.settings),
+    8: (m) async {
+      await m.addColumn(nodes, nodes.rssi);
+      await m.addColumn(nodes, nodes.modemPreset);
+    },
+  };
+
+  /// Миграция целиком или никак: drift сам транзакцию не открывает, а
+  /// user_version пишет уже после — прерванный шаг повторился бы
+  /// («duplicate column»). Версию ставим в той же транзакции.
+  Future<void> _atomically(Future<void> Function() body) =>
+      transaction(() async {
+        await body();
+        await customStatement('PRAGMA user_version = $schemaVersion');
+      });
 
   /// Удаляет всё, что есть в файле (в том числе таблицы и индексы старых
   /// схем), и создаёт схему заново.
