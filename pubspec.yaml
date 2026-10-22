@@ -59,13 +59,13 @@ flutter:
     - assets/icon/window.png
 
 # Иконки приложения: CI запускает `dart run flutter_launcher_icons` после
-# flutter create. Исходник — assets/icon/app_icon.png; производные —
+# flutter create. Исходники — assets/icon/src/*.svg; PNG делает
 # tool/make_icons.py.
 flutter_launcher_icons:
   image_path: assets/icon/app_icon.png
   android: true
-  # Рисунок целиком в фоне: глобус занимает ~57% и влезает в маску.
-  adaptive_icon_background: assets/icon/app_icon.png
+  # Сплошной фон (BG в tool/make_icons.py), рисунок — в переднем слое.
+  adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: assets/icon/android_foreground.png
   ios: true
   remove_alpha_ios: true
