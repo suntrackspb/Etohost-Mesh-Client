@@ -195,6 +195,9 @@ class _DesktopLink implements _SerialLink {
     final p = _port;
     _port = null;
     if (p != null) {
+      // Изолят читателя может ещё до 500 мс ждать в нативном sp_wait:
+      // освободить порт под ним — краш (на Windows при отключении).
+      await Future<void>.delayed(const Duration(milliseconds: 700));
       p.close();
       p.dispose();
     }
