@@ -28,6 +28,7 @@ import '../../mirror/mirror_config.dart';
 import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/open_node.dart';
+import '../../data/read_marker.dart';
 import 'chat_page.dart';
 import 'chat_search_delegate.dart';
 import 'emoji_sheet.dart';
@@ -66,10 +67,47 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
 
   late final _openChats = ref.read(openChatsProvider);
 
+  /// Отметка «прочитано» на момент входа: граница «Новые сообщения»
+  /// держится, пока чат открыт.
+  DateTime? _entryMark;
+  bool _entryReady = false;
+
   @override
   void initState() {
     super.initState();
     _openChats.open(widget.id);
+    _enter();
+  }
+
+  /// Запомнить отметку и догрузить ленту до первого непрочитанного.
+  Future<void> _enter() async {
+    final id = widget.id;
+    final mark = await ref.read(feedReadProvider(id).future);
+    final unread = await ref
+        .read(unreadCountProvider(id).future)
+        .timeout(const Duration(seconds: 3), onTimeout: () => 0);
+    final limit = ref.read(feedLimitProvider(id).notifier);
+    final want = feedLimitForUnread(limit.state, unread);
+    if (want != limit.state) {
+      limit.state = want;
+      await ref.read(feedMessagesProvider(id).future);
+    }
+    if (!mounted || id != widget.id) return;
+    setState(() {
+      _entryMark = mark;
+      _entryReady = true;
+    });
+  }
+
+  /// На экране побывали сообщения до [seen] — двигаем отметку вперёд.
+  void _seen(DateTime? seen) {
+    final read = ref.read(feedReadProvider(widget.id));
+    if (!read.hasValue) return;
+    final next = advanceMark(read.value, seen);
+    if (next == null || next == read.value) return;
+    ref
+        .read(databaseProvider)
+        .setSetting(readSettingKey(widget.id), next.toIso8601String());
   }
 
   @override
@@ -87,6 +125,9 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
         ..open(widget.id);
       _replyTo = null;
       _mirrorDone = false;
+      _entryMark = null;
+      _entryReady = false;
+      _enter();
     }
   }
 
@@ -101,21 +142,6 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
       ),
     );
     if (m != null) await actions.open(id, m);
-  }
-
-  /// Открытая переписка прочитана до самого свежего входящего.
-  void _markRead(List<Message> list) {
-    final newest = list.where((m) => !m.isOutgoing).firstOrNull?.rxTime;
-    if (newest == null) return;
-    final id = widget.id;
-    final read = ref.read(feedReadProvider(id));
-    if (!read.hasValue) return;
-    if (read.value != null && !newest.isAfter(read.value!)) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(databaseProvider)
-          .setSetting(readSettingKey(id), newest.toIso8601String());
-    });
   }
 
   /// Подгрузить старше: сначала из БД, когда там кончилось — страница зеркала.
@@ -227,9 +253,13 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
               error: (e, _) =>
                   EmptyState(icon: Icons.error_outline, text: '$e'),
               data: (list) {
-                _markRead(list);
                 return _MessageList(
+                  key: ValueKey(id),
                   feedId: id,
+                  unreadAfter: _entryMark,
+                  ready: _entryReady,
+                  unread: ref.watch(unreadCountProvider(id)).value ?? 0,
+                  onSeen: _seen,
                   messages: list,
                   canLoadMore:
                       list.length >= ref.watch(feedLimitProvider(id)) ||
@@ -393,7 +423,12 @@ String _authorName(Map<int, Node> nodes, int num) {
 
 class _MessageList extends ConsumerStatefulWidget {
   const _MessageList({
+    super.key,
     required this.feedId,
+    required this.unreadAfter,
+    required this.ready,
+    required this.unread,
+    required this.onSeen,
     required this.messages,
     required this.canLoadMore,
     required this.loadingMore,
@@ -405,6 +440,16 @@ class _MessageList extends ConsumerStatefulWidget {
   });
 
   final String feedId;
+
+  /// Входящие новее — «новые»: над самым старым из них разделитель.
+  final DateTime? unreadAfter;
+
+  /// Отметка входа известна, лента догружена — можно позиционировать.
+  final bool ready;
+
+  /// Непрочитанных сейчас — счётчик на кнопке «вниз».
+  final int unread;
+  final ValueChanged<DateTime?> onSeen;
   final List<Message> messages;
   final bool canLoadMore;
   final bool loadingMore;
@@ -420,15 +465,97 @@ class _MessageList extends ConsumerStatefulWidget {
 
 class _MessageListState extends ConsumerState<_MessageList> {
   final _scroll = ScrollController();
+  final _listKey = GlobalKey();
   final _keys = <int, GlobalKey>{};
   int? _highlight;
+  List<Message> _visible = const [];
+
+  /// Начальная позиция выставлена (к первому непрочитанному или как была).
+  bool _positioned = false;
+
+  /// Можно отмечать прочитанное: до позиционирования на экране «низ».
+  bool _settled = false;
+  bool _atBottom = true;
 
   GlobalKey _keyFor(int packetId) => _keys[packetId] ??= GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(_onScroll);
+  }
 
   @override
   void dispose() {
     _scroll.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    final bottom = !_scroll.hasClients || _scroll.offset < 150;
+    if (bottom != _atBottom) setState(() => _atBottom = bottom);
+  }
+
+  /// Индекс самого свежего сообщения, видного на экране.
+  int? _newestOnScreen() {
+    final list = _listKey.currentContext?.findRenderObject() as RenderBox?;
+    if (list == null || !list.attached) return null;
+    final h = list.size.height;
+    for (var i = 0; i < _visible.length; i++) {
+      final ctx = _keys[_visible[i].packetId]?.currentContext;
+      final box = ctx?.findRenderObject() as RenderBox?;
+      if (box == null || !box.attached) continue;
+      final top = box.localToGlobal(Offset.zero, ancestor: list).dy;
+      if (top < h && top + box.size.height > 0) return i;
+    }
+    return null;
+  }
+
+  void _reportSeen() {
+    if (!_settled || !mounted) return;
+    final i = _newestOnScreen();
+    if (i == null) return;
+    // Внизу — прочитано всё, вместе с реакциями (их нет среди пузырей).
+    widget.onSeen(
+      i == 0 ? readUpTo(widget.messages, 0) : readUpTo(_visible, i),
+    );
+  }
+
+  /// Открыть на первом непрочитанном: разделитель — вверху экрана.
+  Future<void> _position() async {
+    final i = firstUnreadIndex(_visible, widget.unreadAfter);
+    if (i != null && i > 0) {
+      final list = _visible;
+      await scrollToItem(
+        _scroll,
+        i,
+        list.length,
+        (j) => _keyFor(list[j].packetId),
+        // Список перевёрнут: 1 — верх экрана; чуть ниже, чтобы был виден
+        // разделитель над сообщением.
+        alignment: 0.9,
+        duration: Duration.zero,
+      );
+    }
+    if (!mounted) return;
+    _settled = true;
+    _onScroll();
+    _reportSeen();
+  }
+
+  /// Вниз — и всё прочитано.
+  void _toBottom() {
+    if (!_scroll.hasClients) return;
+    if (_scroll.offset > 3 * _scroll.position.viewportDimension) {
+      _scroll.jumpTo(0);
+    } else {
+      _scroll.animateTo(
+        0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    }
+    widget.onSeen(readUpTo(widget.messages, 0));
   }
 
   /// Тап по цитате: прокрутить к исходному сообщению и подсветить его.
@@ -480,6 +607,15 @@ class _MessageListState extends ConsumerState<_MessageList> {
     }
     final more = canLoadMore ? 1 : 0;
     final positions = bubblePositions(visible);
+    _visible = visible;
+    final firstNew = firstUnreadIndex(visible, w.unreadAfter);
+    if (!_positioned && w.ready) {
+      _positioned = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _position());
+    } else if (_settled) {
+      // Новые данные (пришло сообщение) — видно ли его.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _reportSeen());
+    }
     // Переход к результату поиска — когда сообщение уже в ленте.
     final jump = ref.watch(chatJumpProvider(feedId));
     if (jump != null && visible.any((m) => m.packetId == jump)) {
@@ -489,9 +625,10 @@ class _MessageListState extends ConsumerState<_MessageList> {
         _jumpTo(visible, jump);
       });
     }
-    return NotificationListener<ScrollNotification>(
+    final list = NotificationListener<ScrollNotification>(
       // Долистали почти до верха (список перевёрнут — это конец) — подгружаем.
       onNotification: (n) {
+        if (n is ScrollEndNotification) _reportSeen();
         if (canLoadMore &&
             !loadingMore &&
             n.metrics.extentAfter < 400 &&
@@ -558,14 +695,40 @@ class _MessageListState extends ConsumerState<_MessageList> {
               },
             ),
           );
-          // Первое сообщение дня — плашка с датой над ним.
-          if (!startsDay(visible, i)) return bubble;
+          // Первое сообщение дня — плашка с датой над ним; первое
+          // непрочитанное — разделитель «Новые сообщения».
+          final day = startsDay(visible, i);
+          if (!day && i != firstNew) return bubble;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [_DayChip(dayLabel(m.rxTime, DateTime.now())), bubble],
+            children: [
+              if (day) _DayChip(dayLabel(m.rxTime, DateTime.now())),
+              if (i == firstNew) const _NewDivider(),
+              bubble,
+            ],
           );
         },
       ),
+    );
+    return Stack(
+      children: [
+        KeyedSubtree(key: _listKey, child: list),
+        if (!_atBottom)
+          Positioned(
+            right: Tokens.s12,
+            bottom: Tokens.s12,
+            child: Badge(
+              isLabelVisible: w.unread > 0,
+              label: Text(w.unread > 999 ? '999+' : '${w.unread}'),
+              child: FloatingActionButton.small(
+                heroTag: 'feedDown:$feedId',
+                tooltip: 'Вниз, всё прочитано',
+                onPressed: _toBottom,
+                child: const Icon(Icons.keyboard_arrow_down),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -887,6 +1050,34 @@ class _Bubble extends StatelessWidget {
 const _avatarSize = 36.0;
 
 /// Плашка дня между сообщениями: «Сегодня», «Вчера», «20 окт.».
+/// Граница прочитанного: над первым сообщением, пришедшим без вас.
+class _NewDivider extends StatelessWidget {
+  const _NewDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Tokens.s8),
+      child: Row(
+        children: [
+          Expanded(child: Divider(color: scheme.primary)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Tokens.s8),
+            child: Text(
+              'Новые сообщения',
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: scheme.primary),
+            ),
+          ),
+          Expanded(child: Divider(color: scheme.primary)),
+        ],
+      ),
+    );
+  }
+}
+
 class _DayChip extends StatelessWidget {
   const _DayChip(this.label);
 
