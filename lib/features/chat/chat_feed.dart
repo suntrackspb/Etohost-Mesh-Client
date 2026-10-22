@@ -10,6 +10,7 @@ import '../../app/notify_providers.dart';
 import '../../app/providers.dart';
 import '../../core/glyph_zip.dart';
 import '../../core/proto/mesh.dart';
+import '../../data/bubble_groups.dart';
 import '../../data/database.dart';
 import '../../data/delivery.dart';
 import '../../data/message_meta.dart';
@@ -437,6 +438,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
       );
     }
     final more = canLoadMore ? 1 : 0;
+    final positions = bubblePositions(visible);
     return NotificationListener<ScrollNotification>(
       // Долистали почти до верха (список перевёрнут — это конец) — подгружаем.
       onNotification: (n) {
@@ -474,6 +476,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
             onReply: canWrite ? () => onReply(m) : null,
             child: _Bubble(
               key: _keyFor(m.packetId),
+              pos: positions[i],
               highlighted: _highlight == m.packetId,
               onOpenQuote: m.replyId == null || byPacket[m.replyId] == null
                   ? null
@@ -584,6 +587,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
 class _Bubble extends StatelessWidget {
   const _Bubble({
     super.key,
+    required this.pos,
     required this.highlighted,
     required this.onOpenQuote,
     required this.message,
@@ -600,6 +604,9 @@ class _Bubble extends StatelessWidget {
   });
 
   final Message message;
+
+  /// Место в серии сообщений одного автора.
+  final BubblePos pos;
   final String author;
   final String? shortName;
   final Message? quoted;
@@ -616,6 +623,15 @@ class _Bubble extends StatelessWidget {
 
   /// Тап по цитате; null — исходного сообщения нет в загруженной ленте.
   final VoidCallback? onOpenQuote;
+
+  /// Внутри серии стыки острые с обеих сторон — пузыри как один блок.
+  BorderRadius _radius() {
+    const big = Radius.circular(Tokens.radiusL);
+    const small = Radius.circular(Tokens.s4);
+    final top = pos.joinedAbove ? small : big;
+    final bottom = pos.joinedBelow ? small : big;
+    return BorderRadius.vertical(top: top, bottom: bottom);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -638,13 +654,13 @@ class _Bubble extends StatelessWidget {
             : out
             ? scheme.primaryContainer
             : scheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(Tokens.radiusL),
+        borderRadius: _radius(),
       ),
       child: IntrinsicWidth(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!out)
+            if (!out && !pos.joinedAbove)
               Text(
                 author,
                 style: text.labelMedium?.copyWith(color: scheme.primary),
@@ -702,7 +718,11 @@ class _Bubble extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Tokens.s4),
+      // В серии пузыри стоят плотно.
+      padding: EdgeInsets.only(
+        top: pos.joinedAbove ? 1 : Tokens.s4,
+        bottom: pos.joinedBelow ? 1 : Tokens.s4,
+      ),
       child: Row(
         mainAxisAlignment: out
             ? MainAxisAlignment.end
@@ -710,14 +730,18 @@ class _Bubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!out) ...[
-            GestureDetector(
-              onTap: onOpenNode,
-              child: NodeAvatar(
-                nodeNum: message.fromNum,
-                shortName: shortName,
-                size: 36,
+            // Аватар — у нижнего пузыря серии, над остальными — отступ.
+            if (pos.joinedBelow)
+              const SizedBox(width: _avatarSize)
+            else
+              GestureDetector(
+                onTap: onOpenNode,
+                child: NodeAvatar(
+                  nodeNum: message.fromNum,
+                  shortName: shortName,
+                  size: _avatarSize,
+                ),
               ),
-            ),
             const SizedBox(width: Tokens.s8),
           ],
           Flexible(
@@ -735,6 +759,8 @@ class _Bubble extends StatelessWidget {
     );
   }
 }
+
+const _avatarSize = 36.0;
 
 class _Quote extends StatelessWidget {
   const _Quote(this.quoted, this.author);
