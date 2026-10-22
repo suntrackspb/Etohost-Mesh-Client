@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../proto/mesh.dart';
+import '../transport/tcp_transport.dart';
 import '../transport/transport.dart';
 import 'endpoint.dart';
 import 'journal.dart';
@@ -50,6 +51,15 @@ class RadioSession extends ChangeNotifier {
   Duration nodesTimeout = const Duration(seconds: 10);
 
   static const heartbeatInterval = Duration(seconds: 60);
+
+  /// По TCP перезагрузка ноды не закрывает сокет — обрыв виден только по
+  /// молчанию. Пульс чаще, и нода отвечает на него QueueStatus
+  /// (PhoneAPI.cpp, heartbeatReceived): нет ответа за [heartbeatReply] — разрыв.
+  Duration tcpHeartbeatInterval = const Duration(seconds: 15);
+  Duration heartbeatReply = const Duration(seconds: 5);
+
+  /// Транспорт, где обрыв виден только по молчанию.
+  bool Function(Transport t) silentDrop = (t) => t is TcpTransport;
   static const reconnectDelay = Duration(seconds: 5);
 
   final Journal journal;
@@ -87,6 +97,11 @@ class RadioSession extends ChangeNotifier {
 
   Transport? _t;
   Timer? _heartbeat;
+  Timer? _heartbeatCheck;
+
+  /// Нода хоть раз ответила на пульс — только тогда молчание считаем
+  /// разрывом (старые прошивки могут не отвечать).
+  bool _heartbeatAnswers = false;
   Timer? _nodesWatch;
   int _nodesRetry = 0;
   Timer? _reconnect;
@@ -126,7 +141,11 @@ class RadioSession extends ChangeNotifier {
       await send(ToRadio(wantConfigId: configNonce));
 
       _heartbeat?.cancel();
-      _heartbeat = Timer.periodic(heartbeatInterval, (_) => _sendHeartbeat());
+      _heartbeatAnswers = false;
+      _heartbeat = Timer.periodic(
+        silentDrop(t) ? tcpHeartbeatInterval : heartbeatInterval,
+        (_) => _sendHeartbeat(),
+      );
     } catch (e) {
       _app(
         'Ошибка подключения: $e'
@@ -155,11 +174,24 @@ class RadioSession extends ChangeNotifier {
   }
 
   Future<void> _sendHeartbeat() async {
+    final t = _t;
+    final sent = DateTime.now();
     try {
       await send(ToRadio(heartbeat: Heartbeat()));
     } catch (e) {
       _app('heartbeat не отправлен: $e');
+      return;
     }
+    _heartbeatCheck?.cancel();
+    _heartbeatCheck = Timer(heartbeatReply, () {
+      if (t == null || !identical(t, _t)) return;
+      final rx = lastRx;
+      if (rx != null && rx.isAfter(sent)) {
+        _heartbeatAnswers = true;
+      } else if (_heartbeatAnswers && silentDrop(t)) {
+        _onClosed(t, 'нода не ответила на heartbeat');
+      }
+    });
   }
 
   void _onFromRadio(Uint8List data) {
@@ -314,6 +346,7 @@ class RadioSession extends ChangeNotifier {
 
   Future<void> _teardown() async {
     _heartbeat?.cancel();
+    _heartbeatCheck?.cancel();
     _nodesWatch?.cancel();
     queue.reset();
     // Копия: _teardown может зайти повторно (разрыв во время отключения).

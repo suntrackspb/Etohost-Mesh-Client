@@ -357,15 +357,8 @@ ProfilePlan planProfile(
       ),
     );
   }
-  // Bluetooth перед последним шагом: смена режима/PIN рвёт BLE.
-  final bt = configs['bluetooth'];
-  if (bt != null) {
-    items.add(
-      ProfileItem(ProfileSection.device, 'Bluetooth', [
-        AdminMessage(setConfig: bt),
-      ]),
-    );
-  }
+  // Bluetooth не восстанавливаем: смена режима/PIN (и даже запись того же)
+  // ломает сопряжение с телефоном, а оно у пользователя уже настроено.
   final sec = configs['security'];
   if (sec != null) {
     final merged = mergeSecurity(sec.security, security);

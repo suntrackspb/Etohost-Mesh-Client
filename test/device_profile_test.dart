@@ -183,4 +183,16 @@ void main() {
     expect(r.committed, isTrue);
     expect(r.pending, ['MQTT']);
   });
+
+  test('Bluetooth is never restored', () {
+    final p = buildProfile(
+      ProfileSource(
+        configs: {
+          'bluetooth': Config(bluetooth: Config_BluetoothConfig(enabled: true)),
+        },
+      ),
+    );
+    expect(p.config.hasBluetooth(), isTrue); // в файл попадает
+    expect(planProfile(p).items, isEmpty);
+  });
 }

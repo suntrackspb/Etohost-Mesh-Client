@@ -107,4 +107,52 @@ void main() {
     expect((await pending).status, DeliveryStatus.disconnected);
     s.dispose();
   });
+
+  test('TCP: нода перестала отвечать на heartbeat — разрыв', () async {
+    final t = FakeTransport();
+    var answer = true;
+    t.onSend = (m) {
+      if (m.hasWantConfigId()) {
+        Future.microtask(
+          () => t.reply(FromRadio(configCompleteId: m.wantConfigId)),
+        );
+      }
+      if (m.hasHeartbeat() && answer) {
+        Future.microtask(() => t.reply(FromRadio(queueStatus: QueueStatus())));
+      }
+    };
+    final s = RadioSession(Journal())
+      ..tcpHeartbeatInterval = const Duration(milliseconds: 30)
+      ..heartbeatReply = const Duration(milliseconds: 10)
+      ..silentDrop = ((_) => true)
+      ..autoReconnect = false;
+    await s.connect(RadioTarget('fake', (_) => t));
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    expect(s.state, RadioState.ready);
+    answer = false;
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    expect(s.disconnects, 1);
+    expect(s.state, RadioState.idle);
+    await s.disconnect();
+  });
+
+  test('старая прошивка не отвечает на heartbeat — не рвём', () async {
+    final t = FakeTransport();
+    t.onSend = (m) {
+      if (m.hasWantConfigId()) {
+        Future.microtask(
+          () => t.reply(FromRadio(configCompleteId: m.wantConfigId)),
+        );
+      }
+    };
+    final s = RadioSession(Journal())
+      ..tcpHeartbeatInterval = const Duration(milliseconds: 20)
+      ..heartbeatReply = const Duration(milliseconds: 5)
+      ..silentDrop = ((_) => true);
+    await s.connect(RadioTarget('fake', (_) => t));
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    expect(s.disconnects, 0);
+    expect(s.state, RadioState.ready);
+    await s.disconnect();
+  });
 }
