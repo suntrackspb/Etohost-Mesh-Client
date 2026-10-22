@@ -131,7 +131,10 @@ class _MapPageState extends ConsumerState<MapPage> {
   @override
   Widget build(BuildContext context) {
     final points = ref.watch(mapPointsProvider);
-    final filtered = ref.watch(nodeFilterProvider).active;
+    final filter = ref.watch(nodeFilterProvider);
+    final query = filter.query.trim();
+    // Поиск из списка нод действует и на карте — значок и плашка об этом.
+    final filtered = filter.active || query.isNotEmpty;
     final me = points.where((p) => p.isMe).firstOrNull;
     final rotate = ref.watch(mapRotateProvider).value ?? false;
     final area = ref.watch(nodeAreaProvider);
@@ -299,11 +302,30 @@ class _MapPageState extends ConsumerState<MapPage> {
                 ),
               ),
             ),
+          if (query.isNotEmpty)
+            Positioned(
+              left: Tokens.s16,
+              top: Tokens.s16,
+              child: InputChip(
+                avatar: const Icon(Icons.search, size: 18),
+                label: Text('Поиск: $query'),
+                tooltip: 'Поиск из списка нод',
+                deleteButtonTooltipMessage: 'Показать все ноды',
+                onDeleted: () => ref.read(nodeFilterProvider.notifier).state =
+                    filter.copyWith(query: ''),
+              ),
+            ),
           if (points.isEmpty)
             Align(
               alignment: Alignment.topCenter,
               child: Card(
-                margin: const EdgeInsets.all(Tokens.s16),
+                // Под плашкой поиска, если она есть.
+                margin: EdgeInsets.fromLTRB(
+                  Tokens.s16,
+                  query.isEmpty ? Tokens.s16 : 72,
+                  Tokens.s16,
+                  Tokens.s16,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(Tokens.s16),
                   child: Text(

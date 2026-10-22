@@ -22,8 +22,22 @@ class NodesPage extends ConsumerStatefulWidget {
 }
 
 class _NodesPageState extends ConsumerState<NodesPage> {
+  // Поиск общий с картой: сброс там должен очистить и это поле.
+  late final _search = TextEditingController(
+    text: ref.read(nodeFilterProvider).query,
+  );
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(nodeFilterProvider.select((f) => f.query), (_, q) {
+      if (_search.text != q) _search.text = q;
+    });
     final nodes = ref.watch(filteredNodesProvider);
     final total = ref.watch(nodesProvider).value?.length;
     final filter = ref.watch(nodeFilterProvider);
@@ -60,11 +74,21 @@ class _NodesPageState extends ConsumerState<NodesPage> {
               Tokens.s16,
               Tokens.s8,
             ),
-            child: TextFormField(
-              initialValue: filter.query,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
+            child: TextField(
+              controller: _search,
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
                 hintText: 'Имя или !id',
+                suffixIcon: filter.query.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Очистить',
+                        icon: const Icon(Icons.close),
+                        onPressed: () =>
+                            ref.read(nodeFilterProvider.notifier).state = ref
+                                .read(nodeFilterProvider)
+                                .copyWith(query: ''),
+                      ),
               ),
               onChanged: (v) => ref.read(nodeFilterProvider.notifier).state =
                   ref.read(nodeFilterProvider).copyWith(query: v),
