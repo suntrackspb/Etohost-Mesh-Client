@@ -286,7 +286,7 @@ final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
         break;
     }
   }, log: log)..start();
-  ref.onDispose(rt.dispose);
+  // dispose вызывает сам ChangeNotifierProvider; второй вызов — ошибка.
   return rt;
 });
 
