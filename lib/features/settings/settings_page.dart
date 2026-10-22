@@ -219,6 +219,12 @@ class SettingsPage extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/admin'),
               ),
+              MeshTile(
+                title: 'Резервная копия и восстановление',
+                leading: const Icon(Icons.settings_backup_restore),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/backup'),
+              ),
             ],
           ),
           SectionCard(
