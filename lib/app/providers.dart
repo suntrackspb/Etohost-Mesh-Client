@@ -18,6 +18,7 @@ import '../core/radio/journal.dart';
 import '../core/radio/radio_session.dart';
 import '../core/transport/serial_transport.dart';
 import '../core/update/update_checker.dart';
+import '../data/recent_reactions.dart';
 import '../data/chat_search.dart';
 import '../data/database.dart';
 import '../data/node_row_info.dart';
@@ -713,6 +714,24 @@ Stream<String?> _setting(Ref ref, String key) =>
 
 Future<void> saveSetting(WidgetRef ref, String key, String value) =>
     ref.read(databaseProvider).setSetting(key, value);
+
+/// Недавние реакции — для быстрой панели.
+final recentReactionsProvider = StreamProvider<List<String>>(
+  (ref) =>
+      _setting(ref, AppSettingKeys.recentReactions).map(parseRecentReactions),
+);
+
+/// Запомнить поставленную реакцию.
+Future<void> rememberReaction(WidgetRef ref, String emoji) async {
+  final db = ref.read(databaseProvider);
+  final now = parseRecentReactions(
+    await db.getSetting(AppSettingKeys.recentReactions),
+  );
+  await db.setSetting(
+    AppSettingKeys.recentReactions,
+    encodeRecentReactions(useReaction(now, emoji)),
+  );
+}
 
 /// Тема приложения; неизвестное значение — как в системе.
 final themeModeProvider = StreamProvider<ThemeMode>(

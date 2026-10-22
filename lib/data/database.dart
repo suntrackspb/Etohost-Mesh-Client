@@ -59,6 +59,9 @@ abstract final class AppSettingKeys {
   /// Группировать близкие ноды на карте: 'true'/'false', по умолчанию да.
   static const mapCluster = 'map.cluster';
 
+  /// Недавние реакции: JSON-список эмодзи, последний — первым.
+  static const recentReactions = 'chat.recentReactions';
+
   /// Подложка карты: [MapStyle].name, по умолчанию auto.
   static const mapStyle = 'map.style';
 

@@ -11,6 +11,7 @@ dependencies:
   cupertino_icons: ^2.0.0
   drift: ^2.35.2
   drift_flutter: ^0.3.1
+  emoji_picker_flutter: ^4.5.4
   file_picker: ^13.1.0
   fixnum: ^1.1.1
   flutter:

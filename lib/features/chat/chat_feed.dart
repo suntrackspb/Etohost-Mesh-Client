@@ -22,12 +22,14 @@ import '../../data/message_split.dart';
 import '../../data/ping_guard.dart';
 import '../../data/mirror_ingest.dart';
 import '../../data/reaction_groups.dart';
+import '../../data/recent_reactions.dart';
 import '../../mirror/mirror_config.dart';
 import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/open_node.dart';
 import 'chat_page.dart';
 import 'chat_search_delegate.dart';
+import 'emoji_sheet.dart';
 import 'link_text.dart';
 import 'message_images.dart';
 import 'reactions_sheet.dart';
@@ -36,7 +38,6 @@ import 'scroll_to_item.dart';
 import 'swipe_to_reply.dart';
 
 /// Быстрые реакции (как в официальных клиентах — эмодзи-ответ на сообщение).
-const quickReactions = ['👍', '❤️', '😂', '😮', '😢', '👎'];
 
 /// Сообщение-реакция: эмодзи-ответ на другое сообщение. Из зеркала флаг
 /// `emoji` не приходит — тогда реакция это ответ из одних эмодзи.
@@ -157,6 +158,8 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
     final id = widget.id;
     final target = ChatTarget.parse(id);
     final messages = ref.watch(feedMessagesProvider(id));
+    // Держим недавние реакции загруженными к открытию меню сообщения.
+    ref.watch(recentReactionsProvider);
     final nodes = {
       for (final n in ref.watch(nodesProvider).value ?? <Node>[]) n.num: n,
     };
@@ -237,7 +240,10 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
                   nodes: nodes,
                   canWrite: blocked == null,
                   onReply: (m) => setState(() => _replyTo = m),
-                  onReact: (m, emoji) => _send(emoji, replyTo: m, emoji: true),
+                  onReact: (m, emoji) {
+                    rememberReaction(ref, emoji);
+                    _send(emoji, replyTo: m, emoji: true);
+                  },
                 );
               },
             ),
@@ -591,18 +597,43 @@ class _MessageListState extends ConsumerState<_MessageList> {
             if (canSend)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Tokens.s16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    for (final e in quickReactions)
+                // Два ряда по 6: 11 частых реакций и «+» — полный выбор.
+                child: Builder(
+                  builder: (_) {
+                    final emojis = quickReactions(
+                      ref.read(recentReactionsProvider).value ?? const [],
+                    );
+                    final buttons = <Widget>[
+                      for (final e in emojis)
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            onReact(m, e);
+                          },
+                          icon: Text(e, style: const TextStyle(fontSize: 24)),
+                        ),
                       IconButton(
-                        onPressed: () {
+                        tooltip: 'Другие эмодзи',
+                        onPressed: () async {
                           Navigator.pop(ctx);
-                          onReact(m, e);
+                          final e = await pickEmoji(context);
+                          if (e != null) onReact(m, e);
                         },
-                        icon: Text(e, style: const TextStyle(fontSize: 24)),
+                        icon: const Icon(Icons.add_reaction_outlined),
                       ),
-                  ],
+                    ];
+                    return Column(
+                      children: [
+                        for (var r = 0; r < buttons.length; r += 6)
+                          Row(
+                            children: [
+                              for (final b in buttons.skip(r).take(6))
+                                Expanded(child: b),
+                            ],
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ),
             if (canWrite)
