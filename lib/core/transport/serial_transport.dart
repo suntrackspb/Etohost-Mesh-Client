@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
 import 'package:usb_serial/usb_serial.dart';
 
+import 'ansi_text.dart';
 import 'transport.dart';
 
 /// Найденный последовательный порт.
@@ -54,8 +55,11 @@ Future<List<SerialPortInfo>> listSerialPorts() async {
       result.add(
         SerialPortInfo(
           id: name,
-          title: p.productName ?? p.description ?? name,
-          subtitle: [name, p.manufacturer].whereType<String>().join(' · '),
+          title: fixAnsiText(p.productName ?? p.description ?? name),
+          subtitle: [
+            name,
+            p.manufacturer,
+          ].whereType<String>().map(fixAnsiText).join(' · '),
         ),
       );
     } finally {
@@ -161,7 +165,11 @@ class _DesktopLink implements _SerialLink {
       ..bits = 8
       ..parity = SerialPortParity.none
       ..stopBits = 1
-      ..setFlowControl(SerialPortFlowControl.none);
+      ..setFlowControl(SerialPortFlowControl.none)
+      // Как на Android: без DTR встроенный USB ESP32-S3 на Windows молчит
+      // (порт открыт, но конфиг не приходит).
+      ..dtr = SerialPortDtr.on
+      ..rts = SerialPortRts.on;
     p.config = cfg;
     cfg.dispose();
     _port = p;

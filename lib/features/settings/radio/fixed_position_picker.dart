@@ -73,6 +73,11 @@ class _FixedPositionPickerState extends State<FixedPositionPicker> {
     _map.move(_point, _map.camera.zoom);
   }
 
+  void _zoomBy(double delta) {
+    final cam = _map.camera;
+    _map.move(cam.center, (cam.zoom + delta).clamp(2, 19));
+  }
+
   void _save() {
     final f = manualFix(_lat.text, _lon.text, _alt.text, DateTime.now());
     if (f == null) {
@@ -96,48 +101,79 @@ class _FixedPositionPickerState extends State<FixedPositionPicker> {
             // Перетаскивание ловим Listener'ом поверх карты: жесты внутри
             // маркера карта перехватывает сама. Пока тащим метку, карта
             // не двигается.
-            child: Listener(
-              onPointerDown: (e) {
-                if (_onPin(e.localPosition)) setState(() => _dragging = true);
-              },
-              onPointerMove: (e) {
-                if (_dragging) _drag(e.localDelta);
-              },
-              onPointerUp: (_) => setState(() => _dragging = false),
-              onPointerCancel: (_) => setState(() => _dragging = false),
-              child: FlutterMap(
-                mapController: _map,
-                options: MapOptions(
-                  initialCenter: _point,
-                  initialZoom: widget.initial == null ? 9 : 15,
-                  interactionOptions: InteractionOptions(
-                    flags: _dragging
-                        ? InteractiveFlag.none
-                        : InteractiveFlag.all & ~InteractiveFlag.rotate,
-                  ),
-                ),
-                children: [
-                  const OsmTiles(),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: _point,
-                        width: _pin,
-                        height: _pin,
-                        alignment: Alignment.topCenter,
-                        child: Icon(
-                          Icons.location_pin,
-                          size: _pin,
-                          color: Colors.red,
-                          shadows: const [
-                            Shadow(color: Colors.black54, blurRadius: 4),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Listener(
+                    onPointerDown: (e) {
+                      if (_onPin(e.localPosition)) {
+                        setState(() => _dragging = true);
+                      }
+                    },
+                    onPointerMove: (e) {
+                      if (_dragging) _drag(e.localDelta);
+                    },
+                    onPointerUp: (_) => setState(() => _dragging = false),
+                    onPointerCancel: (_) => setState(() => _dragging = false),
+                    child: FlutterMap(
+                      mapController: _map,
+                      options: MapOptions(
+                        initialCenter: _point,
+                        initialZoom: widget.initial == null ? 9 : 15,
+                        interactionOptions: InteractionOptions(
+                          flags: _dragging
+                              ? InteractiveFlag.none
+                              : InteractiveFlag.all & ~InteractiveFlag.rotate,
+                        ),
+                      ),
+                      children: [
+                        const OsmTiles(),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: _point,
+                              width: _pin,
+                              height: _pin,
+                              alignment: Alignment.topCenter,
+                              child: Icon(
+                                Icons.location_pin,
+                                size: _pin,
+                                color: Colors.red,
+                                shadows: const [
+                                  Shadow(color: Colors.black54, blurRadius: 4),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Запасной способ масштаба: с мыши и трекпада на десктопе.
+                Positioned(
+                  right: Tokens.s16,
+                  bottom: Tokens.s16,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FloatingActionButton.small(
+                        heroTag: 'pickerZoomIn',
+                        tooltip: 'Приблизить',
+                        onPressed: () => _zoomBy(1),
+                        child: const Icon(Icons.add),
+                      ),
+                      const SizedBox(height: Tokens.s8),
+                      FloatingActionButton.small(
+                        heroTag: 'pickerZoomOut',
+                        tooltip: 'Отдалить',
+                        onPressed: () => _zoomBy(-1),
+                        child: const Icon(Icons.remove),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           SafeArea(
