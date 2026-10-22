@@ -31,6 +31,7 @@ class _MapPageState extends ConsumerState<MapPage> {
     final cam = _map.camera;
     _map.move(cam.center, (cam.zoom + delta).clamp(2, 19));
   }
+
   bool _ready = false;
   bool _fitted = false;
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
@@ -75,6 +76,9 @@ abstract final class AppSettingKeys {
 
   /// Как часто передавать позицию, минуты (по умолчанию 15).
   static const positionIntervalMin = 'position.intervalMin';
+
+  /// Скрытые каналы зеркала: JSON-список ключей.
+  static const hiddenChannels = 'chat.hiddenChannels';
 
   /// Время последнего прочитанного сообщения канала (ISO-8601).
   static String channelRead(String key) => 'chat.read.$key';
@@ -531,6 +535,38 @@ class AppDatabase extends _$AppDatabase {
     appSettings,
   ).insertOnConflictUpdate(AppSettingsCompanion.insert(key: key, value: value));
 
+  Future<Set<String>> hiddenChannels() async =>
+      parseHiddenChannels(await getSetting(AppSettingKeys.hiddenChannels));
+
+  Stream<Set<String>> watchHiddenChannels() =>
+      watchSetting(AppSettingKeys.hiddenChannels).map(parseHiddenChannels);
+
+  /// Скрыть канал зеркала: больше не показывать и не загружать, а его
+  /// сообщения только из зеркала удалить. Своё и услышанное в эфире — оставить.
+  Future<void> hideChannel(String key) => transaction(() async {
+    final all = await hiddenChannels();
+    await setSetting(
+      AppSettingKeys.hiddenChannels,
+      jsonEncode((all..add(key)).toList()..sort()),
+    );
+    await (delete(messages)..where(
+          (m) =>
+              m.channelKey.equals(key) &
+              m.heardOnRadio.not() &
+              m.isOutgoing.not(),
+        ))
+        .go();
+  });
+
+  /// Вернуть канал: сообщения снова придут из зеркала.
+  Future<void> unhideChannel(String key) async {
+    final all = await hiddenChannels();
+    await setSetting(
+      AppSettingKeys.hiddenChannels,
+      jsonEncode((all..remove(key)).toList()..sort()),
+    );
+  }
+
   /// После сброса NodeDB своей ноды: ноды только с радио удаляем, у нод из
   /// зеркала снимаем отметку радио. Свою ноду и (при [keepFavorites])
   /// избранные не трогаем — прошивка их тоже сохранит.
@@ -569,4 +605,20 @@ class AppDatabase extends _$AppDatabase {
 
   Stream<List<MeshChannel>> watchChannels() =>
       (select(channels)..orderBy([(c) => OrderingTerm.asc(c.index)])).watch();
+}
+
+/// Список скрытых каналов из настройки; битое значение — пусто.
+Set<String> parseHiddenChannels(String? raw) {
+  if (raw == null || raw.isEmpty) return {};
+  try {
+    final v = jsonDecode(raw);
+    return v is List
+        ? {
+            for (final k in v)
+              if (k is String) k,
+          }
+        : {};
+  } on FormatException {
+    return {};
+  }
 }

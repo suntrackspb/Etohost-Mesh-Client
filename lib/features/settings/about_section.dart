@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/providers.dart';
+import '../../core/update/release_notes.dart';
 import '../../core/update/update_checker.dart';
 import '../../data/database.dart';
 import '../../ui/kit/kit.dart';
@@ -16,6 +17,7 @@ class UpdateBanner extends ConsumerWidget {
     final r = ref.watch(updateBadgeProvider);
     if (r == null) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
+    final notes = ReleaseNotes.parse(r.notes);
     return Card(
       color: scheme.primaryContainer,
       margin: const EdgeInsets.only(bottom: Tokens.s16),
@@ -36,25 +38,26 @@ class UpdateBanner extends ConsumerWidget {
                 ),
               ],
             ),
-            if (r.notes.trim().isNotEmpty) ...[
+            if (!notes.isEmpty) ...[
               const SizedBox(height: Tokens.s8),
-              Text(
-                r.notes.trim(),
-                maxLines: 6,
-                overflow: TextOverflow.ellipsis,
-              ),
+              Text(notes.summary, maxLines: 4, overflow: TextOverflow.ellipsis),
             ],
             const SizedBox(height: Tokens.s8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: Tokens.s8,
               children: [
+                if (!notes.isEmpty)
+                  TextButton(
+                    onPressed: () => showReleaseNotes(context, r, notes),
+                    child: const Text('Подробнее'),
+                  ),
                 TextButton(
                   onPressed: () => ref
                       .read(databaseProvider)
                       .setSetting(AppSettingKeys.updateDismissed, r.version),
                   child: const Text('Не напоминать'),
                 ),
-                const SizedBox(width: Tokens.s8),
                 FilledButton(
                   onPressed: () => openRelease(r),
                   child: const Text('Скачать'),
@@ -66,6 +69,67 @@ class UpdateBanner extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Полные заметки к релизу — нижняя панель с прокруткой.
+Future<void> showReleaseNotes(
+  BuildContext context,
+  AppRelease r,
+  ReleaseNotes notes,
+) {
+  final text = Theme.of(context).textTheme;
+  return showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    builder: (ctx) => DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.6,
+      maxChildSize: 0.9,
+      builder: (ctx, scroll) => ListView(
+        controller: scroll,
+        padding: const EdgeInsets.fromLTRB(
+          Tokens.s16,
+          0,
+          Tokens.s16,
+          Tokens.s24,
+        ),
+        children: [
+          Text('Версия ${r.version}', style: text.titleLarge),
+          for (final b in notes.blocks)
+            switch (b) {
+              NotesHeading() => Padding(
+                padding: const EdgeInsets.only(top: Tokens.s16),
+                child: Text(b.text, style: text.titleMedium),
+              ),
+              NotesBullet() => Padding(
+                padding: const EdgeInsets.only(top: Tokens.s8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('•  '),
+                    Expanded(child: Text(b.text)),
+                  ],
+                ),
+              ),
+              NotesParagraph() => Padding(
+                padding: const EdgeInsets.only(top: Tokens.s8),
+                child: Text(b.text),
+              ),
+            },
+          const SizedBox(height: Tokens.s16),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton(
+              onPressed: () => openRelease(r),
+              child: const Text('Скачать'),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 Future<void> openRelease(AppRelease r) =>

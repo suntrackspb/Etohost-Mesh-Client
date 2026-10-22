@@ -14,6 +14,7 @@ import '../../data/bubble_groups.dart';
 import '../../data/database.dart';
 import '../../data/delivery.dart';
 import '../../data/message_meta.dart';
+import '../../data/notify/message_alerts.dart';
 import '../../data/message_sender.dart';
 import '../../data/message_split.dart';
 import '../../data/ping_guard.dart';
@@ -213,6 +214,9 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
             _Notice(blocked)
           else
             _Composer(
+              // Свой черновик у каждого чата.
+              key: ValueKey('composer:${widget.id}'),
+              chatId: widget.id,
               replyTo: _replyTo,
               replyAuthor: _replyTo == null
                   ? null
@@ -421,6 +425,8 @@ class _MessageListState extends ConsumerState<_MessageList> {
     );
     final (canWrite, onReply) = (w.canWrite, w.onReply);
     final mirror = ref.watch(mirrorActiveProvider);
+    final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
+    final myShort = me == null ? '' : nodes[me]?.shortName ?? '';
     final byPacket = {for (final m in messages) m.packetId: m};
     final reactions = <int, List<Message>>{};
     final visible = <Message>[];
@@ -477,6 +483,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
             child: _Bubble(
               key: _keyFor(m.packetId),
               pos: positions[i],
+              mention: !m.isOutgoing && _toMe(m, byPacket, me, myShort),
               highlighted: _highlight == m.packetId,
               onOpenQuote: m.replyId == null || byPacket[m.replyId] == null
                   ? null
@@ -568,6 +575,24 @@ class _MessageListState extends ConsumerState<_MessageList> {
                 Clipboard.setData(ClipboardData(text: m.body));
               },
             ),
+            const Divider(height: 1),
+            for (final (label, value) in messageIds(m))
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.tag),
+                title: Text(label),
+                subtitle: Text(
+                  value,
+                  style: const TextStyle(fontFamily: 'monospace'),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Clipboard.setData(ClipboardData(text: value));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Скопировано')));
+                },
+              ),
             if (failed && canSend)
               ListTile(
                 leading: const Icon(Icons.refresh),
@@ -588,6 +613,7 @@ class _Bubble extends StatelessWidget {
   const _Bubble({
     super.key,
     required this.pos,
+    required this.mention,
     required this.highlighted,
     required this.onOpenQuote,
     required this.message,
@@ -607,6 +633,10 @@ class _Bubble extends StatelessWidget {
 
   /// Место в серии сообщений одного автора.
   final BubblePos pos;
+
+  /// Обращено ко мне: упомянуто короткое имя своей ноды или ответ
+  /// с цитатой на моё сообщение.
+  final bool mention;
   final String author;
   final String? shortName;
   final Message? quoted;
@@ -624,13 +654,26 @@ class _Bubble extends StatelessWidget {
   /// Тап по цитате; null — исходного сообщения нет в загруженной ленте.
   final VoidCallback? onOpenQuote;
 
-  /// Внутри серии стыки острые с обеих сторон — пузыри как один блок.
-  BorderRadius _radius() {
+  /// Внутри серии углы со стороны автора острые: там у серии ровный край,
+  /// а с другой стороны пузыри разной ширины — острые углы торчали бы.
+  BorderRadius _radius(bool out) {
     const big = Radius.circular(Tokens.radiusL);
     const small = Radius.circular(Tokens.s4);
     final top = pos.joinedAbove ? small : big;
     final bottom = pos.joinedBelow ? small : big;
-    return BorderRadius.vertical(top: top, bottom: bottom);
+    return out
+        ? BorderRadius.only(
+            topLeft: big,
+            bottomLeft: big,
+            topRight: top,
+            bottomRight: bottom,
+          )
+        : BorderRadius.only(
+            topRight: big,
+            bottomRight: big,
+            topLeft: top,
+            bottomLeft: bottom,
+          );
   }
 
   @override
@@ -654,7 +697,10 @@ class _Bubble extends StatelessWidget {
             : out
             ? scheme.primaryContainer
             : scheme.surfaceContainerHigh,
-        borderRadius: _radius(),
+        borderRadius: _radius(out),
+        border: mention && !highlighted
+            ? Border.all(color: scheme.tertiary, width: 1.5)
+            : null,
       ),
       child: IntrinsicWidth(
         child: Column(
@@ -761,6 +807,14 @@ class _Bubble extends StatelessWidget {
 }
 
 const _avatarSize = 36.0;
+
+/// Чужое сообщение обращено ко мне: упоминание короткого имени своей ноды
+/// (как для уведомлений) или ответ на моё сообщение.
+bool _toMe(Message m, Map<int, Message> byPacket, int? me, String myShort) {
+  if (MessageAlerts.mentions(m.body, myShort)) return true;
+  final q = m.replyId == null ? null : byPacket[m.replyId];
+  return q != null && (q.isOutgoing || (me != null && q.fromNum == me));
+}
 
 class _Quote extends StatelessWidget {
   const _Quote(this.quoted, this.author);
@@ -938,12 +992,15 @@ class _Notice extends StatelessWidget {
 /// Поле ввода: лимит в байтах, Enter — отправить, Shift+Enter — перенос.
 class _Composer extends ConsumerStatefulWidget {
   const _Composer({
+    super.key,
+    required this.chatId,
     required this.replyTo,
     required this.replyAuthor,
     required this.onCancelReply,
     required this.onSend,
   });
 
+  final String chatId;
   final Message? replyTo;
   final String? replyAuthor;
   final VoidCallback onCancelReply;
@@ -962,7 +1019,18 @@ class _ComposerState extends ConsumerState<_Composer> {
   @override
   void initState() {
     super.initState();
-    _text.addListener(() => setState(() {}));
+    final drafts = ref.read(chatDraftsProvider);
+    _text.text = drafts[widget.chatId] ?? '';
+    _text.addListener(() {
+      // Черновик переживает уход с вкладки и переход в другой чат.
+      final t = _text.text;
+      if (t.isEmpty) {
+        drafts.remove(widget.chatId);
+      } else {
+        drafts[widget.chatId] = t;
+      }
+      setState(() {});
+    });
   }
 
   @override

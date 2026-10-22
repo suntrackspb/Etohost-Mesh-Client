@@ -63,6 +63,10 @@ class ChatPage extends ConsumerWidget {
                   trailing: _UnreadBadge(c.key),
                   selected: wide && c.key == selected,
                   onTap: () => context.go(ChatPage.location(c.key)),
+                  // Канал только из зеркала можно скрыть.
+                  onLongPress: c.index == null
+                      ? () => _hide(context, ref, c)
+                      : null,
                 ),
               if (dms.isNotEmpty) const _Header('Личные'),
               for (final d in dms)
@@ -158,4 +162,29 @@ class _UnreadBadge extends ConsumerWidget {
     if (n == 0) return const SizedBox.shrink();
     return Badge(label: Text(n > 99 ? '99+' : '$n'));
   }
+}
+
+Future<void> _hide(BuildContext context, WidgetRef ref, ChatChannel c) async {
+  final db = ref.read(databaseProvider);
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text('Скрыть канал «${c.title}»?'),
+      content: const Text(
+        'Его сообщения из зеркала удалятся и больше не будут загружаться. '
+        'Вернуть канал можно в настройках зеркала.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Отмена'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text('Скрыть'),
+        ),
+      ],
+    ),
+  );
+  if (ok == true) await db.hideChannel(c.key);
 }

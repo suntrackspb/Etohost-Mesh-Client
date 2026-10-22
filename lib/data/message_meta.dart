@@ -1,3 +1,4 @@
+import '../core/proto/mesh.dart';
 import 'database.dart';
 
 /// Сколько хопов прошло сообщение по радио; null — неизвестно или не из эфира.
@@ -39,3 +40,15 @@ bool isEmojiOnly(String s) {
   final t = s.trim();
   return t.isNotEmpty && t.runes.length <= 12 && _emojiOnly.hasMatch(t);
 }
+
+/// Идентификаторы для меню сообщения: (подпись, значение для копирования).
+/// Без packet_id у сообщения из зеркала ключ отрицательный — тогда его id
+/// в зеркале.
+List<(String, String)> messageIds(Message m) => [
+  if (m.packetId > 0) ...[
+    ('ID пакета', '${m.packetId}'),
+    ('ID пакета (hex)', '0x${m.packetId.toRadixString(16).padLeft(8, '0')}'),
+  ] else if (m.mirrorId != null)
+    ('ID в зеркале', '${m.mirrorId}'),
+  ('Отправитель', nodeIdString(m.fromNum)),
+];

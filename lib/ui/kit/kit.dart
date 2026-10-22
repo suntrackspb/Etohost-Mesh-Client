@@ -85,6 +85,7 @@ class MeshTile extends StatelessWidget {
     this.leading,
     this.trailing,
     this.onTap,
+    this.onLongPress,
     this.selected = false,
   });
 
@@ -99,6 +100,7 @@ class MeshTile extends StatelessWidget {
   final Widget? leading;
   final Widget? trailing;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final bool selected;
 
   @override
@@ -127,6 +129,7 @@ class MeshTile extends StatelessWidget {
     trailing:
         trailing ?? (onTap != null ? const Icon(Icons.chevron_right) : null),
     onTap: onTap,
+    onLongPress: onLongPress,
     selected: selected,
   );
 }

@@ -73,6 +73,7 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
     final draft = normalizeMirrorUrl(_address.text);
     final changed = cfg == null || _address.text.trim() != cfg.address;
     final theme = Theme.of(context);
+    final hidden = ref.watch(hiddenChannelsProvider).value ?? const {};
 
     return Scaffold(
       appBar: AppBar(title: const Text('Зеркало')),
@@ -176,6 +177,25 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                 ),
             ],
           ),
+          if (hidden.isNotEmpty) ...[
+            const SizedBox(height: Tokens.s16),
+            SectionCard(
+              footer:
+                  'Сообщения скрытых каналов не загружаются из зеркала. '
+                  'Вернёте канал — его лента подгрузится снова.',
+              children: [
+                for (final k in [...hidden]..sort())
+                  ListTile(
+                    leading: const Icon(Icons.visibility_off_outlined),
+                    title: Text(k),
+                    trailing: TextButton(
+                      onPressed: () => _db.unhideChannel(k),
+                      child: const Text('Вернуть'),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ],
       ),
     );

@@ -15,10 +15,13 @@ class MirrorIngest {
 
   /// [live] — пришло по WS только что: время — «сейчас», а не время сервера.
   Future<void> messages(List<MirrorMessage> batch, {bool live = false}) async {
+    final hidden = await db.hiddenChannels();
     for (final m in batch) {
       final text = m.text, ch = m.channel;
       final from = nodeNumFromId(m.fromId);
       if (text == null || text.isEmpty || ch == null || from == null) continue;
+      // Скрытый пользователем канал зеркала — не подтягиваем снова.
+      if (hidden.contains(channelKey(ch))) continue;
       // Время приёма сервером, а не sentAt: часы отправителя могут спешить.
       final time = live
           ? DateTime.now()

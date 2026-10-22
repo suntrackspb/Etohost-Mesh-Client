@@ -214,6 +214,13 @@ final presetNameProvider = StreamProvider<String>((ref) {
   );
 });
 
+/// Черновики сообщений по id чата — пока приложение запущено.
+final chatDraftsProvider = Provider<Map<String, String>>((ref) => {});
+
+final hiddenChannelsProvider = StreamProvider<Set<String>>(
+  (ref) => ref.watch(databaseProvider).watchHiddenChannels(),
+);
+
 final _messageChannelKeysProvider = StreamProvider<List<String>>(
   (ref) => ref
       .watch(databaseProvider)
@@ -241,6 +248,7 @@ final chatChannelsProvider = Provider<AsyncValue<List<ChatChannel>>>((ref) {
   final own = ref.watch(channelsProvider);
   final preset = ref.watch(presetNameProvider).value ?? 'LongFast';
   final keys = ref.watch(_messageChannelKeysProvider).value ?? const <String>[];
+  final hidden = ref.watch(hiddenChannelsProvider).value ?? const <String>{};
   return own.whenData((rows) {
     final result = <ChatChannel>[];
     for (final c in rows) {
@@ -263,6 +271,7 @@ final chatChannelsProvider = Provider<AsyncValue<List<ChatChannel>>>((ref) {
     }
     final known = {for (final c in result) c.key};
     for (final k in [...keys]..sort()) {
+      if (hidden.contains(k)) continue;
       if (known.add(k)) result.add(ChatChannel(key: k, title: k));
     }
     return result;
