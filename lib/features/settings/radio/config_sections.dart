@@ -82,13 +82,16 @@ final positionSpec = ConfigSectionSpec<Config>(
   fields: (_) => PositionSection.fields(),
   read: (c) => PositionSection.read(c.position),
   save: (admin, db, c, v, d) => PositionSection.save(admin, db, c.position, v),
-  extra: (context, ref, form, cfg) => [
-    if (PositionSection.fixedAvailable(
-      form.value<int>('gpsMode'),
-      cfg.position.fixedPosition,
-    ))
-      FixedPositionTile(cfg: cfg.position),
-  ],
+  // Отдельным блоком между «Устройство GPS» и «Флаги позиции».
+  after: (context, ref, form, cfg) => {
+    PositionSection.groupGps: [
+      if (PositionSection.fixedAvailable(
+        form.value<int>('gpsMode'),
+        cfg.position.fixedPosition,
+      ))
+        FixedPositionTile(cfg: cfg.position),
+    ],
+  },
 );
 
 final powerSpec = ConfigSectionSpec<Config>(

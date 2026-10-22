@@ -29,6 +29,12 @@ class SettingsPage extends ConsumerWidget {
                 onTap: () => context.go('/settings/app'),
               ),
               MeshTile(
+                title: 'Данные',
+                leading: const Icon(Icons.storage_outlined),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.go('/settings/data'),
+              ),
+              MeshTile(
                 title: 'Зеркало',
                 leading: const Icon(Icons.public),
                 trailing: Text(

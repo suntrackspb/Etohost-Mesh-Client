@@ -7,17 +7,25 @@ import '../../../ui/kit/kit.dart';
 /// Отрисовка полей [SettingsForm] по их описаниям. Только внешний вид:
 /// значения, обрезка и проверка — в форме.
 class SettingsFormView extends StatelessWidget {
-  const SettingsFormView({super.key, required this.form, this.title});
+  const SettingsFormView({
+    super.key,
+    required this.form,
+    this.title,
+    this.after = const {},
+  });
 
   final SettingsForm form;
   final String? title;
+
+  /// Свои блоки сразу после группы с этим заголовком.
+  final Map<String, List<Widget>> after;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: form,
     builder: (context, _) => Column(
       children: [
-        for (final (group, fields) in form.groups)
+        for (final (group, fields) in form.groups) ...[
           SectionCard(
             title: group ?? title,
             children: [
@@ -31,6 +39,8 @@ class SettingsFormView extends StatelessWidget {
                 ),
             ],
           ),
+          ...?after[group],
+        ],
       ],
     ),
   );

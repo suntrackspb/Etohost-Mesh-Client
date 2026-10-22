@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' show ThemeMode;
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +28,8 @@ import '../data/node_actions.dart';
 import '../data/node_filter.dart';
 import '../data/position_sharer.dart';
 import '../data/mirror_ingest.dart';
+import '../data/node_db_store.dart';
+import '../data/node_dbs.dart';
 import '../data/packet_router.dart';
 import '../mirror/mirror_api.dart';
 import '../mirror/mirror_config.dart';
@@ -36,11 +39,140 @@ import 'position_service.dart';
 import '../data/radio_stats.dart';
 
 /// База данных приложения. В тестах подменяется на in-memory.
-final databaseProvider = Provider<AppDatabase>((ref) {
+/// Общая база: настройки приложения и недавние подключения.
+final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
   ref.onDispose(db.close);
   return db;
 });
+
+/// Номер ноды, чья база открыта (последняя подключённая; до первого
+/// подключения — [noNodeDb]). Задаётся при старте и на `myInfo`.
+final activeNodeDbProvider = StateProvider<int>((ref) => noNodeDb);
+
+/// База активной ноды: её ноды, каналы, сообщения и копия зеркала.
+/// Настройки и недавние она берёт из общей.
+final databaseProvider = Provider<AppDatabase>((ref) {
+  final db = AppDatabase.forNode(
+    ref.watch(activeNodeDbProvider),
+    ref.watch(appDatabaseProvider),
+  );
+  // Закрываем с запасом: взявший базу до переключения мог ещё дописывать.
+  ref.onDispose(() => Future.delayed(const Duration(seconds: 10), db.close));
+  return db;
+});
+
+/// Файлы баз нод (экран «Данные»).
+final nodeDbStoreProvider = FutureProvider<NodeDbStore>(
+  (ref) async => NodeDbStore(
+    (await getApplicationDocumentsDirectory()).path,
+    ref.watch(appDatabaseProvider),
+  ),
+);
+
+/// Список баз нод; после изменений — `ref.invalidate`.
+final nodeDbListProvider = FutureProvider<List<NodeDbInfo>>((ref) async {
+  final store = await ref.watch(nodeDbStoreProvider.future);
+  return store.list(
+    ref.watch(activeNodeDbProvider),
+    ref.watch(databaseProvider),
+  );
+});
+
+/// Действия экрана «Данные»: после каждого список перечитывается.
+class NodeDbActions {
+  NodeDbActions(this._ref);
+  final Ref _ref;
+
+  Future<NodeDbStore> get _store => _ref.read(nodeDbStoreProvider.future);
+  int get _active => _ref.read(activeNodeDbProvider);
+
+  Future<Uint8List> export(int num) async =>
+      (await _store).export(num, _active, _ref.read(databaseProvider));
+
+  Future<void> delete(int num) async {
+    await (await _store).delete(num, _active);
+    _ref.invalidate(nodeDbListProvider);
+  }
+
+  Future<Uint8List> exportApp() async => (await _store).exportApp();
+
+  /// Настройки применяются сразу; число загруженных настроек.
+  Future<int> importApp(Uint8List bytes) async =>
+      (await _store).importApp(bytes);
+
+  /// null — отказались заменять имеющуюся базу.
+  Future<int?> import(
+    Uint8List bytes,
+    Future<bool> Function(int num) replace,
+  ) async {
+    final num = await (await _store).import(
+      bytes,
+      active: _active,
+      replace: replace,
+    );
+    _ref.invalidate(nodeDbListProvider);
+    return num;
+  }
+}
+
+final nodeDbActionsProvider = Provider<NodeDbActions>(NodeDbActions.new);
+
+/// Имя файла экспорта: etohost-mesh-!a1b2c3d4-2026-10-22.sqlite;
+/// [num] null — база приложения (etohost-mesh-app-…).
+String nodeDbExportName(int? num, DateTime now) {
+  String two(int v) => v.toString().padLeft(2, '0');
+  final id = switch (num) {
+    null => 'app',
+    noNodeDb => 'mirror',
+    _ => nodeIdString(num),
+  };
+  return 'etohost-mesh-$id-${now.year}-${two(now.month)}-${two(now.day)}.sqlite';
+}
+
+Future<String> _nodeDbPath(int num) async =>
+    '${(await getApplicationDocumentsDirectory()).path}/'
+    '${AppDatabase.nodeDbName(num)}.sqlite';
+
+/// При старте, до UI: переезд со старой единой базы и выбор активной.
+Future<void> prepareNodeDb(ProviderContainer c) async {
+  final dir = (await getApplicationDocumentsDirectory()).path;
+  int num;
+  try {
+    num = await migrateToNodeDbs(
+      c.read(appDatabaseProvider),
+      (n) => '$dir/${AppDatabase.nodeDbName(n)}.sqlite',
+    );
+  } catch (e) {
+    c.read(journalProvider).add(JournalKind.error, 'Базы нод: $e');
+    num = noNodeDb;
+  }
+  c.read(activeNodeDbProvider.notifier).state = num;
+}
+
+/// Подключились к ноде [num]: открыть её базу (новую — пустой), поднять
+/// в начало списка и удалить базы сверх лимита.
+Future<void> switchNodeDb(Ref ref, int num) async {
+  final app = ref.read(appDatabaseProvider);
+  final r = useNodeDb(
+    parseNodeDbs(await app.getSetting(AppSettingKeys.nodeDbs)),
+    num,
+  );
+  await app.setSetting(AppSettingKeys.nodeDbs, encodeNodeDbs(r.list));
+  if (ref.read(activeNodeDbProvider) != num) {
+    ref
+        .read(journalProvider)
+        .add(JournalKind.app, 'База ноды ${nodeIdString(num)}');
+    ref.read(activeNodeDbProvider.notifier).state = num;
+  }
+  for (final n in r.evicted) {
+    try {
+      deleteDbFiles(await _nodeDbPath(n));
+    } catch (e) {
+      ref.read(journalProvider).add(JournalKind.error, 'Удаление базы $n: $e');
+    }
+  }
+}
 
 /// Файл журнала (ротация 2×1 МБ) — источник журнала для отчётов.
 final journalFileProvider = Provider<JournalFile>(
@@ -60,8 +192,14 @@ final radioProvider = ChangeNotifierProvider<RadioSession>((ref) {
   ref.read(databaseProvider).getSetting(AppSettingKeys.autoReconnect).then((v) {
     if (v == 'false') session.autoReconnect = false;
   });
-  final router = PacketRouter(ref.read(databaseProvider));
-  final sub = session.packets.asyncMap(router.handle).listen(null);
+  // myInfo приходит первым: сначала переключаемся на базу этой ноды, и
+  // только потом пишем её пакеты (asyncMap обрабатывает строго по очереди).
+  Future<void> handle(FromRadio f) async {
+    if (f.hasMyInfo()) await switchNodeDb(ref, f.myInfo.myNodeNum);
+    await PacketRouter(ref.read(databaseProvider)).handle(f);
+  }
+
+  final sub = session.packets.asyncMap(handle).listen(null);
 
   // Успешное подключение (дошли до ready) — в недавние.
   var wasReady = false;
@@ -120,7 +258,8 @@ final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
   final ws = cfg.webSocketUrl, api = ref.watch(mirrorApiProvider);
   if (!cfg.active || ws == null || api == null) return null;
 
-  final ingest = MirrorIngest(ref.read(databaseProvider));
+  // watch: сменилась база ноды — переподключаемся и заполняем её копию.
+  final ingest = MirrorIngest(ref.watch(databaseProvider));
   final journal = ref.read(journalProvider);
   // В файл (и отчёт) — без текста ошибки: в нём бывает адрес зеркала.
   void log(String s, [Object? e]) => journal.add(
@@ -442,7 +581,7 @@ final totalUnreadProvider = Provider<int>((ref) {
 final messageSenderProvider = Provider<MessageSender>((ref) {
   final radio = ref.read(radioProvider);
   return MessageSender(
-    ref.read(databaseProvider),
+    ref.watch(databaseProvider),
     radio.sendPacket,
     () => radio.state == RadioState.ready ? radio.myNodeNum : null,
     radio.queue.nextId,
@@ -452,7 +591,7 @@ final messageSenderProvider = Provider<MessageSender>((ref) {
 final nodeActionsProvider = Provider<NodeActions>((ref) {
   final radio = ref.read(radioProvider);
   return NodeActions(
-    ref.read(databaseProvider),
+    ref.watch(databaseProvider),
     radio.sendPacket,
     () => radio.state == RadioState.ready ? radio.myNodeNum : null,
     radio.queue.nextId,
@@ -653,7 +792,7 @@ final positionServiceProvider = ChangeNotifierProvider<PositionService?>((ref) {
   final radio = ref.read(radioProvider);
   final service = PositionService(
     PositionSharer(
-      ref.read(databaseProvider),
+      ref.watch(databaseProvider),
       radio.sendPacket,
       () => radio.state == RadioState.ready ? radio.myNodeNum : null,
       radio.queue.nextId,

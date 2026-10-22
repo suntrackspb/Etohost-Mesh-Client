@@ -33,7 +33,7 @@ final localNotifierProvider = Provider<LocalNotifier>((ref) => LocalNotifier());
 
 /// Уведомления о сообщениях. Держится живым из корня приложения.
 final messageAlertsProvider = Provider<AlertWatcher>((ref) {
-  final db = ref.read(databaseProvider);
+  final db = ref.watch(databaseProvider);
   final notifier = ref.read(localNotifierProvider);
   final open = ref.read(openChatsProvider);
   final journal = ref.read(journalProvider);

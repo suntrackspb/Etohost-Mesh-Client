@@ -118,7 +118,7 @@ abstract final class ChannelEdit {
     ChoiceFieldSpec(
       'positionPrecision',
       'Приблизительное местоположение',
-      [for (var b = 12; b <= 15; b++) (value: b, label: precisionLabel(b))],
+      [for (var b = 12; b <= 19; b++) (value: b, label: precisionLabel(b))],
       group: groupPosition,
       unknownLabel: precisionLabel,
       visibleWhen: (v) =>

@@ -28,6 +28,7 @@ class ConfigSectionSpec<C> {
     this.check,
     this.afterSave,
     this.extra,
+    this.after,
   });
 
   /// Сохранённый конфиг по имени: `configProvider` или `moduleConfigProvider`.
@@ -59,6 +60,15 @@ class ConfigSectionSpec<C> {
     C cfg,
   )?
   extra;
+
+  /// Свои блоки между группами: заголовок группы → блоки после неё.
+  final Map<String, List<Widget>> Function(
+    BuildContext context,
+    WidgetRef ref,
+    SettingsForm form,
+    C cfg,
+  )?
+  after;
 }
 
 /// Своя нода для построения полей: прошивка и модель.
@@ -147,7 +157,10 @@ class _ConfigSectionPageState<C> extends ConsumerState<ConfigSectionPage<C>> {
         children: [
           AbsorbPointer(
             absorbing: !canSend,
-            child: SettingsFormView(form: form),
+            child: SettingsFormView(
+              form: form,
+              after: spec.after?.call(context, ref, form, cfg) ?? const {},
+            ),
           ),
           ...?spec.extra?.call(context, ref, form, cfg),
           SaveBar(

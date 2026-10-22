@@ -137,7 +137,7 @@ abstract final class MqttSection {
     ChoiceFieldSpec(
       'positionPrecision',
       'Приблизительное местоположение',
-      [for (var b = 12; b <= 15; b++) (value: b, label: precisionLabel(b))],
+      [for (var b = 12; b <= 19; b++) (value: b, label: precisionLabel(b))],
       group: groupMap,
       visibleWhen: _consented,
       help:
@@ -203,11 +203,12 @@ abstract final class MqttSection {
       'jsonEnabled': c.jsonEnabled,
       'mapReportingEnabled': c.mapReportingEnabled,
       'shouldReportLocation': m.shouldReportLocation,
-      // Прошивка требует не чаще раза в час и 12–15 бит (как normalize в iOS).
+      // Не чаще раза в час (как normalize в iOS). Точность — 12–19 бит: штатная
+      // 2.8 принимает до 15, модифицированные прошивки — больше.
       'publishIntervalSecs': m.publishIntervalSecs < 3600
           ? 3600
           : m.publishIntervalSecs,
-      'positionPrecision': precision < 12 || precision > 15 ? 14 : precision,
+      'positionPrecision': precision < 12 || precision > 19 ? 14 : precision,
       'root': c.root.isEmpty ? 'msh' : c.root,
       'address': c.address,
       'username': c.username,

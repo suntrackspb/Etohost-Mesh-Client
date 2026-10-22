@@ -13,7 +13,7 @@ import 'core/desktop/linux_desktop_entry.dart';
 import 'core/radio/journal.dart';
 import 'ui/theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final container = ProviderContainer();
   final journal = container.read(journalProvider);
@@ -29,6 +29,8 @@ void main() {
     journal.add(JournalKind.error, '$e\n$st');
     return false;
   };
+
+  await prepareNodeDb(container);
 
   installLinuxDesktopEntry().catchError(
     (Object e) => journal.add(JournalKind.error, 'Ярлык Linux: $e'),

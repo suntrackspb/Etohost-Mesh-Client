@@ -85,3 +85,15 @@ Position positionOf(Fix f) => Position(
   timestamp: f.time.millisecondsSinceEpoch ~/ 1000,
   locationSource: Position_LocSource.LOC_EXTERNAL,
 );
+
+/// Позиция, введённая вручную: широта, долгота (с точкой или запятой)
+/// и высота в метрах (пусто — без высоты). null — значения неверны.
+Fix? manualFix(String lat, String lon, String alt, DateTime now) {
+  double? num(String s) => double.tryParse(s.trim().replaceAll(',', '.'));
+  final la = num(lat), lo = num(lon);
+  if (la == null || lo == null) return null;
+  if (la < -90 || la > 90 || lo < -180 || lo > 180) return null;
+  final a = alt.trim().isEmpty ? null : num(alt);
+  if (alt.trim().isNotEmpty && a == null) return null;
+  return (lat: la, lon: lo, altitude: a, time: now);
+}

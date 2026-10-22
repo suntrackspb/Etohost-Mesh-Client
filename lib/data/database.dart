@@ -77,6 +77,9 @@ abstract final class AppSettingKeys {
   /// Как часто передавать позицию, минуты (по умолчанию 15).
   static const positionIntervalMin = 'position.intervalMin';
 
+  /// Базы нод: JSON-список номеров, последняя использованная — первой.
+  static const nodeDbs = 'db.nodes';
+
   /// Скрытые каналы зеркала: JSON-список ключей.
   static const hiddenChannels = 'chat.hiddenChannels';
 
@@ -334,7 +337,20 @@ class AppSettings extends Table {
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor]) : super(executor ?? _open());
+  /// [settings] — общая база приложения: настройки и недавние подключения
+  /// берутся из неё. Без неё (общая база сама, тесты) — из этой же.
+  AppDatabase([QueryExecutor? executor, this.settings])
+    : super(executor ?? driftDatabase(name: appDbName));
+
+  /// База конкретной ноды (свои ноды, каналы, сообщения, копия зеркала).
+  AppDatabase.forNode(int num, AppDatabase settings)
+    : this(driftDatabase(name: nodeDbName(num)), settings);
+
+  /// Файл общей базы — старое имя: настройки при обновлении на месте.
+  static const appDbName = 'meshtastic';
+  static String nodeDbName(int num) => 'node_$num';
+
+  final AppDatabase? settings;
 
   @override
   int get schemaVersion => 8;
@@ -377,8 +393,6 @@ class AppDatabase extends _$AppDatabase {
     }
     await m.createAll();
   }
-
-  static QueryExecutor _open() => driftDatabase(name: 'meshtastic');
 
   /// Все ноды, свежие сверху.
   /// Ноды; без [includeMirror] — только услышанные через свою ноду.
@@ -553,6 +567,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Stream<List<RecentConnection>> watchRecent({int limit = 5}) =>
+      settings?.watchRecent(limit: limit) ??
       (select(recentConnections)
             ..orderBy([(r) => OrderingTerm.desc(r.lastUsed)])
             ..limit(limit))
@@ -563,36 +578,48 @@ class AppDatabase extends _$AppDatabase {
     String address,
     String name,
     int? nodeNum,
-  ) => into(recentConnections).insertOnConflictUpdate(
-    RecentConnectionsCompanion.insert(
-      kind: kind,
-      address: address,
-      name: Value(name),
-      nodeNum: Value(nodeNum),
-      lastUsed: DateTime.now(),
-    ),
-  );
+  ) =>
+      settings?.touchRecent(kind, address, name, nodeNum) ??
+      into(recentConnections).insertOnConflictUpdate(
+        RecentConnectionsCompanion.insert(
+          kind: kind,
+          address: address,
+          name: Value(name),
+          nodeNum: Value(nodeNum),
+          lastUsed: DateTime.now(),
+        ),
+      );
 
-  Future<void> forgetRecent(String kind, String address) => (delete(
-    recentConnections,
-  )..where((r) => r.kind.equals(kind) & r.address.equals(address))).go();
+  Future<void> forgetRecent(String kind, String address) =>
+      settings?.forgetRecent(kind, address) ??
+      (delete(
+        recentConnections,
+      )..where((r) => r.kind.equals(kind) & r.address.equals(address))).go();
 
-  Future<String?> getSetting(String key) async => (await (select(
-    appSettings,
-  )..where((s) => s.key.equals(key))).getSingleOrNull())?.value;
+  Future<String?> getSetting(String key) async => settings != null
+      ? settings!.getSetting(key)
+      : (await (select(
+          appSettings,
+        )..where((s) => s.key.equals(key))).getSingleOrNull())?.value;
 
-  Stream<String?> watchSetting(String key) => (select(
-    appSettings,
-  )..where((s) => s.key.equals(key))).watchSingleOrNull().map((r) => r?.value);
+  Stream<String?> watchSetting(String key) =>
+      settings?.watchSetting(key) ??
+      (select(appSettings)..where((s) => s.key.equals(key)))
+          .watchSingleOrNull()
+          .map((r) => r?.value);
 
   /// Все настройки разом (для составных, вроде конфига зеркала).
-  Stream<Map<String, String>> watchSettings() => select(
-    appSettings,
-  ).watch().map((rows) => {for (final r in rows) r.key: r.value});
+  Stream<Map<String, String>> watchSettings() =>
+      settings?.watchSettings() ??
+      select(
+        appSettings,
+      ).watch().map((rows) => {for (final r in rows) r.key: r.value});
 
-  Future<void> setSetting(String key, String value) => into(
-    appSettings,
-  ).insertOnConflictUpdate(AppSettingsCompanion.insert(key: key, value: value));
+  Future<void> setSetting(String key, String value) =>
+      settings?.setSetting(key, value) ??
+      into(appSettings).insertOnConflictUpdate(
+        AppSettingsCompanion.insert(key: key, value: value),
+      );
 
   Future<Set<String>> hiddenChannels() async =>
       parseHiddenChannels(await getSetting(AppSettingKeys.hiddenChannels));
