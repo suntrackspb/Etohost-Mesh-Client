@@ -17,6 +17,7 @@ import '../core/radio/journal.dart';
 import '../core/radio/radio_session.dart';
 import '../core/transport/serial_transport.dart';
 import '../core/update/update_checker.dart';
+import '../data/chat_search.dart';
 import '../data/database.dart';
 import '../data/node_row_info.dart';
 import '../data/map_style.dart';
@@ -330,6 +331,52 @@ final feedMessagesProvider = StreamProvider.family<List<Message>, String>((
     DirectTarget(:final num) => db.watchDirectMessages(num, limit: limit),
   };
 });
+
+/// Сообщение, к которому надо прокрутить ленту (результат поиска).
+final chatJumpProvider = StateProvider.family<int?, String>((ref, id) => null);
+
+/// Поиск по ленте чата [id] (как она видна: с зеркалом или без).
+Future<List<Message>> searchFeed(Ref ref, String id, String query) async {
+  final db = ref.read(databaseProvider);
+  final all = switch (ChatTarget.parse(id)) {
+    ChannelTarget(:final key) => await db.feedForSearch(
+      channelKey: key,
+      includeMirror: ref.read(mirrorActiveProvider),
+    ),
+    DirectTarget(:final num) => await db.feedForSearch(peer: num),
+  };
+  return ChatSearch.filter(all, query);
+}
+
+/// Открыть найденное: поднять лимит ленты, чтобы сообщение в неё попало,
+/// и попросить ленту прокрутить к нему.
+Future<void> jumpToMessage(Ref ref, String id, Message m) async {
+  final db = ref.read(databaseProvider);
+  final newer = switch (ChatTarget.parse(id)) {
+    ChannelTarget(:final key) => await db.feedCountSince(
+      m.rxTime,
+      channelKey: key,
+      includeMirror: ref.read(mirrorActiveProvider),
+    ),
+    DirectTarget(:final num) => await db.feedCountSince(m.rxTime, peer: num),
+  };
+  final limit = ref.read(feedLimitProvider(id).notifier);
+  // С запасом: в ленте ещё реакции и соседи по времени.
+  final need = newer + feedPageSize ~/ 2;
+  if (limit.state < need) limit.state = need;
+  ref.read(chatJumpProvider(id).notifier).state = m.packetId;
+}
+
+/// Для виджетов: поиск и переход без `Ref`.
+final chatSearchProvider = Provider<ChatSearchActions>(ChatSearchActions.new);
+
+class ChatSearchActions {
+  ChatSearchActions(this._ref);
+  final Ref _ref;
+
+  Future<List<Message>> search(String id, String q) => searchFeed(_ref, id, q);
+  Future<void> open(String id, Message m) => jumpToMessage(_ref, id, m);
+}
 
 String readSettingKey(String id) => switch (ChatTarget.parse(id)) {
   ChannelTarget(:final key) => AppSettingKeys.channelRead(key),

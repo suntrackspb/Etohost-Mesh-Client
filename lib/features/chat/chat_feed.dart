@@ -11,6 +11,7 @@ import '../../app/providers.dart';
 import '../../core/glyph_zip.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/bubble_groups.dart';
+import '../../data/chat_days.dart';
 import '../../data/database.dart';
 import '../../data/delivery.dart';
 import '../../data/message_meta.dart';
@@ -25,6 +26,7 @@ import '../../mirror/mirror_models.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/open_node.dart';
 import 'chat_page.dart';
+import 'chat_search_delegate.dart';
 import 'link_text.dart';
 import 'message_images.dart';
 import 'reactions_sheet.dart';
@@ -83,6 +85,19 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
       _replyTo = null;
       _mirrorDone = false;
     }
+  }
+
+  Future<void> _search(Map<int, Node> nodes) async {
+    final actions = ref.read(chatSearchProvider);
+    final id = widget.id;
+    final m = await showSearch<Message?>(
+      context: context,
+      delegate: ChatSearchDelegate(
+        search: (q) => actions.search(id, q),
+        nodes: nodes,
+      ),
+    );
+    if (m != null) await actions.open(id, m);
   }
 
   /// Открытая переписка прочитана до самого свежего входящего.
@@ -184,6 +199,13 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
             Flexible(child: Text(title, overflow: TextOverflow.ellipsis)),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Поиск',
+            icon: const Icon(Icons.search),
+            onPressed: () => _search(nodes),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -445,6 +467,15 @@ class _MessageListState extends ConsumerState<_MessageList> {
     }
     final more = canLoadMore ? 1 : 0;
     final positions = bubblePositions(visible);
+    // Переход к результату поиска — когда сообщение уже в ленте.
+    final jump = ref.watch(chatJumpProvider(feedId));
+    if (jump != null && visible.any((m) => m.packetId == jump)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(chatJumpProvider(feedId).notifier).state = null;
+        _jumpTo(visible, jump);
+      });
+    }
     return NotificationListener<ScrollNotification>(
       // Долистали почти до верха (список перевёрнут — это конец) — подгружаем.
       onNotification: (n) {
@@ -478,7 +509,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
             );
           }
           final m = visible[i];
-          return SwipeToReply(
+          final bubble = SwipeToReply(
             onReply: canWrite ? () => onReply(m) : null,
             child: _Bubble(
               key: _keyFor(m.packetId),
@@ -513,6 +544,12 @@ class _MessageListState extends ConsumerState<_MessageList> {
                 if (url != null) showRelayMap(context, url);
               },
             ),
+          );
+          // Первое сообщение дня — плашка с датой над ним.
+          if (!startsDay(visible, i)) return bubble;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [_DayChip(dayLabel(m.rxTime, DateTime.now())), bubble],
           );
         },
       ),
@@ -696,11 +733,15 @@ class _Bubble extends StatelessWidget {
             ? scheme.tertiaryContainer
             : out
             ? scheme.primaryContainer
+            : mention
+            // Обращение ко мне: лёгкий зеленоватый оттенок вместо рамки —
+            // рамка рвёт склеенную серию.
+            ? Color.alphaBlend(
+                Colors.green.withValues(alpha: 0.12),
+                scheme.surfaceContainerHigh,
+              )
             : scheme.surfaceContainerHigh,
         borderRadius: _radius(out),
-        border: mention && !highlighted
-            ? Border.all(color: scheme.tertiary, width: 1.5)
-            : null,
       ),
       child: IntrinsicWidth(
         child: Column(
@@ -807,6 +848,37 @@ class _Bubble extends StatelessWidget {
 }
 
 const _avatarSize = 36.0;
+
+/// Плашка дня между сообщениями: «Сегодня», «Вчера», «20 окт.».
+class _DayChip extends StatelessWidget {
+  const _DayChip(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: Tokens.s8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: Tokens.s12,
+          vertical: Tokens.s4,
+        ),
+        decoration: ShapeDecoration(
+          color: scheme.surfaceContainerHighest,
+          shape: const StadiumBorder(),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(
+            context,
+          ).textTheme.labelMedium?.copyWith(color: scheme.onSurfaceVariant),
+        ),
+      ),
+    );
+  }
+}
 
 /// Чужое сообщение обращено ко мне: упоминание короткого имени своей ноды
 /// (как для уведомлений) или ответ на моё сообщение.

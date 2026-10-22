@@ -463,6 +463,65 @@ class AppDatabase extends _$AppDatabase {
           .watch();
 
   /// Без зеркала видно услышанное в эфире и своё исходящее.
+  /// Условие ленты: канал [channelKey] или личка с [peer].
+  Expression<bool> _feed(
+    $MessagesTable m, {
+    String? channelKey,
+    int? peer,
+    bool includeMirror = false,
+  }) => peer != null
+      ? m.toNum.equals(0xffffffff).not() &
+            (m.fromNum.equals(peer) | m.toNum.equals(peer))
+      : m.channelKey.equals(channelKey!) &
+            m.toNum.equals(0xffffffff) &
+            _visible(m, includeMirror);
+
+  /// Сообщения ленты для поиска, свежие первыми, без реакций. Отбор по
+  /// тексту — в Dart: LIKE в SQLite не знает регистра кириллицы.
+  Future<List<Message>> feedForSearch({
+    String? channelKey,
+    int? peer,
+    bool includeMirror = false,
+    int limit = 5000,
+  }) =>
+      (select(messages)
+            ..where(
+              (m) =>
+                  _feed(
+                    m,
+                    channelKey: channelKey,
+                    peer: peer,
+                    includeMirror: includeMirror,
+                  ) &
+                  m.emoji.equals(0),
+            )
+            ..orderBy([(m) => OrderingTerm.desc(m.rxTime)])
+            ..limit(limit))
+          .get();
+
+  /// Сколько сообщений ленты не старше [since] — до какого лимита
+  /// подгрузить ленту, чтобы в ней оказалось найденное.
+  Future<int> feedCountSince(
+    DateTime since, {
+    String? channelKey,
+    int? peer,
+    bool includeMirror = false,
+  }) async {
+    final count = messages.id.count();
+    final q = selectOnly(messages)
+      ..addColumns([count])
+      ..where(
+        _feed(
+              messages,
+              channelKey: channelKey,
+              peer: peer,
+              includeMirror: includeMirror,
+            ) &
+            messages.rxTime.isBiggerOrEqualValue(since),
+      );
+    return (await q.getSingle()).read(count) ?? 0;
+  }
+
   static Expression<bool> _visible($MessagesTable m, bool includeMirror) =>
       includeMirror ? const Constant(true) : m.heardOnRadio | m.isOutgoing;
 
