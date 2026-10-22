@@ -176,7 +176,10 @@ void main() {
       channel: channel,
       snr: -3,
       receivedAt: DateTime(2020),
-      relays: const [MirrorRelay(), MirrorRelay()],
+      relays: const [
+        MirrorRelay(nodeId: '!1'),
+        MirrorRelay(nodeId: '!2'),
+      ],
     );
 
     test('эфир, затем зеркало — одна запись, данные эфира сохранены', () async {
@@ -190,6 +193,18 @@ void main() {
       expect(m.rxTime.year, isNot(2020)); // время приёма своей нодой
       expect(m.relayCount, 2);
       expect(m.mirrorId, 5);
+    });
+
+    test('шлюзы не считаются дважды', () async {
+      await mirror.messages([mm(5, 77)]);
+      await mirror.relay(5, const MirrorRelay(nodeId: '!1')); // уже в списке
+      await mirror.relay(5, const MirrorRelay(nodeId: '!3'));
+      await mirror.relay(5, const MirrorRelay(nodeId: '!3')); // повтор
+      await mirror.messages([mm(5, 77)]); // перезагрузка ленты
+      final m =
+          (await db.watchChannelMessages('longfast', includeMirror: true).first)
+              .single;
+      expect(m.relayCount, 3); // !1, !2, !3
     });
 
     test('зеркало, затем эфир — одна запись с обоими источниками', () async {

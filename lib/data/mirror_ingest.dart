@@ -13,6 +13,10 @@ class MirrorIngest {
 
   final AppDatabase db;
 
+  /// Шлюзы, уже учтённые в relay_count, по id сообщения в зеркале: событие
+  /// о ретрансляторе приходит и для шлюзов из списка `relays`, и повторно.
+  final _relays = <int, Set<String>>{};
+
   /// [live] — пришло по WS только что: время — «сейчас», а не время сервера.
   Future<void> messages(List<MirrorMessage> batch, {bool live = false}) async {
     final hidden = await db.hiddenChannels();
@@ -30,6 +34,8 @@ class MirrorIngest {
           ? broadcastNum
           : (nodeNumFromId(m.toId!) ?? broadcastNum);
 
+      final relays = (_relays[m.id] ??= {})
+        ..addAll([for (final r in m.relays) ?r.nodeId]);
       await db
           .into(db.messages)
           .insert(
@@ -47,7 +53,7 @@ class MirrorIngest {
               rxRssi: Value(m.rssi),
               heardOnMirror: const Value(true),
               mirrorId: Value(m.id),
-              relayCount: Value(m.relays.length),
+              relayCount: Value(relays.length),
               isBot: Value(m.isBot),
             ),
             onConflict: DoUpdate.withExcluded(
@@ -55,7 +61,11 @@ class MirrorIngest {
                 heardOnMirror: const Constant(true),
                 mirrorId: ex.mirrorId,
                 isBot: ex.isBot,
-                relayCount: _max(old.relayCount, ex.relayCount),
+                // Список из зеркала — полный: он и есть ответ. По WS
+                // новое сообщение приходит без шлюзов — не обнуляем.
+                relayCount: live
+                    ? _max(old.relayCount, ex.relayCount)
+                    : ex.relayCount,
                 // Флаг реакции из эфира не затираем нулём из старого зеркала.
                 emoji: _max(old.emoji, ex.emoji),
                 // Лента из зеркала без эфира — выравниваем по времени сервера;
@@ -79,11 +89,15 @@ class MirrorIngest {
     }
   }
 
-  Future<void> relay(int mirrorId, MirrorRelay r) => db.customUpdate(
-    'UPDATE messages SET relay_count = relay_count + 1 WHERE mirror_id = ?',
-    variables: [Variable.withInt(mirrorId)],
-    updates: {db.messages},
-  );
+  Future<void> relay(int mirrorId, MirrorRelay r) async {
+    final id = r.nodeId;
+    if (id != null && !(_relays[mirrorId] ??= {}).add(id)) return;
+    await db.customUpdate(
+      'UPDATE messages SET relay_count = relay_count + 1 WHERE mirror_id = ?',
+      variables: [Variable.withInt(mirrorId)],
+      updates: {db.messages},
+    );
+  }
 
   Future<void> nodes(List<MirrorNode> batch) async {
     for (final n in batch) {
