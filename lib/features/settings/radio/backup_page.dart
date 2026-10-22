@@ -224,13 +224,11 @@ class _ReviewDialogState extends State<_ReviewDialog> {
               Padding(
                 padding: const EdgeInsets.only(top: Tokens.s8),
                 child: Text(
+                  'Последними записываются: '
                   '${[for (final i in plan.items)
-                    if (i.afterCommit) i.label].join(' и ')} '
-                  'отличается от настроек ноды и будет записан последним. '
-                  'По Bluetooth нода после этого сбросит сопряжение: на телефоне '
-                  'забудьте устройство в настройках Bluetooth и подключитесь '
-                  'заново с PIN.',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    if (i.afterCommit) i.label].join(', ')}. '
+                  'После них нода перезагрузится, связь ненадолго прервётся.',
+                  style: muted,
                 ),
               ),
             if (plan.unsupported.isNotEmpty) ...[
