@@ -1,4 +1,7 @@
 {
   "IMAGES_URL": "",
-  "IMAGES_KEY": ""
+  "IMAGES_KEY": "",
+  "CARTO_KEY": "",
+  "REPORT_URL": "",
+  "REPORT_KEY": ""
 }
