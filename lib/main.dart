@@ -13,6 +13,7 @@ import 'app/providers.dart';
 import 'app/router.dart';
 import 'core/desktop/linux_desktop_entry.dart';
 import 'core/radio/journal.dart';
+import 'data/appearance.dart';
 import 'ui/theme.dart';
 
 Future<void> main() async {
@@ -90,12 +91,22 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     ref.listen(keepAliveProvider, (_, _) {});
     ref.listen(messageAlertsProvider, (_, _) {});
     ref.listen(desktopTrayProvider, (_, _) {});
+    final theme = ref.watch(appThemeProvider).value ?? AppTheme.system;
+    final accent = ref.watch(accentProvider).value ?? accents.first;
     return toastsHost(
       MaterialApp.router(
         title: 'Etohost Mesh',
-        theme: buildTheme(Brightness.light),
-        darkTheme: buildTheme(Brightness.dark),
-        themeMode: ref.watch(themeModeProvider).value ?? ThemeMode.system,
+        theme: buildTheme(Brightness.light, seed: accent.color),
+        darkTheme: buildTheme(
+          Brightness.dark,
+          seed: accent.color,
+          black: theme == AppTheme.black,
+        ),
+        themeMode: switch (theme) {
+          AppTheme.system => ThemeMode.system,
+          AppTheme.light => ThemeMode.light,
+          AppTheme.dark || AppTheme.black => ThemeMode.dark,
+        },
         routerConfig: appRouter,
         debugShowCheckedModeBanner: false,
       ),

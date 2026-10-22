@@ -10,6 +10,7 @@ import '../../app/providers.dart';
 import '../../app/settings_providers.dart';
 import '../../core/desktop/desktop_tray.dart';
 import '../../core/geo/geo.dart';
+import '../../data/appearance.dart';
 import '../../data/database.dart';
 import '../../data/notify/message_alerts.dart';
 import '../../data/position_sharer.dart';
@@ -23,7 +24,8 @@ class AppSettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.watch(themeModeProvider).value ?? ThemeMode.system;
+    final theme = ref.watch(appThemeProvider).value ?? AppTheme.system;
+    final accent = ref.watch(accentProvider).value ?? accents.first;
     final rotate = ref.watch(mapRotateProvider).value ?? false;
     final images = ref.watch(showImagesProvider).value ?? true;
     final areaOn = ref.watch(areaEnabledProvider).value ?? false;
@@ -60,27 +62,48 @@ class AppSettingsPage extends ConsumerWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(Tokens.s16),
-                child: SegmentedButton<ThemeMode>(
-                  segments: const [
-                    ButtonSegment(
-                      value: ThemeMode.system,
-                      label: Text('Системная'),
-                      icon: Icon(Icons.brightness_auto),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<AppTheme>(
+                    showSelectedIcon: false,
+                    segments: [
+                      for (final t in AppTheme.values)
+                        ButtonSegment(value: t, label: Text(t.title)),
+                    ],
+                    selected: {theme},
+                    onSelectionChanged: (s) =>
+                        save(AppSettingKeys.theme, s.first.name),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Tokens.s16,
+                  0,
+                  Tokens.s16,
+                  Tokens.s16,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Цвет акцента',
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                    ButtonSegment(
-                      value: ThemeMode.light,
-                      label: Text('Светлая'),
-                      icon: Icon(Icons.light_mode_outlined),
-                    ),
-                    ButtonSegment(
-                      value: ThemeMode.dark,
-                      label: Text('Тёмная'),
-                      icon: Icon(Icons.dark_mode_outlined),
+                    const SizedBox(height: Tokens.s8),
+                    Wrap(
+                      spacing: Tokens.s8,
+                      runSpacing: Tokens.s8,
+                      children: [
+                        for (final a in accents)
+                          _AccentDot(
+                            accent: a,
+                            selected: a.id == accent.id,
+                            onTap: () => save(AppSettingKeys.accent, a.id),
+                          ),
+                      ],
                     ),
                   ],
-                  selected: {theme},
-                  onSelectionChanged: (s) =>
-                      save(AppSettingKeys.theme, s.first.name),
                 ),
               ),
             ],
@@ -265,4 +288,48 @@ class _ShareStatus extends ConsumerWidget {
           };
     return MeshTile(title: 'Состояние', subtitle: text);
   }
+}
+
+/// Кружок цвета акцента; выбранный — с галочкой.
+class _AccentDot extends StatelessWidget {
+  const _AccentDot({
+    required this.accent,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Accent accent;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: accent.title,
+    child: Semantics(
+      button: true,
+      selected: selected,
+      label: accent.title,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: accent.color,
+            shape: BoxShape.circle,
+            border: selected
+                ? Border.all(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    width: 2,
+                  )
+                : null,
+          ),
+          child: selected
+              ? const Icon(Icons.check, color: Colors.white, size: 20)
+              : null,
+        ),
+      ),
+    ),
+  );
 }

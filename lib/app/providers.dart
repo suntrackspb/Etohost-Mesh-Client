@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart' show ThemeMode;
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -20,6 +19,7 @@ import '../core/transport/serial_transport.dart';
 import '../core/update/update_checker.dart';
 import '../data/recent_reactions.dart';
 import '../data/chat_search.dart';
+import '../data/appearance.dart';
 import '../data/database.dart';
 import '../data/node_row_info.dart';
 import '../data/map_style.dart';
@@ -734,12 +734,13 @@ Future<void> rememberReaction(WidgetRef ref, String emoji) async {
 }
 
 /// Тема приложения; неизвестное значение — как в системе.
-final themeModeProvider = StreamProvider<ThemeMode>(
-  (ref) => _setting(ref, AppSettingKeys.theme).map(
-    (v) =>
-        ThemeMode.values.where((m) => m.name == v).firstOrNull ??
-        ThemeMode.system,
-  ),
+final appThemeProvider = StreamProvider<AppTheme>(
+  (ref) => _setting(ref, AppSettingKeys.theme).map(AppTheme.parse),
+);
+
+/// Цвет акцента, из которого строится тема.
+final accentProvider = StreamProvider<Accent>(
+  (ref) => _setting(ref, AppSettingKeys.accent).map(parseAccent),
 );
 
 /// Вращение карты жестом (по умолчанию выключено — север всегда сверху).
