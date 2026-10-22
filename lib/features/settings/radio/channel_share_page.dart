@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../../../app/toasts.dart';
 import '../../../app/providers.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/database.dart';
@@ -103,9 +104,7 @@ class _ChannelSharePageState extends ConsumerState<ChannelSharePage> {
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: url));
                 if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Скопировано')));
+                  toasts.success('Скопировано');
                 }
               },
             ),
@@ -297,8 +296,9 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
     );
     if (!mounted) return;
     setState(() => _saving = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(ok ? 'Каналы сохранены' : 'Нода не подтвердила')),
+    toasts.show(
+      ok ? 'Каналы сохранены' : 'Нода не подтвердила',
+      kind: ok ? ToastKind.success : ToastKind.error,
     );
     if (ok) Navigator.of(context).pop();
   }

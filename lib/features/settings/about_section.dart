@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../app/toasts.dart';
 import '../../app/providers.dart';
 import '../../core/update/release_notes.dart';
 import '../../core/update/update_checker.dart';
@@ -148,34 +149,24 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
 
   Future<void> _check() async {
     setState(() => _checking = true);
-    final messenger = ScaffoldMessenger.of(context);
     try {
       final r = await checkForUpdate(await ref.read(appVersionProvider.future));
       if (!mounted) return;
       if (r == null) {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Установлена последняя версия')),
-        );
+        toasts.show('Установлена последняя версия');
       } else {
         // Ручная проверка снимает «не напоминать» и показывает плашку.
         await ref
             .read(databaseProvider)
             .setSetting(AppSettingKeys.updateDismissed, '');
         ref.invalidate(latestReleaseProvider);
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('Доступна версия ${r.version}'),
-            action: SnackBarAction(
-              label: 'Скачать',
-              onPressed: () => openRelease(r),
-            ),
-          ),
+        toasts.show(
+          'Доступна версия ${r.version} — нажмите, чтобы скачать',
+          onTap: () => openRelease(r),
         );
       }
     } catch (e) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Не удалось проверить: $e')),
-      );
+      toasts.error('Не удалось проверить: $e');
     } finally {
       if (mounted) setState(() => _checking = false);
     }

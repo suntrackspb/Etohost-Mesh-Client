@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:swipeable_page_route/swipeable_page_route.dart';
 
+import '../../../app/toasts.dart';
 import '../../../app/position_service.dart';
 import '../../../app/providers.dart';
 import '../../../app/settings_providers.dart';
@@ -106,9 +107,7 @@ class _FixedPositionTileState extends ConsumerState<FixedPositionTile> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (error != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error)));
+      toasts.error(error);
     }
   }
 

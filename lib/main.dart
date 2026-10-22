@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'app/toasts.dart';
 import 'app/desktop_tray_provider.dart';
 import 'app/keep_alive_provider.dart';
 import 'app/mqtt_providers.dart';
@@ -89,13 +90,15 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     ref.listen(keepAliveProvider, (_, _) {});
     ref.listen(messageAlertsProvider, (_, _) {});
     ref.listen(desktopTrayProvider, (_, _) {});
-    return MaterialApp.router(
-      title: 'Etohost Mesh',
-      theme: buildTheme(Brightness.light),
-      darkTheme: buildTheme(Brightness.dark),
-      themeMode: ref.watch(themeModeProvider).value ?? ThemeMode.system,
-      routerConfig: appRouter,
-      debugShowCheckedModeBanner: false,
+    return toastsHost(
+      MaterialApp.router(
+        title: 'Etohost Mesh',
+        theme: buildTheme(Brightness.light),
+        darkTheme: buildTheme(Brightness.dark),
+        themeMode: ref.watch(themeModeProvider).value ?? ThemeMode.system,
+        routerConfig: appRouter,
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/toasts.dart';
 import '../../app/providers.dart';
 import '../../core/radio/journal.dart';
 import '../../ui/kit/kit.dart';
@@ -60,9 +61,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
                   text: all.map((l) => '${_ts(l.time)} ${l.text}').join('\n'),
                 ),
               );
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Журнал скопирован')),
-              );
+              toasts.success('Журнал скопирован');
             },
           ),
           IconButton(

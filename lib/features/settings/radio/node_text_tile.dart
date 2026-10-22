@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/toasts.dart';
 import '../../../app/providers.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/settings/node_text.dart';
@@ -38,18 +39,18 @@ class _NodeTextTileState extends ConsumerState<NodeTextTile> {
 
   Future<void> _save() async {
     setState(() => _saving = true);
-    final messenger = ScaffoldMessenger.of(context);
     try {
       final ok = await _spec.save(
         ref.read(adminSettingsProvider),
         ref.read(databaseProvider),
         _text.text,
       );
-      messenger.showSnackBar(
-        SnackBar(content: Text(ok ? 'Сохранено' : 'Нода не подтвердила')),
+      toasts.show(
+        ok ? 'Сохранено' : 'Нода не подтвердила',
+        kind: ok ? ToastKind.success : ToastKind.error,
       );
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+      toasts.error('Ошибка: $e');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

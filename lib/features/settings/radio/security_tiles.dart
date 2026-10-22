@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/toasts.dart';
 import '../../../app/providers.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/settings/key_backup.dart';
@@ -95,7 +96,10 @@ class _PublicKey extends StatelessWidget {
                 label: const Text('Копировать'),
                 onPressed: text.isEmpty
                     ? null
-                    : () => Clipboard.setData(ClipboardData(text: text)),
+                    : () {
+                        Clipboard.setData(ClipboardData(text: text));
+                        toasts.success('Скопировано');
+                      },
               ),
             ],
           ),
@@ -184,8 +188,7 @@ class KeyBackupCard extends ConsumerWidget {
     );
   }
 
-  static void _snack(BuildContext context, String text) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  static void _snack(BuildContext context, String text) => toasts.show(text);
 
   Future<void> _backup(
     BuildContext context,

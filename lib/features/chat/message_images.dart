@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../app/toasts.dart';
 import '../../app/images_providers.dart';
 import '../../app/providers.dart';
 import '../../core/links.dart';
@@ -127,13 +128,12 @@ class _FullImageState extends ConsumerState<_FullImage> {
   }
 
   Future<void> _run(Future<void> Function() action, String done) async {
-    final messenger = ScaffoldMessenger.of(context);
     setState(() => _busy = true);
     try {
       await action();
-      messenger.showSnackBar(SnackBar(content: Text(done)));
+      toasts.show(done);
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('$e')));
+      toasts.error('$e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }

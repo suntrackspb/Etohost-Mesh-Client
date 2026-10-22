@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/toasts.dart';
 import '../../../app/providers.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/settings/device_actions.dart';
@@ -61,8 +62,7 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
     );
   }
 
-  void _snack(String text) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  void _snack(String text) => toasts.show(text);
 
   Future<void> _run(DeviceAction a, {bool preserveFavorites = true}) async {
     final me = ref.read(radioProvider).myNodeNum;

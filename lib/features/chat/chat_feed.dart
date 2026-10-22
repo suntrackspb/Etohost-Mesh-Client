@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/toasts.dart';
 import '../../app/images_providers.dart';
 import '../../app/notify_providers.dart';
 import '../../app/providers.dart';
@@ -144,9 +145,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('История не загружена: $e')));
+        toasts.error('История не загружена: $e');
       }
     } finally {
       if (mounted) setState(() => _loadingMore = false);
@@ -381,9 +380,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
 
   void _error(Object e) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Не отправлено: $e')));
+    toasts.error('Не отправлено: $e');
   }
 }
 
@@ -647,10 +644,11 @@ class _MessageListState extends ConsumerState<_MessageList> {
               ),
             ListTile(
               leading: const Icon(Icons.copy),
-              title: const Text('Копировать'),
+              title: const Text('Копировать текст'),
               onTap: () {
                 Navigator.pop(ctx);
                 Clipboard.setData(ClipboardData(text: m.body));
+                toasts.success('Скопировано');
               },
             ),
             const Divider(height: 1),
@@ -666,9 +664,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
                 onTap: () {
                   Navigator.pop(ctx);
                   Clipboard.setData(ClipboardData(text: value));
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Скопировано')));
+                  toasts.success('Скопировано');
                 },
               ),
             if (failed && canSend)
@@ -1196,9 +1192,7 @@ class _ComposerState extends ConsumerState<_Composer> {
     if (sent == parts.length) {
       _text.clear();
     } else if (sent > 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Отправлено $sent из ${parts.length}')),
-      );
+      toasts.show('Отправлено $sent из ${parts.length}');
     }
     _focus.requestFocus();
   }
@@ -1207,7 +1201,6 @@ class _ComposerState extends ConsumerState<_Composer> {
 
   /// Выбрать картинку, загрузить и вставить ссылку в поле.
   Future<void> _attachImage(ImageUploads images) async {
-    final messenger = ScaffoldMessenger.of(context);
     try {
       final files = await FilePicker.pickFiles(type: FileType.image);
       if (files.isEmpty) return;
@@ -1217,11 +1210,9 @@ class _ComposerState extends ConsumerState<_Composer> {
       final sep = t.isEmpty || t.endsWith(' ') || t.endsWith('\n') ? '' : ' ';
       _text.text = '$t$sep${img.url}';
       _text.selection = TextSelection.collapsed(offset: _text.text.length);
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Картинка загружена, хранится 3 дня')),
-      );
+      toasts.success('Картинка загружена, хранится 3 дня');
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('$e')));
+      toasts.error('$e');
     } finally {
       if (mounted) setState(() => _uploading = false);
     }

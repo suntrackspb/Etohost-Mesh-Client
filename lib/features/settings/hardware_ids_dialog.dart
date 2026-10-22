@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/toasts.dart';
 import '../../app/providers.dart';
 import '../../core/radio/hardware_ids.dart';
 
@@ -59,9 +60,7 @@ class _HardwareIdsDialog extends ConsumerWidget {
           TextButton(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: ids.asText()));
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Скопировано')));
+              toasts.success('Скопировано');
             },
             child: const Text('Копировать'),
           ),

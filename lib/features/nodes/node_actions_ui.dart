@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/toasts.dart';
 import '../../app/providers.dart';
 import '../../core/proto/mesh.dart';
 import '../../core/radio/send_queue.dart';
@@ -15,7 +16,6 @@ Future<void> _run(
   Future<Object?> Function() action,
   String ok,
 ) async {
-  final messenger = ScaffoldMessenger.of(context);
   String text;
   try {
     final r = await action();
@@ -29,7 +29,7 @@ Future<void> _run(
   } catch (e) {
     text = '$e';
   }
-  messenger.showSnackBar(SnackBar(content: Text(text)));
+  toasts.show(text);
 }
 
 /// Кнопки действий в AppBar карточки. Админ-действия — только для нод из эфира.

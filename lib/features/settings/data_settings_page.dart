@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/toasts.dart';
 import '../../app/providers.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/node_db_store.dart';
@@ -85,8 +86,7 @@ class DataSettingsPage extends ConsumerWidget {
     return '${(bytes / 1024 / 1024).toStringAsFixed(1)} МБ';
   }
 
-  static void _snack(BuildContext context, String text) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  static void _snack(BuildContext context, String text) => toasts.show(text);
 
   Future<void> _menu(BuildContext context, WidgetRef ref, NodeDbInfo db) async {
     final action = await showModalBottomSheet<String>(

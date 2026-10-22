@@ -35,6 +35,7 @@ dependencies:
   protobuf: ^6.1.0
   qr_flutter: ^4.1.0
   swipeable_page_route: ^0.4.8
+  toastification: ^3.2.0
   tray_manager: ^0.5.2
   typed_data: ^1.4.0
   universal_ble: ^3.1.1

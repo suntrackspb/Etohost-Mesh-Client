@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/toasts.dart';
 import '../../app/diagnostics_providers.dart';
 import '../../ui/kit/kit.dart';
 
@@ -239,9 +240,7 @@ class _SentView extends StatelessWidget {
             FilledButton.icon(
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: id));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Номер скопирован')),
-                );
+                toasts.success('Номер скопирован');
               },
               icon: const Icon(Icons.copy),
               label: const Text('Скопировать номер'),
