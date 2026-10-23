@@ -509,6 +509,15 @@ class AppDatabase extends _$AppDatabase {
             ..limit(limit))
           .watch();
 
+  /// Удалить всю личную переписку с [peer] (только у себя).
+  Future<int> deleteDirectChat(int peer) =>
+      (delete(messages)..where(
+            (m) =>
+                m.toNum.equals(0xffffffff).not() &
+                (m.fromNum.equals(peer) | m.toNum.equals(peer)),
+          ))
+          .go();
+
   /// Непрочитанные личные от [peer] новее [since] (null — все).
   Stream<int> watchDirectUnread(int peer, DateTime? since) {
     final count = messages.id.count();

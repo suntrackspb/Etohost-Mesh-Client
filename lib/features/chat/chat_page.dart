@@ -94,7 +94,7 @@ class ChatPage extends ConsumerWidget {
   }
 }
 
-class _DirectTile extends StatelessWidget {
+class _DirectTile extends ConsumerWidget {
   const _DirectTile(this.conv, this.node, this.wide, this.selected);
 
   final Conversation conv;
@@ -103,7 +103,7 @@ class _DirectTile extends StatelessWidget {
   final String? selected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final id = DirectTarget(conv.peer).id;
     final name = node?.longName.isNotEmpty == true
         ? node!.longName
@@ -131,6 +131,7 @@ class _DirectTile extends StatelessWidget {
       ),
       selected: wide && id == selected,
       onTap: () => context.go(ChatPage.location(id)),
+      onLongPress: () => _deleteDirect(context, ref, conv.peer, name),
     );
   }
 }
@@ -193,4 +194,36 @@ Future<void> _hide(BuildContext context, WidgetRef ref, ChatChannel c) async {
     ),
   );
   if (ok == true) await db.hideChannel(c.key);
+}
+
+Future<void> _deleteDirect(
+  BuildContext context,
+  WidgetRef ref,
+  int peer,
+  String name,
+) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text('Удалить переписку с «$name»?'),
+      content: const Text(
+        'Все сообщения этого чата удалятся с этого устройства. '
+        'У собеседника они останутся.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Отмена'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(ctx).colorScheme.error,
+          ),
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text('Удалить'),
+        ),
+      ],
+    ),
+  );
+  if (ok == true) await ref.read(databaseProvider).deleteDirectChat(peer);
 }
