@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/tile_cache.dart';
+import '../map/map_tiles.dart';
 import '../../app/desktop_tray_provider.dart';
 import '../../app/notify_providers.dart';
 import '../../app/position_service.dart';
@@ -245,6 +247,7 @@ class AppSettingsPage extends ConsumerWidget {
                 value: rotate,
                 onChanged: (v) => save(AppSettingKeys.mapRotate, '$v'),
               ),
+              const _TileCacheTile(),
             ],
           ),
           SectionCard(
@@ -399,4 +402,49 @@ class _AccentDot extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Размер кэша просмотренных тайлов и его очистка.
+class _TileCacheTile extends ConsumerStatefulWidget {
+  const _TileCacheTile();
+
+  @override
+  ConsumerState<_TileCacheTile> createState() => _TileCacheTileState();
+}
+
+class _TileCacheTileState extends ConsumerState<_TileCacheTile> {
+  int? _size;
+
+  @override
+  void initState() {
+    super.initState();
+    _measure();
+  }
+
+  Future<void> _measure() async {
+    final dir = await ref.read(tileCacheDirProvider.future);
+    if (mounted) setState(() => _size = tileCacheSize(dir));
+  }
+
+  Future<void> _clear() async {
+    final dir = await ref.read(tileCacheDirProvider.future);
+    if (dir.existsSync()) await dir.delete(recursive: true);
+    ref
+      ..invalidate(tileProviderProvider)
+      ..invalidate(cartoTileProviderProvider);
+    await _measure();
+  }
+
+  @override
+  Widget build(BuildContext context) => MeshTile(
+    title: 'Кэш карты',
+    subtitle:
+        'Просмотренные тайлы, работают без сети. '
+        'Занято ${_size == null ? '…' : formatBytes(_size!)} '
+        'из ${formatBytes(tileCacheLimitBytes)}.',
+    trailing: TextButton(
+      onPressed: (_size ?? 0) == 0 ? null : _clear,
+      child: const Text('Очистить'),
+    ),
+  );
 }

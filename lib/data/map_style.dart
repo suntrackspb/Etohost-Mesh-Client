@@ -3,14 +3,13 @@ import 'package:flutter/widgets.dart' show Brightness;
 /// Ключ CARTO (тёмная подложка); без него CARTO тайлы не отдаёт.
 const cartoKey = String.fromEnvironment('CARTO_KEY');
 
-/// Есть ли выбор подложки в этой сборке.
-const mapStylesAvailable = cartoKey != '';
-
-/// Подложка карты: по теме приложения, светлая (OSM), тёмная (CARTO).
+/// Подложка карты: по теме приложения, светлая (OSM), тёмная (CARTO),
+/// рельеф (OpenTopoMap).
 enum MapStyle {
   auto('По теме приложения'),
   light('Светлая'),
-  dark('Тёмная');
+  dark('Тёмная'),
+  topo('Рельеф');
 
   const MapStyle(this.label);
   final String label;
@@ -19,8 +18,22 @@ enum MapStyle {
       values.where((s) => s.name == v).firstOrNull ?? auto;
 }
 
-/// Тёмные тайлы — только если в сборке есть ключ.
-bool darkTiles(MapStyle style, Brightness theme, {String key = cartoKey}) =>
-    key.isNotEmpty &&
-    (style == MapStyle.dark ||
-        (style == MapStyle.auto && theme == Brightness.dark));
+/// Источник тайлов.
+enum TileSource { osm, carto, topo }
+
+/// Подложки в меню: без ключа CARTO — только светлая и рельеф.
+List<MapStyle> availableMapStyles({String key = cartoKey}) =>
+    key.isEmpty ? const [MapStyle.light, MapStyle.topo] : MapStyle.values;
+
+/// Откуда брать тайлы; тёмные — только если в сборке есть ключ.
+TileSource tileSource(
+  MapStyle style,
+  Brightness theme, {
+  String key = cartoKey,
+}) => switch (style) {
+  MapStyle.topo => TileSource.topo,
+  MapStyle.dark when key.isNotEmpty => TileSource.carto,
+  MapStyle.auto when key.isNotEmpty && theme == Brightness.dark =>
+    TileSource.carto,
+  _ => TileSource.osm,
+};

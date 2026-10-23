@@ -1495,9 +1495,14 @@ class _ComposerState extends ConsumerState<_Composer> {
 
   /// Выбрать картинку, загрузить и вставить ссылку в поле.
   Future<void> _attachImage(ImageUploads images) async {
+    // Поле в фокусе, пока открыт системный выбор фото: после возврата iOS
+    // поднимает клавиатуру сама, а Flutter не получает её высоту — поле
+    // ввода оказывается под клавиатурой. Снимаем фокус заранее и
+    // возвращаем его, когда окно выбора уже закрылось.
+    _focus.unfocus();
     try {
       final files = await FilePicker.pickFiles(type: FileType.image);
-      if (files.isEmpty) return;
+      if (files.isEmpty) return _refocusAfterPicker();
       setState(() => _uploading = true);
       final img = await images.upload(await files.first.readAsBytes());
       final t = _text.text;
@@ -1510,7 +1515,14 @@ class _ComposerState extends ConsumerState<_Composer> {
     } finally {
       if (mounted) setState(() => _uploading = false);
     }
-    _focus.requestFocus();
+    _refocusAfterPicker();
+  }
+
+  /// Вернуть фокус после закрытия системного окна (анимация ~0,3 с).
+  void _refocusAfterPicker() {
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) _focus.requestFocus();
+    });
   }
 
   @override

@@ -490,8 +490,8 @@ class _LayersMenu extends ConsumerWidget {
           ? db.setSetting(AppSettingKeys.mapStyle, v.name)
           : db.setSetting(AppSettingKeys.mapCluster, '${!cluster}'),
       itemBuilder: (_) => [
-        if (mapStylesAvailable) ...[
-          for (final s in MapStyle.values)
+        ...[
+          for (final s in availableMapStyles())
             CheckedPopupMenuItem<Object>(
               value: s,
               checked: s == style,
