@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../app/toasts.dart';
 import '../../core/geo/geo.dart';
+import '../../data/hardware_catalog.dart';
 import '../../data/node_actions.dart';
 import '../../data/node_details.dart';
 import '../../data/node_row_info.dart';
@@ -83,6 +85,7 @@ class NodeDetailPage extends ConsumerWidget {
                         )
                       : null,
                 ),
+              _BoardCard(n.hwModel),
               _DetailsCard(n),
               if (hasPosition(n)) _PositionCard(n, isMe ? null : own),
               _NoteCard(n.num),
@@ -146,7 +149,7 @@ class _DetailsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = <(String, String)>[
       ('Роль', roleTitle(n.role)),
-      ('Модель', HardwareModel.valueOf(n.hwModel)?.name ?? '${n.hwModel}'),
+      ('Модель', hardwareName(n.hwModel)),
       ('Номер', '${n.num}'),
       if (n.lastHeard != null) ('Слышали', lastHeardText(n.lastHeard!)),
       if (n.hopsAway != null) ('Хопов', '${n.hopsAway}'),
@@ -358,6 +361,62 @@ class _NoteCard extends ConsumerWidget {
               );
             }
           },
+        ),
+      ],
+    );
+  }
+}
+
+/// Плата из справочника: картинка (или иконка), название, уровень поддержки.
+class _BoardCard extends StatelessWidget {
+  const _BoardCard(this.hwModel);
+
+  final int hwModel;
+
+  @override
+  Widget build(BuildContext context) {
+    final info = hardwareInfo(hwModel);
+    if (info == null) return const SizedBox.shrink();
+    final assets = hardwareImageAssets(hwModel);
+    final t = Theme.of(context).textTheme;
+    return SectionCard(
+      title: hardwareSectionTitle(hwModel, info),
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(Tokens.s8),
+          child: Row(
+            children: [
+              if (assets.isEmpty)
+                SizedBox.square(
+                  dimension: 96,
+                  child: Icon(
+                    Icons.developer_board,
+                    size: 56,
+                    color: Theme.of(context).disabledColor,
+                  ),
+                )
+              else
+                for (final a in assets)
+                  SizedBox.square(
+                    dimension: assets.length == 1 ? 96 : 64,
+                    child: SvgPicture.asset(a, fit: BoxFit.contain),
+                  ),
+              const SizedBox(width: Tokens.s16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(info.name, style: t.titleMedium),
+                    const SizedBox(height: Tokens.s4),
+                    Text(
+                      hardwareDescription(hwModel, info),
+                      style: t.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
