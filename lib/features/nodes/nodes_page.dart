@@ -8,7 +8,9 @@ import '../../data/database.dart';
 import '../../data/node_row_info.dart';
 import '../../ui/kit/kit.dart';
 import 'node_detail_page.dart';
+import '../../data/node_layout.dart';
 import 'node_filter_sheet.dart';
+import 'node_layout_sheet.dart';
 import '../../app/link_badge.dart';
 
 /// Список нод; на широком экране справа — карточка выбранной.
@@ -42,6 +44,7 @@ class _NodesPageState extends ConsumerState<NodesPage> {
     final total = ref.watch(nodesProvider).value?.length;
     final filter = ref.watch(nodeFilterProvider);
     final wide = SplitView.isWide(context);
+    final layout = ref.watch(nodeLayoutProvider).value ?? const NodeLayout();
 
     final list = Scaffold(
       appBar: AppBar(
@@ -62,6 +65,11 @@ class _NodesPageState extends ConsumerState<NodesPage> {
               child: const Icon(Icons.filter_list),
             ),
             onPressed: () => NodeFilterSheet.show(context),
+          ),
+          IconButton(
+            tooltip: 'Вид строки ноды',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => NodeLayoutSheet.show(context),
           ),
           const LinkBadge(),
         ],
@@ -114,8 +122,9 @@ class _NodesPageState extends ConsumerState<NodesPage> {
           }
           return ListView.builder(
             itemCount: items.length,
-            itemBuilder: (_, i) => _NodeTile(
+            itemBuilder: (_, i) => NodeTile(
               node: items[i],
+              layout: layout,
               selected: wide && items[i].num == widget.selected,
               onTap: () => wide
                   ? context.go('/nodes/${items[i].num}')
@@ -139,14 +148,18 @@ class _NodesPageState extends ConsumerState<NodesPage> {
   }
 }
 
-class _NodeTile extends ConsumerWidget {
-  const _NodeTile({
+/// Строка ноды; [layout] — какие поля показывать.
+class NodeTile extends ConsumerWidget {
+  const NodeTile({
+    super.key,
     required this.node,
     required this.onTap,
+    this.layout = const NodeLayout(),
     this.selected = false,
   });
 
   final Node node;
+  final NodeLayout layout;
   final VoidCallback onTap;
   final bool selected;
 
@@ -164,6 +177,7 @@ class _NodeTile extends ConsumerWidget {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final style = Theme.of(context).textTheme.bodySmall?.copyWith(color: muted);
     final hasKey = node.publicKey?.isNotEmpty == true;
+    bool on(NodeRowField f) => layout.shows(f);
 
     Widget item(IconData icon, String text, {Color? color}) => Row(
       mainAxisSize: MainAxisSize.min,
@@ -175,57 +189,66 @@ class _NodeTile extends ConsumerWidget {
     );
 
     final line3 = [
-      if (node.lastHeard != null)
+      if (on(NodeRowField.lastHeard) && node.lastHeard != null)
         Text(
           lastHeardText(node.lastHeard!),
           style: heardRecently(node.lastHeard)
               ? style?.copyWith(color: Colors.green)
               : style,
         ),
-      if (node.hopsAway != null)
+      if (on(NodeRowField.hops) && node.hopsAway != null)
         item(
           Icons.alt_route,
           node.hopsAway == 0 ? 'direct' : '${node.hopsAway}',
         ),
-      if (node.latitude != null)
+      if (on(NodeRowField.position) && node.latitude != null)
         Tooltip(
           message: 'Есть координаты',
           child: Icon(Icons.location_on, size: 14, color: muted),
         ),
-      if (node.snr != null)
+      if (on(NodeRowField.signal) && node.snr != null)
         item(
           Icons.signal_cellular_alt,
           '${node.snr!.toStringAsFixed(1)} dB',
           color: _qualityColor(snrQuality(node.snr!, preset)),
         ),
-      if (node.rssi != null)
+      if (on(NodeRowField.signal) && node.rssi != null)
         item(
           Icons.settings_input_antenna,
           '${node.rssi} dBm',
           color: _qualityColor(rssiQuality(node.rssi!)),
         ),
-      if (node.viaMqtt) Text('MQTT', style: style),
+      if (on(NodeRowField.mqtt) && node.viaMqtt) Text('MQTT', style: style),
+    ];
+
+    final line2 = [
+      if (on(NodeRowField.id)) nodeIdString(node.num),
+      if (on(NodeRowField.role)) roleName(node.role),
+      if (on(NodeRowField.preset) && preset != null) preset,
     ];
 
     return MeshTile(
       title: name,
-      titleExtra: Tooltip(
-        message: hasKey ? 'Есть публичный ключ' : 'Нет публичного ключа',
-        child: Icon(
-          Icons.key,
-          size: 14,
-          color: hasKey ? Colors.green : Colors.red,
-        ),
-      ),
+      titleExtra: !on(NodeRowField.publicKey)
+          ? null
+          : Tooltip(
+              message: hasKey ? 'Есть публичный ключ' : 'Нет публичного ключа',
+              child: Icon(
+                Icons.key,
+                size: 14,
+                color: hasKey ? Colors.green : Colors.red,
+              ),
+            ),
       subtitleWidget: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            [nodeIdString(node.num), roleName(node.role), ?preset].join(' · '),
-            style: style,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          if (line2.isNotEmpty)
+            Text(
+              line2.join(' · '),
+              style: style,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           if (line3.isNotEmpty)
             Wrap(spacing: 8, runSpacing: 2, children: line3),
         ],

@@ -30,6 +30,7 @@ import '../data/message_sender.dart';
 import '../data/map_points.dart';
 import '../data/node_actions.dart';
 import '../data/node_filter.dart';
+import '../data/node_layout.dart';
 import '../data/position_sharer.dart';
 import '../data/mirror_ingest.dart';
 import '../data/node_db_store.dart';
@@ -802,6 +803,11 @@ final messageFilterOffChatsProvider = StreamProvider<Set<String>>(
     ref,
     AppSettingKeys.messageFilterOffChats,
   ).map((s) => decodeStringList(s).toSet()),
+);
+
+/// Какие поля показывать в строке списка нод.
+final nodeLayoutProvider = StreamProvider<NodeLayout>(
+  (ref) => _setting(ref, AppSettingKeys.nodeLayout).map(NodeLayout.decode),
 );
 
 /// Цвет акцента, из которого строится тема.
