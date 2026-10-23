@@ -14,16 +14,16 @@ void main() {
 
   setUpAll(() => verifier = SchemaVerifier(GeneratedHelper()));
 
-  for (final from in [5, 6, 7]) {
-    test('миграция $from → 8 даёт текущую схему', () async {
+  for (final from in [5, 6, 7, 8]) {
+    test('миграция $from → 9 даёт текущую схему', () async {
       final schema = await verifier.schemaAt(from);
       final db = AppDatabase(schema.newConnection());
-      await verifier.migrateAndValidate(db, 8);
+      await verifier.migrateAndValidate(db, 9);
       await db.close();
     });
   }
 
-  test('данные переживают миграцию 5 → 8', () async {
+  test('данные переживают миграцию 5 → текущая', () async {
     final schema = await verifier.schemaAt(5);
     schema.rawDatabase.execute(
       "INSERT INTO app_settings (key, value) VALUES ('app.theme', 'dark')",
@@ -54,7 +54,7 @@ void main() {
       expect(cols, isNot(contains('rssi')));
 
       final db = AppDatabase(schema.newConnection());
-      await verifier.migrateAndValidate(db, 8);
+      await verifier.migrateAndValidate(db, 9);
       await db.close();
     },
   );

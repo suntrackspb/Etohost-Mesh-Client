@@ -4,7 +4,7 @@
 Источник: Meshtastic-Apple/Meshtastic/Resources/DeviceHardware.json,
 картинки — mesh-mirror-v2/templates/dist/hw и tool/hw_extra (недостающие,
 из github.com/meshtastic/web-flasher public/img/devices; всё — GPL-3).
-Пишет lib/data/hardware_catalog.g.dart и копирует нужные SVG в assets/hw/.
+Пишет lib/data/hardware_catalog_data.dart и копирует нужные SVG в assets/hw/.
 Запуск из корня проекта: python3 tool/gen_hardware.py
 """
 import json
@@ -17,7 +17,7 @@ SRC_JSON = os.path.join(ROOT, '..', 'Meshtastic-Apple', 'Meshtastic', 'Resources
 SRC_IMG = os.path.join(ROOT, '..', 'mesh-mirror-v2', 'templates', 'dist', 'hw')
 EXTRA_IMG = os.path.join(ROOT, 'tool', 'hw_extra')
 OUT_IMG = os.path.join(ROOT, 'assets', 'hw')
-OUT_DART = os.path.join(ROOT, 'lib', 'data', 'hardware_catalog.g.dart')
+OUT_DART = os.path.join(ROOT, 'lib', 'data', 'hardware_catalog_data.dart')
 
 PORTDUINO = 37
 

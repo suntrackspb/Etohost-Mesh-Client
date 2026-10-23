@@ -133,6 +133,11 @@ class Nodes extends Table {
   IntColumn get role => integer().withDefault(const Constant(0))();
   BlobColumn get publicKey => blob().nullable()();
 
+  /// Пришёл другой ключ, чем записанный: храним его здесь, а [publicKey]
+  /// не меняем (первый ключ побеждает, как `keyMatch` в iOS). Не null —
+  /// предупреждение «Несоответствие открытого ключа»; снимается удалением ноды.
+  BlobColumn get newPublicKey => blob().nullable()();
+
   /// Нода не принимает личные сообщения (`User.is_unmessagable`).
   BoolColumn get isUnmessagable =>
       boolean().withDefault(const Constant(false))();
@@ -368,7 +373,7 @@ class AppDatabase extends _$AppDatabase {
   final AppDatabase? settings;
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -408,6 +413,7 @@ class AppDatabase extends _$AppDatabase {
       await m.addColumn(nodes, nodes.rssi);
       await m.addColumn(nodes, nodes.modemPreset);
     },
+    9: (m) => m.addColumn(nodes, nodes.newPublicKey),
   };
 
   /// Миграция целиком или никак: drift сам транзакцию не открывает, а

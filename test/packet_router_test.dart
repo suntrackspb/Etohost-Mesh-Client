@@ -214,6 +214,45 @@ void main() {
     expect(n.publicKey, hasLength(32)); // пустой ключ в пакете не стирает
   });
 
+  test('другой ключ ноды не заменяет записанный, а отмечается', () async {
+    final k1 = List.filled(32, 1), k2 = List.filled(32, 2);
+    await router.handle(
+      FromRadio(
+        nodeInfo: NodeInfo(
+          num: 5,
+          user: User(longName: 'A', publicKey: k1),
+        ),
+      ),
+    );
+    await router.handle(
+      pkt(
+        5,
+        PortNum.NODEINFO_APP,
+        User(longName: 'A', publicKey: k2).writeToBuffer(),
+      ),
+    );
+    final n = (await db.watchNodes().first).single;
+    expect(n.publicKey, k1);
+    expect(n.newPublicKey, k2);
+  });
+
+  test('ключ своей ноды заменяется без предупреждения', () async {
+    await router.handle(FromRadio(myInfo: MyNodeInfo(myNodeNum: 7)));
+    for (final k in [List.filled(32, 1), List.filled(32, 2)]) {
+      await router.handle(
+        FromRadio(
+          nodeInfo: NodeInfo(
+            num: 7,
+            user: User(longName: 'me', publicKey: k),
+          ),
+        ),
+      );
+    }
+    final n = (await db.watchNodes().first).single;
+    expect(n.publicKey, List.filled(32, 2));
+    expect(n.newPublicKey, equals(null));
+  });
+
   test('входящее личное: без ключа канала, с флагом PKI', () async {
     await router.handle(
       FromRadio(

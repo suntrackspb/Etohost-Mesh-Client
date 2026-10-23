@@ -1,5 +1,5 @@
 import '../core/proto/mesh.dart';
-import 'hardware_catalog.g.dart';
+import 'hardware_catalog_data.dart';
 
 /// Плата из справочника: название, SVG в assets/hw/ (0–4, как в iOS)
 /// и уровень поддержки (номер [SupportLevel]).

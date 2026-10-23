@@ -231,6 +231,11 @@ class NodeTile extends ConsumerWidget {
       title: name,
       titleExtra: !on(NodeRowField.publicKey)
           ? null
+          : node.newPublicKey != null
+          ? const Tooltip(
+              message: 'Несоответствие открытого ключа',
+              child: Icon(Icons.key_off, size: 14, color: Colors.red),
+            )
           : Tooltip(
               message: hasKey ? 'Есть публичный ключ' : 'Нет публичного ключа',
               child: Icon(

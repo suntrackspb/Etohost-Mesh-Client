@@ -84,6 +84,18 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     type: DriftSqlType.blob,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _newPublicKeyMeta = const VerificationMeta(
+    'newPublicKey',
+  );
+  @override
+  late final GeneratedColumn<Uint8List> newPublicKey =
+      GeneratedColumn<Uint8List>(
+        'new_public_key',
+        aliasedName,
+        true,
+        type: DriftSqlType.blob,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _isUnmessagableMeta = const VerificationMeta(
     'isUnmessagable',
   );
@@ -337,6 +349,7 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     hwModel,
     role,
     publicKey,
+    newPublicKey,
     isUnmessagable,
     hasXeddsaSigned,
     lastHeard,
@@ -410,6 +423,15 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
       context.handle(
         _publicKeyMeta,
         publicKey.isAcceptableOrUnknown(data['public_key']!, _publicKeyMeta),
+      );
+    }
+    if (data.containsKey('new_public_key')) {
+      context.handle(
+        _newPublicKeyMeta,
+        newPublicKey.isAcceptableOrUnknown(
+          data['new_public_key']!,
+          _newPublicKeyMeta,
+        ),
       );
     }
     if (data.containsKey('is_unmessagable')) {
@@ -587,6 +609,10 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         DriftSqlType.blob,
         data['${effectivePrefix}public_key'],
       ),
+      newPublicKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}new_public_key'],
+      ),
       isUnmessagable: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_unmessagable'],
@@ -685,6 +711,11 @@ class Node extends DataClass implements Insertable<Node> {
   final int role;
   final Uint8List? publicKey;
 
+  /// Пришёл другой ключ, чем записанный: храним его здесь, а [publicKey]
+  /// не меняем (первый ключ побеждает, как `keyMatch` в iOS). Не null —
+  /// предупреждение «Несоответствие открытого ключа»; снимается удалением ноды.
+  final Uint8List? newPublicKey;
+
   /// Нода не принимает личные сообщения (`User.is_unmessagable`).
   final bool isUnmessagable;
 
@@ -724,6 +755,7 @@ class Node extends DataClass implements Insertable<Node> {
     required this.hwModel,
     required this.role,
     this.publicKey,
+    this.newPublicKey,
     required this.isUnmessagable,
     required this.hasXeddsaSigned,
     this.lastHeard,
@@ -756,6 +788,9 @@ class Node extends DataClass implements Insertable<Node> {
     map['role'] = Variable<int>(role);
     if (!nullToAbsent || publicKey != null) {
       map['public_key'] = Variable<Uint8List>(publicKey);
+    }
+    if (!nullToAbsent || newPublicKey != null) {
+      map['new_public_key'] = Variable<Uint8List>(newPublicKey);
     }
     map['is_unmessagable'] = Variable<bool>(isUnmessagable);
     map['has_xeddsa_signed'] = Variable<bool>(hasXeddsaSigned);
@@ -817,6 +852,9 @@ class Node extends DataClass implements Insertable<Node> {
       publicKey: publicKey == null && nullToAbsent
           ? const Value.absent()
           : Value(publicKey),
+      newPublicKey: newPublicKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(newPublicKey),
       isUnmessagable: Value(isUnmessagable),
       hasXeddsaSigned: Value(hasXeddsaSigned),
       lastHeard: lastHeard == null && nullToAbsent
@@ -875,6 +913,7 @@ class Node extends DataClass implements Insertable<Node> {
       hwModel: serializer.fromJson<int>(json['hwModel']),
       role: serializer.fromJson<int>(json['role']),
       publicKey: serializer.fromJson<Uint8List?>(json['publicKey']),
+      newPublicKey: serializer.fromJson<Uint8List?>(json['newPublicKey']),
       isUnmessagable: serializer.fromJson<bool>(json['isUnmessagable']),
       hasXeddsaSigned: serializer.fromJson<bool>(json['hasXeddsaSigned']),
       lastHeard: serializer.fromJson<DateTime?>(json['lastHeard']),
@@ -910,6 +949,7 @@ class Node extends DataClass implements Insertable<Node> {
       'hwModel': serializer.toJson<int>(hwModel),
       'role': serializer.toJson<int>(role),
       'publicKey': serializer.toJson<Uint8List?>(publicKey),
+      'newPublicKey': serializer.toJson<Uint8List?>(newPublicKey),
       'isUnmessagable': serializer.toJson<bool>(isUnmessagable),
       'hasXeddsaSigned': serializer.toJson<bool>(hasXeddsaSigned),
       'lastHeard': serializer.toJson<DateTime?>(lastHeard),
@@ -941,6 +981,7 @@ class Node extends DataClass implements Insertable<Node> {
     int? hwModel,
     int? role,
     Value<Uint8List?> publicKey = const Value.absent(),
+    Value<Uint8List?> newPublicKey = const Value.absent(),
     bool? isUnmessagable,
     bool? hasXeddsaSigned,
     Value<DateTime?> lastHeard = const Value.absent(),
@@ -969,6 +1010,7 @@ class Node extends DataClass implements Insertable<Node> {
     hwModel: hwModel ?? this.hwModel,
     role: role ?? this.role,
     publicKey: publicKey.present ? publicKey.value : this.publicKey,
+    newPublicKey: newPublicKey.present ? newPublicKey.value : this.newPublicKey,
     isUnmessagable: isUnmessagable ?? this.isUnmessagable,
     hasXeddsaSigned: hasXeddsaSigned ?? this.hasXeddsaSigned,
     lastHeard: lastHeard.present ? lastHeard.value : this.lastHeard,
@@ -1003,6 +1045,9 @@ class Node extends DataClass implements Insertable<Node> {
       hwModel: data.hwModel.present ? data.hwModel.value : this.hwModel,
       role: data.role.present ? data.role.value : this.role,
       publicKey: data.publicKey.present ? data.publicKey.value : this.publicKey,
+      newPublicKey: data.newPublicKey.present
+          ? data.newPublicKey.value
+          : this.newPublicKey,
       isUnmessagable: data.isUnmessagable.present
           ? data.isUnmessagable.value
           : this.isUnmessagable,
@@ -1050,6 +1095,7 @@ class Node extends DataClass implements Insertable<Node> {
           ..write('hwModel: $hwModel, ')
           ..write('role: $role, ')
           ..write('publicKey: $publicKey, ')
+          ..write('newPublicKey: $newPublicKey, ')
           ..write('isUnmessagable: $isUnmessagable, ')
           ..write('hasXeddsaSigned: $hasXeddsaSigned, ')
           ..write('lastHeard: $lastHeard, ')
@@ -1083,6 +1129,7 @@ class Node extends DataClass implements Insertable<Node> {
     hwModel,
     role,
     $driftBlobEquality.hash(publicKey),
+    $driftBlobEquality.hash(newPublicKey),
     isUnmessagable,
     hasXeddsaSigned,
     lastHeard,
@@ -1115,6 +1162,7 @@ class Node extends DataClass implements Insertable<Node> {
           other.hwModel == this.hwModel &&
           other.role == this.role &&
           $driftBlobEquality.equals(other.publicKey, this.publicKey) &&
+          $driftBlobEquality.equals(other.newPublicKey, this.newPublicKey) &&
           other.isUnmessagable == this.isUnmessagable &&
           other.hasXeddsaSigned == this.hasXeddsaSigned &&
           other.lastHeard == this.lastHeard &&
@@ -1145,6 +1193,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
   final Value<int> hwModel;
   final Value<int> role;
   final Value<Uint8List?> publicKey;
+  final Value<Uint8List?> newPublicKey;
   final Value<bool> isUnmessagable;
   final Value<bool> hasXeddsaSigned;
   final Value<DateTime?> lastHeard;
@@ -1173,6 +1222,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.hwModel = const Value.absent(),
     this.role = const Value.absent(),
     this.publicKey = const Value.absent(),
+    this.newPublicKey = const Value.absent(),
     this.isUnmessagable = const Value.absent(),
     this.hasXeddsaSigned = const Value.absent(),
     this.lastHeard = const Value.absent(),
@@ -1202,6 +1252,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.hwModel = const Value.absent(),
     this.role = const Value.absent(),
     this.publicKey = const Value.absent(),
+    this.newPublicKey = const Value.absent(),
     this.isUnmessagable = const Value.absent(),
     this.hasXeddsaSigned = const Value.absent(),
     this.lastHeard = const Value.absent(),
@@ -1231,6 +1282,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Expression<int>? hwModel,
     Expression<int>? role,
     Expression<Uint8List>? publicKey,
+    Expression<Uint8List>? newPublicKey,
     Expression<bool>? isUnmessagable,
     Expression<bool>? hasXeddsaSigned,
     Expression<DateTime>? lastHeard,
@@ -1260,6 +1312,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
       if (hwModel != null) 'hw_model': hwModel,
       if (role != null) 'role': role,
       if (publicKey != null) 'public_key': publicKey,
+      if (newPublicKey != null) 'new_public_key': newPublicKey,
       if (isUnmessagable != null) 'is_unmessagable': isUnmessagable,
       if (hasXeddsaSigned != null) 'has_xeddsa_signed': hasXeddsaSigned,
       if (lastHeard != null) 'last_heard': lastHeard,
@@ -1291,6 +1344,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Value<int>? hwModel,
     Value<int>? role,
     Value<Uint8List?>? publicKey,
+    Value<Uint8List?>? newPublicKey,
     Value<bool>? isUnmessagable,
     Value<bool>? hasXeddsaSigned,
     Value<DateTime?>? lastHeard,
@@ -1320,6 +1374,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
       hwModel: hwModel ?? this.hwModel,
       role: role ?? this.role,
       publicKey: publicKey ?? this.publicKey,
+      newPublicKey: newPublicKey ?? this.newPublicKey,
       isUnmessagable: isUnmessagable ?? this.isUnmessagable,
       hasXeddsaSigned: hasXeddsaSigned ?? this.hasXeddsaSigned,
       lastHeard: lastHeard ?? this.lastHeard,
@@ -1366,6 +1421,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
     }
     if (publicKey.present) {
       map['public_key'] = Variable<Uint8List>(publicKey.value);
+    }
+    if (newPublicKey.present) {
+      map['new_public_key'] = Variable<Uint8List>(newPublicKey.value);
     }
     if (isUnmessagable.present) {
       map['is_unmessagable'] = Variable<bool>(isUnmessagable.value);
@@ -1440,6 +1498,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
           ..write('hwModel: $hwModel, ')
           ..write('role: $role, ')
           ..write('publicKey: $publicKey, ')
+          ..write('newPublicKey: $newPublicKey, ')
           ..write('isUnmessagable: $isUnmessagable, ')
           ..write('hasXeddsaSigned: $hasXeddsaSigned, ')
           ..write('lastHeard: $lastHeard, ')
@@ -5889,6 +5948,7 @@ typedef $$NodesTableCreateCompanionBuilder =
       Value<int> hwModel,
       Value<int> role,
       Value<Uint8List?> publicKey,
+      Value<Uint8List?> newPublicKey,
       Value<bool> isUnmessagable,
       Value<bool> hasXeddsaSigned,
       Value<DateTime?> lastHeard,
@@ -5919,6 +5979,7 @@ typedef $$NodesTableUpdateCompanionBuilder =
       Value<int> hwModel,
       Value<int> role,
       Value<Uint8List?> publicKey,
+      Value<Uint8List?> newPublicKey,
       Value<bool> isUnmessagable,
       Value<bool> hasXeddsaSigned,
       Value<DateTime?> lastHeard,
@@ -5981,6 +6042,11 @@ class $$NodesTableFilterComposer extends Composer<_$AppDatabase, $NodesTable> {
 
   ColumnFilters<Uint8List> get publicKey => $composableBuilder(
     column: $table.publicKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<Uint8List> get newPublicKey => $composableBuilder(
+    column: $table.newPublicKey,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6129,6 +6195,11 @@ class $$NodesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<Uint8List> get newPublicKey => $composableBuilder(
+    column: $table.newPublicKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isUnmessagable => $composableBuilder(
     column: $table.isUnmessagable,
     builder: (column) => ColumnOrderings(column),
@@ -6260,6 +6331,11 @@ class $$NodesTableAnnotationComposer
   GeneratedColumn<Uint8List> get publicKey =>
       $composableBuilder(column: $table.publicKey, builder: (column) => column);
 
+  GeneratedColumn<Uint8List> get newPublicKey => $composableBuilder(
+    column: $table.newPublicKey,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get isUnmessagable => $composableBuilder(
     column: $table.isUnmessagable,
     builder: (column) => column,
@@ -6370,6 +6446,7 @@ class $$NodesTableTableManager
                 Value<int> hwModel = const Value.absent(),
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> publicKey = const Value.absent(),
+                Value<Uint8List?> newPublicKey = const Value.absent(),
                 Value<bool> isUnmessagable = const Value.absent(),
                 Value<bool> hasXeddsaSigned = const Value.absent(),
                 Value<DateTime?> lastHeard = const Value.absent(),
@@ -6398,6 +6475,7 @@ class $$NodesTableTableManager
                 hwModel: hwModel,
                 role: role,
                 publicKey: publicKey,
+                newPublicKey: newPublicKey,
                 isUnmessagable: isUnmessagable,
                 hasXeddsaSigned: hasXeddsaSigned,
                 lastHeard: lastHeard,
@@ -6428,6 +6506,7 @@ class $$NodesTableTableManager
                 Value<int> hwModel = const Value.absent(),
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> publicKey = const Value.absent(),
+                Value<Uint8List?> newPublicKey = const Value.absent(),
                 Value<bool> isUnmessagable = const Value.absent(),
                 Value<bool> hasXeddsaSigned = const Value.absent(),
                 Value<DateTime?> lastHeard = const Value.absent(),
@@ -6456,6 +6535,7 @@ class $$NodesTableTableManager
                 hwModel: hwModel,
                 role: role,
                 publicKey: publicKey,
+                newPublicKey: newPublicKey,
                 isUnmessagable: isUnmessagable,
                 hasXeddsaSigned: hasXeddsaSigned,
                 lastHeard: lastHeard,

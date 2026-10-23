@@ -6,6 +6,7 @@ import 'package:drift/drift.dart';
 import '../core/proto/channel_names.dart';
 import '../core/proto/mesh.dart';
 import 'database.dart';
+import 'node_key.dart';
 import 'settings/node_text.dart';
 
 /// Раскладывает FromRadio по таблицам. UI читает только из БД,
@@ -77,9 +78,6 @@ class PacketRouter {
             shortName: user(u.shortName),
             hwModel: user(u.hwModel.value),
             role: user(u.role.value),
-            publicKey: u.publicKey.isEmpty
-                ? const Value.absent()
-                : Value(Uint8List.fromList(u.publicKey)),
             isUnmessagable: user(u.isUnmessagable),
             lastHeard: Value(n.lastHeard == 0 ? null : _time(n.lastHeard)),
             snr: Value(n.snr == 0 ? null : n.snr),
@@ -98,6 +96,7 @@ class PacketRouter {
             onRadio: const Value(true),
           ),
         );
+    await _applyKey(n.num, u.publicKey);
   }
 
   /// NodeInfo из эфира: обновляем только данные пользователя — позиция,
@@ -116,21 +115,33 @@ class PacketRouter {
     await db
         .into(db.nodes)
         .insert(
-          user.copyWith(
-            num: Value(num),
-            publicKey: u.publicKey.isEmpty
-                ? const Value.absent()
-                : Value(Uint8List.fromList(u.publicKey)),
-          ),
-          onConflict: DoUpdate(
-            // Пустой ключ в пакете не стирает известный.
-            (_) => u.publicKey.isEmpty
-                ? user
-                : user.copyWith(
-                    publicKey: Value(Uint8List.fromList(u.publicKey)),
-                  ),
-          ),
+          user.copyWith(num: Value(num)),
+          onConflict: DoUpdate((_) => user),
         );
+    await _applyKey(num, u.publicKey);
+  }
+
+  /// Публичный ключ из NodeInfo по правилу «первый ключ побеждает»
+  /// ([keyUpdate]); ключ своей ноды принимается всегда.
+  Future<void> _applyKey(int num, List<int> key) async {
+    if (key.isEmpty) return;
+    final row = await (db.select(
+      db.nodes,
+    )..where((n) => n.num.equals(num))).getSingleOrNull();
+    final me = (await db.select(db.myNode).getSingleOrNull())?.myNodeNum;
+    final c = switch (keyUpdate(row?.publicKey, key, own: num == me)) {
+      KeyUpdate.store => NodesCompanion(
+        publicKey: Value(Uint8List.fromList(key)),
+        newPublicKey: const Value(null),
+      ),
+      KeyUpdate.mismatch => NodesCompanion(
+        newPublicKey: Value(Uint8List.fromList(key)),
+      ),
+      KeyUpdate.ignore || KeyUpdate.match => null,
+    };
+    if (c != null) {
+      await (db.update(db.nodes)..where((n) => n.num.equals(num))).write(c);
+    }
   }
 
   Future<void> _upsertChannel(Channel c) => db.upsertChannel(c);

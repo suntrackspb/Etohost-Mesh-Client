@@ -73,6 +73,7 @@ class NodeDetailPage extends ConsumerWidget {
             padding: const EdgeInsets.all(Tokens.s16),
             children: [
               _Header(n),
+              if (n.newPublicKey != null) const _KeyMismatch(),
               const SizedBox(height: Tokens.s8),
               if (isMe)
                 OwnNodeActionsCard(n)
@@ -419,6 +420,49 @@ class _BoardCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Тексты — из перевода официального iOS.
+class _KeyMismatch extends StatelessWidget {
+  const _KeyMismatch();
+
+  @override
+  Widget build(BuildContext context) {
+    final error = Theme.of(context).colorScheme.error;
+    final t = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: Tokens.s16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.key_off, color: error),
+          const SizedBox(width: Tokens.s12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Несоответствие открытого ключа',
+                  style: t.titleMedium?.copyWith(color: error),
+                ),
+                const SizedBox(height: Tokens.s4),
+                Text(
+                  'Проверьте, с кем вы общаетесь, сравнив открытые ключи при '
+                  'личной встрече или по телефону. Самый последний открытый '
+                  'ключ для этой ноды не совпадает с ранее записанным ключом. '
+                  'Вы можете удалить ноду и позволить ей снова обменяться '
+                  'ключами, если смена ключа произошла из-за сброса настроек '
+                  'или другого преднамеренного действия, но это также может '
+                  'указывать на более серьезную проблему безопасности.',
+                  style: t.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

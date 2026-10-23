@@ -310,6 +310,10 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
               },
             ),
           ),
+          if (target case DirectTarget(
+            :final num,
+          ) when nodes[num]?.newPublicKey != null)
+            _KeyMismatchBar(num),
           if (blocked != null)
             _Notice(blocked)
           else
@@ -1366,6 +1370,43 @@ class RelayChip extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Ключ собеседника не совпал с записанным (как в iOS: писать можно,
+/// но предупреждаем). Тексты — из перевода официального iOS.
+class _KeyMismatchBar extends StatelessWidget {
+  const _KeyMismatchBar(this.num);
+
+  final int num;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Tokens.s12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.key_off,
+            size: 14,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          const SizedBox(width: Tokens.s4),
+          Flexible(
+            child: Text(
+              'Возникла проблема с открытым ключом этого контакта.',
+              style: t.bodySmall,
+            ),
+          ),
+          TextButton(
+            onPressed: () => openNode(context, num),
+            child: const Text('Подробности...'),
+          ),
+        ],
       ),
     );
   }
