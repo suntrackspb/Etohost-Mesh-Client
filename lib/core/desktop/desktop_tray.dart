@@ -6,11 +6,15 @@ import 'package:window_manager/window_manager.dart';
 /// Windows и Linux: крестик прячет окно в трей (если включено), иконка
 /// в трее возвращает его, «Выход» в её меню закрывает приложение.
 class DesktopTray with WindowListener, TrayListener {
-  DesktopTray({this.onError});
+  DesktopTray({this.onError, this.onFirstClose});
 
   static bool get supported => Platform.isWindows || Platform.isLinux;
 
   final void Function(Object e)? onError;
+
+  /// Спросить при закрытии окна, что делать: true — в трей, false — выйти,
+  /// null — передумали. Сам решает, спрашивать ли (только первый раз).
+  final Future<bool?> Function()? onFirstClose;
 
   bool _ready = false;
   bool _wanted = false;
@@ -74,8 +78,13 @@ class DesktopTray with WindowListener, TrayListener {
   }
 
   @override
-  void onWindowClose() {
-    if (_shown) windowManager.hide();
+  Future<void> onWindowClose() async {
+    if (!_shown) return;
+    final ask = onFirstClose;
+    final toTray = ask == null ? true : await ask();
+    if (toTray == null) return;
+    if (!toTray) return _exit();
+    await windowManager.hide();
   }
 
   // На Linux щелчки по значку не приходят: AppIndicator сам показывает меню.

@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'app/toasts.dart';
 import 'app/desktop_tray_provider.dart';
@@ -11,7 +13,9 @@ import 'app/mqtt_providers.dart';
 import 'app/notify_providers.dart';
 import 'app/providers.dart';
 import 'app/router.dart';
+import 'core/desktop/desktop_tray.dart';
 import 'core/desktop/linux_desktop_entry.dart';
+import 'core/desktop/single_instance.dart';
 import 'core/radio/journal.dart';
 import 'data/appearance.dart';
 import 'ui/theme.dart';
@@ -35,6 +39,17 @@ Future<void> main() async {
     journal.add(JournalKind.error, '$e\n$st');
     return false;
   };
+
+  // Второй экземпляр на той же базе и ноде — «database is locked»:
+  // показываем окно уже запущенного и выходим.
+  if (DesktopTray.supported) {
+    final dir = await getApplicationSupportDirectory();
+    final instance = await SingleInstance.claim(
+      dir,
+      onActivate: () => container.read(desktopTrayProvider)?.bringToFront(),
+    );
+    if (instance == null) exit(0);
+  }
 
   await prepareNodeDb(container);
 

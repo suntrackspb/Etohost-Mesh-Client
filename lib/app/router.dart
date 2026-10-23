@@ -25,7 +25,11 @@ import '../features/settings/settings_page.dart';
 import '../ui/kit/kit.dart';
 import 'shell.dart';
 
+/// Корневой навигатор — для диалогов не из виджетов (вопрос при закрытии).
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final appRouter = GoRouter(
+  navigatorKey: rootNavigatorKey,
   initialLocation: '/connection',
   routes: [
     StatefulShellRoute.indexedStack(
