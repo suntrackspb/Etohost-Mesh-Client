@@ -1,8 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
+import '../../app/toasts.dart';
+import '../../core/geo/geo.dart';
+import '../../data/node_actions.dart';
+import '../../data/node_details.dart';
+import '../../data/node_row_info.dart';
+import '../map/map_tiles.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
 import '../../data/message_sender.dart';
@@ -19,7 +31,7 @@ final _nodeProvider = StreamProvider.family<Node?, int>((ref, id) {
   )..where((n) => n.num.equals(id))).watchSingleOrNull();
 });
 
-/// Карточка ноды: данные из БД, «Написать» и действия с нодой.
+/// Карточка ноды: шапка, действия, сведения, позиция, трассировки, удаление.
 class NodeDetailPage extends ConsumerWidget {
   const NodeDetailPage({super.key, required this.num, this.standalone = false});
 
@@ -32,7 +44,7 @@ class NodeDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final node = ref.watch(_nodeProvider(num));
     final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
-    final block = directBlock(node.value);
+    final own = me == null ? null : ref.watch(_nodeProvider(me)).value;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: standalone,
@@ -41,111 +53,256 @@ class NodeDetailPage extends ConsumerWidget {
               ? node.value!.longName
               : nodeIdString(num),
         ),
-        actions: [
-          if (node.value != null && num != me)
-            IconButton(
-              tooltip: switch (block) {
-                null => 'Написать',
-                DirectBlock.noKey => 'Нет публичного ключа — написать нельзя',
-                DirectBlock.unmessagable => 'Нода не принимает сообщения',
-              },
-              icon: const Icon(Icons.chat_outlined),
-              onPressed: block == null
-                  ? () => context.go(ChatPage.location(DirectTarget(num).id))
-                  : null,
-            ),
-          if (node.value != null && num != me)
-            ...nodeActionButtons(context, ref, node.value!)
-          else if (num == me)
-            ...ownNodeActionButtons(context, ref),
-          const LinkBadge(),
-        ],
+        actions: const [LinkBadge()],
       ),
       body: node.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => EmptyState(icon: Icons.error_outline, text: '$e'),
-        data: (n) => n == null
-            ? const EmptyState(
-                icon: Icons.help_outline,
-                text: 'Нода не найдена',
-              )
-            : ListView(
-                padding: const EdgeInsets.all(Tokens.s16),
-                children: [
-                  Center(
-                    child: NodeAvatar(
-                      nodeNum: n.num,
-                      shortName: n.shortName,
-                      size: 72,
-                    ),
-                  ),
-                  const SizedBox(height: Tokens.s16),
-                  SectionCard(
-                    title: 'Нода',
-                    children: [
-                      _row('ID', nodeIdString(n.num)),
-                      _row('Короткое имя', n.shortName),
-                      _row(
-                        'Модель',
-                        HardwareModel.valueOf(n.hwModel)?.name ??
-                            '${n.hwModel}',
-                      ),
-                      _row(
-                        'Роль',
-                        Config_DeviceConfig_Role.valueOf(n.role)?.name ??
-                            '${n.role}',
-                      ),
-                      _row('Источник', nodeSourceText(n)),
-                      _row(
-                        'Публичный ключ',
-                        n.publicKey == null ? 'нет' : 'есть',
-                      ),
-                      if (n.hasXeddsaSigned)
-                        _row('Подпись XEdDSA', 'подписывает пакеты'),
-                    ],
-                  ),
-                  SectionCard(
-                    title: 'Связь',
-                    children: [
-                      _row(
-                        'Последний раз',
-                        n.lastHeard == null ? '—' : lastHeardText(n.lastHeard!),
-                      ),
-                      _row('SNR', n.snr?.toStringAsFixed(1) ?? '—'),
-                      _row('Хопов', n.hopsAway?.toString() ?? '—'),
-                      _row('Через MQTT', n.viaMqtt ? 'да' : 'нет'),
-                    ],
-                  ),
-                  if (n.batteryLevel != null || n.latitude != null)
-                    SectionCard(
-                      title: 'Устройство',
-                      children: [
-                        if (n.batteryLevel != null)
-                          _row(
-                            'Батарея',
-                            n.batteryLevel! > 100
-                                ? 'питание от сети'
-                                : '${n.batteryLevel}%',
-                          ),
-                        if (n.voltage != null)
-                          _row(
-                            'Напряжение',
-                            '${n.voltage!.toStringAsFixed(2)} В',
-                          ),
-                        if (n.latitude != null)
-                          _row(
-                            'Позиция',
-                            '${n.latitude!.toStringAsFixed(5)}, ${n.longitude!.toStringAsFixed(5)}',
-                          ),
-                      ],
-                    ),
-                  TracerouteSection(n.num),
-                ],
-              ),
+        data: (n) {
+          if (n == null) {
+            return const EmptyState(
+              icon: Icons.help_outline,
+              text: 'Нода не найдена',
+            );
+          }
+          final isMe = n.num == me;
+          final block = directBlock(n);
+          return ListView(
+            padding: const EdgeInsets.all(Tokens.s16),
+            children: [
+              _Header(n),
+              const SizedBox(height: Tokens.s8),
+              if (isMe)
+                OwnNodeActionsCard(n)
+              else
+                NodeActionsCard(
+                  n,
+                  onWrite: block == null
+                      ? () => context.go(
+                          ChatPage.location(DirectTarget(n.num).id),
+                        )
+                      : null,
+                ),
+              _DetailsCard(n),
+              if (hasPosition(n)) _PositionCard(n, isMe ? null : own),
+              TracerouteSection(n.num),
+              if (!isMe) DeleteNodeButton(n),
+            ],
+          );
+        },
       ),
     );
   }
+}
 
-  Widget _row(String k, String v) =>
-      MeshTile(title: k, trailing: SelectableText(v));
+class _Header extends StatelessWidget {
+  const _Header(this.n);
+
+  final Node n;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final heard = [
+      if (n.lastHeard != null) lastHeardText(n.lastHeard!),
+      if (n.hopsAway != null)
+        n.hopsAway == 0 ? 'напрямую' : 'хопов: ${n.hopsAway}',
+      if (n.viaMqtt) 'MQTT',
+    ].join(' · ');
+    return Row(
+      children: [
+        NodeAvatar(nodeNum: n.num, shortName: n.shortName, size: 64),
+        const SizedBox(width: Tokens.s16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                n.longName.isEmpty ? nodeIdString(n.num) : n.longName,
+                style: t.titleLarge,
+              ),
+              SelectableText(
+                '${n.shortName}  ${nodeIdString(n.num)}',
+                style: t.bodyMedium,
+              ),
+              if (heard.isNotEmpty) Text(heard, style: t.bodySmall),
+            ],
+          ),
+        ),
+        if (n.isFavorite) const Icon(Icons.star, color: Colors.amber),
+      ],
+    );
+  }
+}
+
+/// Сведения сеткой в две колонки.
+class _DetailsCard extends StatelessWidget {
+  const _DetailsCard(this.n);
+
+  final Node n;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <(String, String)>[
+      ('Роль', roleTitle(n.role)),
+      ('Модель', HardwareModel.valueOf(n.hwModel)?.name ?? '${n.hwModel}'),
+      ('Номер', '${n.num}'),
+      if (n.lastHeard != null) ('Слышали', lastHeardText(n.lastHeard!)),
+      if (n.hopsAway != null) ('Хопов', '${n.hopsAway}'),
+      if (n.snr != null)
+        (
+          'SNR',
+          '${n.snr!.toStringAsFixed(1)} дБ, ${qualityText(snrQuality(n.snr!, n.modemPreset))}',
+        ),
+      if (n.rssi != null) ('RSSI', '${n.rssi} дБм'),
+      if (n.uptimeSeconds != null) ('Аптайм', uptimeText(n.uptimeSeconds!)),
+      if (n.batteryLevel != null)
+        (
+          'Батарея',
+          [
+            n.batteryLevel! > 100 ? 'от сети' : '${n.batteryLevel}%',
+            if (n.voltage != null) '${n.voltage!.toStringAsFixed(2)} В',
+          ].join(', '),
+        ),
+      if (n.channelUtilization != null)
+        ('ChUtil', '${n.channelUtilization!.toStringAsFixed(1)}%'),
+      if (n.airUtilTx != null)
+        ('AirUtil', '${n.airUtilTx!.toStringAsFixed(1)}%'),
+      if (n.modemPreset != null) ('Пресет', n.modemPreset!),
+      ('Источник', nodeSourceText(n)),
+      ('Шифрование', n.publicKey?.isNotEmpty == true ? 'PKI' : 'нет ключа'),
+      if (n.hasXeddsaSigned) ('Подпись', 'XEdDSA'),
+    ];
+    final t = Theme.of(context).textTheme;
+    final key = n.publicKey;
+    return SectionCard(
+      title: 'Сведения',
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(Tokens.s8),
+          child: LayoutBuilder(
+            builder: (_, c) => Wrap(
+              runSpacing: Tokens.s8,
+              children: [
+                for (final (k, v) in items)
+                  SizedBox(
+                    width: (c.maxWidth / 2).floorToDouble(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(k, style: t.labelSmall),
+                        SelectableText(
+                          v,
+                          style: t.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        if (key != null && key.isNotEmpty)
+          MeshTile(
+            title: 'Публичный ключ',
+            subtitle: base64Encode(key),
+            trailing: IconButton(
+              tooltip: 'Скопировать',
+              icon: const Icon(Icons.copy),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: base64Encode(key)));
+                toasts.show('Ключ скопирован');
+              },
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Мини-карта, координаты, расстояние и азимут от своей ноды.
+class _PositionCard extends StatelessWidget {
+  const _PositionCard(this.n, this.own);
+
+  final Node n;
+
+  /// Своя нода — для расстояния; null — не считаем.
+  final Node? own;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = LatLng(n.latitude!, n.longitude!);
+    final coords =
+        '${n.latitude!.toStringAsFixed(5)}, ${n.longitude!.toStringAsFixed(5)}';
+    final o = own;
+    final from = o != null && hasPosition(o)
+        ? (lat: o.latitude!, lon: o.longitude!)
+        : null;
+    final to = (lat: n.latitude!, lon: n.longitude!);
+    return SectionCard(
+      title: 'Позиция',
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(Tokens.s8),
+          child: SizedBox(
+            height: 160,
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter: p,
+                initialZoom: 13,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.none,
+                ),
+              ),
+              children: [
+                const OsmTiles(),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: p,
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.topCenter,
+                      child: const Icon(
+                        Icons.location_pin,
+                        size: 32,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                const OsmAttribution(),
+              ],
+            ),
+          ),
+        ),
+        MeshTile(
+          title: coords,
+          subtitle: [
+            if (n.altitude != null) 'высота ${n.altitude} м',
+            'нажмите — открыть в Картах, удержите — скопировать',
+          ].join('\n'),
+          onTap: () => launchUrl(
+            Uri.parse('https://maps.apple.com/?q=${p.latitude},${p.longitude}'),
+            mode: LaunchMode.externalApplication,
+          ),
+          onLongPress: () {
+            Clipboard.setData(ClipboardData(text: coords));
+            toasts.show('Координаты скопированы');
+          },
+        ),
+        if (from != null)
+          MeshTile(
+            title: 'От своей ноды',
+            trailing: Text(
+              '${distanceText(distanceKm(from, to))}, '
+              '${bearingText(bearingDeg(from, to))}',
+            ),
+          ),
+      ],
+    );
+  }
 }

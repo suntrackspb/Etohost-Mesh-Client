@@ -85,6 +85,23 @@ void main() {
     expect(User.fromBuffer(p.decoded.payload).longName, 'n170');
   });
 
+  test(
+    'рассылка позиции — всем, без hop_limit; без координат — ошибка',
+    () async {
+      expect(actions().broadcastPosition(), throwsStateError);
+      await (db.update(db.nodes)..where((n) => n.num.equals(0xAA))).write(
+        const NodesCompanion(latitude: Value(59.9), longitude: Value(30.3)),
+      );
+      await actions().broadcastPosition();
+      final p = sent.single;
+      expect(p.to, 0xffffffff);
+      expect(p.wantAck, isFalse);
+      expect(p.hopLimit, 0);
+      expect(p.decoded.portnum, PortNum.POSITION_APP);
+      expect(Position.fromBuffer(p.decoded.payload).latitudeI, 599000000);
+    },
+  );
+
   test('разбор трассировки: SNR ×4, неизвестный — null', () {
     final rd = RouteDiscovery(
       route: [0x10],

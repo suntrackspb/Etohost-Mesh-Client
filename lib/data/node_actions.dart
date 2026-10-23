@@ -115,6 +115,34 @@ class NodeActions {
     );
   }
 
+  /// Разослать свою позицию всем (координаты своей ноды из базы).
+  /// Без подтверждения, hop_limit не задаём.
+  Future<DeliveryResult> broadcastPosition() async {
+    final me = _me();
+    final own = await (db.select(
+      db.nodes,
+    )..where((n) => n.num.equals(me))).getSingleOrNull();
+    if (own == null || !hasPosition(own)) {
+      throw StateError('у своей ноды нет координат');
+    }
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return _send(
+      MeshPacket(
+        id: _nextId(),
+        to: 0xffffffff,
+        decoded: Data(
+          portnum: PortNum.POSITION_APP,
+          payload: Position(
+            latitudeI: (own.latitude! * 1e7).round(),
+            longitudeI: (own.longitude! * 1e7).round(),
+            altitude: own.altitude,
+            time: now,
+          ).writeToBuffer(),
+        ),
+      ),
+    );
+  }
+
   /// Отправить свою NodeInfo и попросить ответную (ключ, имя).
   Future<DeliveryResult> exchangeNodeInfo(int num) async {
     final user = await _ownUser();
@@ -149,6 +177,12 @@ class NodeActions {
     );
   }
 }
+
+/// Есть ли у ноды координаты (0,0 — «нет позиции»).
+bool hasPosition(Node n) =>
+    n.latitude != null &&
+    n.longitude != null &&
+    !(n.latitude == 0 && n.longitude == 0);
 
 /// User своей ноды из строки БД.
 User ownUser(Node n) => User(

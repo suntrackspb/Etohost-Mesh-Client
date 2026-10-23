@@ -132,7 +132,7 @@ class NodeFilterSheet extends ConsumerWidget {
                 children: [
                   for (final (s, t) in const [
                     (NodeSource.all, 'все'),
-                    (NodeSource.radio, 'эфир'),
+                    (NodeSource.radio, 'радио'),
                     (NodeSource.mirror, 'зеркало'),
                   ])
                     ChoiceChip(

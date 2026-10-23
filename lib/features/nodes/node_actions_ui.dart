@@ -32,112 +32,216 @@ Future<void> _run(
   toasts.show(text);
 }
 
-/// Кнопки действий в AppBar карточки. Админ-действия — только для нод из эфира.
-List<Widget> nodeActionButtons(BuildContext context, WidgetRef ref, Node n) {
-  final canSend = ref.watch(canSendProvider);
-  final a = ref.read(nodeActionsProvider);
-  if (!canSend || !n.onRadio) return const [];
-  return [
-    IconButton(
-      tooltip: n.isFavorite ? 'Убрать из избранного' : 'В избранное',
-      icon: Icon(n.isFavorite ? Icons.star : Icons.star_border),
-      onPressed: () => _run(
-        context,
-        () => a.setFavorite(n.num, !n.isFavorite),
-        n.isFavorite ? 'Убрано из избранного' : 'Добавлено в избранное',
+/// Кнопка действия карточки: иконка с подписью.
+class _Action extends StatelessWidget {
+  const _Action(this.icon, this.label, this.onTap);
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 96,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(Tokens.s8),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: Tokens.s8),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: onTap == null
+                  ? Theme.of(context).disabledColor
+                  : Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: Tokens.s4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ],
+        ),
       ),
     ),
-    PopupMenuButton<void Function()>(
-      onSelected: (f) => f(),
-      itemBuilder: (_) => [
-        PopupMenuItem(
-          value: () => _run(
-            context,
-            () => a.traceroute(n.num),
-            'Трассировка отправлена — ждём ответ',
-          ),
-          child: const Text('Трассировка маршрута'),
-        ),
-        PopupMenuItem(
-          value: () => _run(
-            context,
-            () => a.exchangeNodeInfo(n.num),
-            'NodeInfo отправлена',
-          ),
-          child: const Text('Обменяться NodeInfo'),
-        ),
-        PopupMenuItem(
-          value: () => _run(
-            context,
-            () => a.requestLocalStats(n.num),
-            'Запрос статистики отправлен',
-          ),
-          child: const Text('Запросить статистику'),
-        ),
-        PopupMenuItem(
-          value: () => _run(
-            context,
-            () => a.setIgnored(n.num, !n.isIgnored),
-            n.isIgnored ? 'Нода больше не игнорируется' : 'Нода игнорируется',
-          ),
-          child: Text(n.isIgnored ? 'Не игнорировать' : 'Игнорировать'),
-        ),
-        PopupMenuItem(
-          value: () async {
-            final yes = await showDialog<bool>(
-              context: context,
-              builder: (c) => AlertDialog(
-                title: const Text('Удалить ноду?'),
-                content: const Text(
-                  'Нода будет удалена из базы своей ноды. '
-                  'Она снова появится, когда её услышат.',
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(c, false),
-                    child: const Text('Отмена'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(c, true),
-                    child: const Text('Удалить'),
-                  ),
-                ],
+  );
+}
+
+/// Действия с чужой нодой. Админ-действия — только для нод из эфира.
+class NodeActionsCard extends ConsumerWidget {
+  const NodeActionsCard(this.n, {super.key, this.onWrite});
+
+  final Node n;
+
+  /// null — написать нельзя (нет ключа и т. п.).
+  final VoidCallback? onWrite;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final canSend = ref.watch(canSendProvider) && n.onRadio;
+    final a = ref.read(nodeActionsProvider);
+    VoidCallback? run(Future<Object?> Function() f, String ok) =>
+        canSend ? () => _run(context, f, ok) : null;
+    return SectionCard(
+      title: 'Действия',
+      children: [
+        Wrap(
+          alignment: WrapAlignment.spaceEvenly,
+          children: [
+            _Action(Icons.chat_outlined, 'Написать', onWrite),
+            _Action(
+              Icons.route,
+              'Трассировка маршрута',
+              run(
+                () => a.traceroute(n.num),
+                'Трассировка отправлена — ждём ответ',
               ),
-            );
-            if (yes == true && context.mounted) {
-              await _run(context, () => a.remove(n.num), 'Нода удалена');
-            }
-          },
-          child: const Text('Удалить'),
+            ),
+            _Action(
+              Icons.badge_outlined,
+              'Обменяться NodeInfo',
+              run(() => a.exchangeNodeInfo(n.num), 'NodeInfo отправлена'),
+            ),
+            _Action(
+              Icons.query_stats,
+              'Запросить статистику',
+              run(
+                () => a.requestLocalStats(n.num),
+                'Запрос статистики отправлен',
+              ),
+            ),
+          ],
+        ),
+        SwitchListTile(
+          secondary: const Icon(Icons.star_border),
+          title: const Text('Избранное'),
+          value: n.isFavorite,
+          onChanged: canSend
+              ? (v) => _run(
+                  context,
+                  () => a.setFavorite(n.num, v),
+                  v ? 'Добавлено в избранное' : 'Убрано из избранного',
+                )
+              : null,
+        ),
+        SwitchListTile(
+          secondary: const Icon(Icons.block),
+          title: const Text('Игнорировать'),
+          value: n.isIgnored,
+          onChanged: canSend
+              ? (v) => _run(
+                  context,
+                  () => a.setIgnored(n.num, v),
+                  v ? 'Нода игнорируется' : 'Нода больше не игнорируется',
+                )
+              : null,
         ),
       ],
-    ),
-  ];
+    );
+  }
 }
 
-/// Действия в карточке своей ноды.
-List<Widget> ownNodeActionButtons(BuildContext context, WidgetRef ref) {
-  if (!ref.watch(canSendProvider)) return const [];
-  final a = ref.read(nodeActionsProvider);
-  return [
-    PopupMenuButton<void Function()>(
-      onSelected: (f) => f(),
-      itemBuilder: (_) => [
-        PopupMenuItem(
-          value: () =>
-              _run(context, a.broadcastNodeInfo, 'NodeInfo отправлена в сеть'),
-          child: const Text('Отправить Nodeinfo'),
+/// Действия своей ноды: разослать NodeInfo и позицию (если есть координаты).
+class OwnNodeActionsCard extends ConsumerWidget {
+  const OwnNodeActionsCard(this.n, {super.key});
+
+  final Node n;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(canSendProvider)) return const SizedBox.shrink();
+    final a = ref.read(nodeActionsProvider);
+    return SectionCard(
+      title: 'Действия',
+      children: [
+        Wrap(
+          alignment: WrapAlignment.spaceEvenly,
+          children: [
+            _Action(
+              Icons.badge_outlined,
+              'Отправить Nodeinfo',
+              () => _run(
+                context,
+                a.broadcastNodeInfo,
+                'NodeInfo отправлена в сеть',
+              ),
+            ),
+            if (hasPosition(n))
+              _Action(
+                Icons.my_location,
+                'Отправить позицию',
+                () => _run(
+                  context,
+                  a.broadcastPosition,
+                  'Позиция отправлена в сеть',
+                ),
+              ),
+          ],
         ),
       ],
-    ),
-  ];
+    );
+  }
 }
 
-/// Откуда данные о ноде: эфир приоритетнее зеркала.
+/// Удаление ноды из базы своей ноды — внизу карточки, с подтверждением.
+class DeleteNodeButton extends ConsumerWidget {
+  const DeleteNodeButton(this.n, {super.key});
+
+  final Node n;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(canSendProvider) || !n.onRadio) {
+      return const SizedBox.shrink();
+    }
+    final error = Theme.of(context).colorScheme.error;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Tokens.s16),
+      child: OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: error,
+          side: BorderSide(color: error),
+        ),
+        icon: const Icon(Icons.delete_outline),
+        label: const Text('Удалить'),
+        onPressed: () async {
+          final yes = await showDialog<bool>(
+            context: context,
+            builder: (c) => AlertDialog(
+              title: const Text('Удалить ноду?'),
+              content: const Text(
+                'Нода будет удалена из базы своей ноды. '
+                'Она снова появится, когда её услышат.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(c, false),
+                  child: const Text('Отмена'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(c, true),
+                  child: const Text('Удалить'),
+                ),
+              ],
+            ),
+          );
+          if (yes == true && context.mounted) {
+            final a = ref.read(nodeActionsProvider);
+            await _run(context, () => a.remove(n.num), 'Нода удалена');
+          }
+        },
+      ),
+    );
+  }
+}
+
+/// Откуда данные о ноде.
 String nodeSourceText(Node n) => switch ((n.onRadio, n.onMirror)) {
-  (true, true) => 'эфир (зеркало дополняет)',
-  (true, false) => 'эфир',
-  (false, true) => 'только зеркало',
+  (true, true) => 'Радио + Зеркало',
+  (true, false) => 'Радио',
+  (false, true) => 'Зеркало',
   _ => '—',
 };
 
