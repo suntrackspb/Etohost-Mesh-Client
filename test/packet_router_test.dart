@@ -253,6 +253,34 @@ void main() {
     expect(n.newPublicKey, equals(null));
   });
 
+  test('прошивка своей ноды и первое обнаружение', () async {
+    await router.handle(FromRadio(myInfo: MyNodeInfo(myNodeNum: 7)));
+    await router.handle(
+      FromRadio(
+        nodeInfo: NodeInfo(
+          num: 7,
+          lastHeard: 1700000000,
+          user: User(longName: 'me'),
+        ),
+      ),
+    );
+    await router.handle(
+      FromRadio(metadata: DeviceMetadata(firmwareVersion: '2.7.15.567b8ea')),
+    );
+    await router.handle(
+      FromRadio(
+        nodeInfo: NodeInfo(
+          num: 7,
+          lastHeard: 1800000000,
+          user: User(longName: 'me'),
+        ),
+      ),
+    );
+    final n = (await db.watchNodes().first).single;
+    expect(n.firmwareVersion, '2.7.15.567b8ea');
+    expect(n.firstHeard!.millisecondsSinceEpoch, 1700000000 * 1000);
+  });
+
   test('входящее личное: без ключа канала, с флагом PKI', () async {
     await router.handle(
       FromRadio(

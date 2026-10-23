@@ -100,6 +100,7 @@ class MirrorIngest {
   }
 
   Future<void> nodes(List<MirrorNode> batch) async {
+    final myNum = (await db.select(db.myNode).getSingleOrNull())?.myNodeNum;
     for (final n in batch) {
       final num = nodeNumFromId(n.nodeId);
       if (num == null) continue;
@@ -134,6 +135,11 @@ class MirrorIngest {
               batteryLevel: fill(n.batteryLevel, old?.batteryLevel),
               snr: fill(n.lastSnr, old?.snr),
               modemPreset: fill(n.modemPreset, old?.modemPreset),
+              // По эфиру версию чужих нод не узнать — берём из зеркала всегда,
+              // кроме своей ноды (у неё точная, из DeviceMetadata).
+              firmwareVersion: n.firmwareVersion != null && num != myNum
+                  ? Value(n.firmwareVersion)
+                  : const Value.absent(),
               publicKey: old?.publicKey == null && n.publicKeyBytes != null
                   ? Value(n.publicKeyBytes)
                   : const Value.absent(),
@@ -146,6 +152,7 @@ class MirrorIngest {
             ),
           );
     }
+    await db.fillFirstHeard();
   }
 
   /// Имена отправителя из сообщения — чтобы в ленте не было голых !id.

@@ -810,6 +810,20 @@ final nodeLayoutProvider = StreamProvider<NodeLayout>(
   (ref) => _setting(ref, AppSettingKeys.nodeLayout).map(NodeLayout.decode),
 );
 
+/// Догрузить из зеркала карточку одной ноды (версия прошивки есть только
+/// там, не в общем списке). Ошибки сети молча игнорируем — это дополнение.
+final mirrorNodeDetailProvider = FutureProvider.autoDispose.family<void, int>((
+  ref,
+  node,
+) async {
+  final api = ref.watch(mirrorApiProvider);
+  if (api == null) return;
+  try {
+    final n = await api.node(nodeIdString(node));
+    if (n != null) await MirrorIngest(ref.read(databaseProvider)).nodes([n]);
+  } catch (_) {}
+});
+
 /// Личная заметка о ноде; пусто — нет.
 final nodeNoteProvider = StreamProvider.family<String, int>(
   (ref, node) =>

@@ -102,6 +102,7 @@ class MirrorNode {
     this.lastSnr,
     this.modemPreset,
     this.publicKey,
+    this.firmwareVersion,
   });
 
   static MirrorNode? tryParse(Object? raw) {
@@ -122,6 +123,9 @@ class MirrorNode {
           ? raw['modem_preset'] as String
           : null,
       publicKey: raw['public_key'] as String?,
+      firmwareVersion: raw['firmware_version'] is String
+          ? raw['firmware_version'] as String
+          : null,
     );
   }
 
@@ -135,6 +139,9 @@ class MirrorNode {
   final int? batteryLevel;
   final double? lastSnr;
   final String? modemPreset;
+
+  /// Из MapReport; в списке /api/nodes сервер пока не отдаёт, только в карточке.
+  final String? firmwareVersion;
 
   /// Пока сервер не отдаёт — null; hex (64 символа) или base64 (32 байта).
   final String? publicKey;

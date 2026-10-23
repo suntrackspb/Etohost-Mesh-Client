@@ -138,6 +138,13 @@ class Nodes extends Table {
   /// предупреждение «Несоответствие открытого ключа»; снимается удалением ноды.
   BlobColumn get newPublicKey => blob().nullable()();
 
+  /// Когда нода впервые появилась в базе (по её «последний раз»).
+  DateTimeColumn get firstHeard => dateTime().nullable()();
+
+  /// Версия прошивки: своей ноды — из DeviceMetadata, чужих — из зеркала
+  /// (MapReport); по эфиру чужие её не сообщают.
+  TextColumn get firmwareVersion => text().nullable()();
+
   /// Нода не принимает личные сообщения (`User.is_unmessagable`).
   BoolColumn get isUnmessagable =>
       boolean().withDefault(const Constant(false))();
@@ -373,7 +380,7 @@ class AppDatabase extends _$AppDatabase {
   final AppDatabase? settings;
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -414,6 +421,10 @@ class AppDatabase extends _$AppDatabase {
       await m.addColumn(nodes, nodes.modemPreset);
     },
     9: (m) => m.addColumn(nodes, nodes.newPublicKey),
+    10: (m) async {
+      await m.addColumn(nodes, nodes.firstHeard);
+      await m.addColumn(nodes, nodes.firmwareVersion);
+    },
   };
 
   /// Миграция целиком или никак: drift сам транзакцию не открывает, а
@@ -640,6 +651,13 @@ class AppDatabase extends _$AppDatabase {
       (delete(
         recentConnections,
       )..where((r) => r.kind.equals(kind) & r.address.equals(address))).go();
+
+  /// «Первое обнаружение» — тем нодам, у кого его ещё нет: их «последний раз».
+  Future<void> fillFirstHeard() => customUpdate(
+    'UPDATE nodes SET first_heard = last_heard '
+    'WHERE first_heard IS NULL AND last_heard IS NOT NULL',
+    updates: {nodes},
+  );
 
   Future<String?> getSetting(String key) async => settings != null
       ? settings!.getSetting(key)

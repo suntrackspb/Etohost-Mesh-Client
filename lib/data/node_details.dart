@@ -25,3 +25,6 @@ String bearingText(double deg) {
 
 /// Заметка перед сохранением: без пробелов по краям и пустых строк в конце.
 String normalizeNote(String s) => s.trim();
+
+/// «2.7.15.567b8ea» → «2.7.15»: для строки списка хватает номера версии.
+String shortFirmware(String v) => v.split('.').take(3).join('.');

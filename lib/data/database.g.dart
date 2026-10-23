@@ -96,6 +96,28 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         type: DriftSqlType.blob,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _firstHeardMeta = const VerificationMeta(
+    'firstHeard',
+  );
+  @override
+  late final GeneratedColumn<DateTime> firstHeard = GeneratedColumn<DateTime>(
+    'first_heard',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _firmwareVersionMeta = const VerificationMeta(
+    'firmwareVersion',
+  );
+  @override
+  late final GeneratedColumn<String> firmwareVersion = GeneratedColumn<String>(
+    'firmware_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _isUnmessagableMeta = const VerificationMeta(
     'isUnmessagable',
   );
@@ -350,6 +372,8 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     role,
     publicKey,
     newPublicKey,
+    firstHeard,
+    firmwareVersion,
     isUnmessagable,
     hasXeddsaSigned,
     lastHeard,
@@ -431,6 +455,21 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         newPublicKey.isAcceptableOrUnknown(
           data['new_public_key']!,
           _newPublicKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('first_heard')) {
+      context.handle(
+        _firstHeardMeta,
+        firstHeard.isAcceptableOrUnknown(data['first_heard']!, _firstHeardMeta),
+      );
+    }
+    if (data.containsKey('firmware_version')) {
+      context.handle(
+        _firmwareVersionMeta,
+        firmwareVersion.isAcceptableOrUnknown(
+          data['firmware_version']!,
+          _firmwareVersionMeta,
         ),
       );
     }
@@ -613,6 +652,14 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         DriftSqlType.blob,
         data['${effectivePrefix}new_public_key'],
       ),
+      firstHeard: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}first_heard'],
+      ),
+      firmwareVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}firmware_version'],
+      ),
       isUnmessagable: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_unmessagable'],
@@ -716,6 +763,13 @@ class Node extends DataClass implements Insertable<Node> {
   /// предупреждение «Несоответствие открытого ключа»; снимается удалением ноды.
   final Uint8List? newPublicKey;
 
+  /// Когда нода впервые появилась в базе (по её «последний раз»).
+  final DateTime? firstHeard;
+
+  /// Версия прошивки: своей ноды — из DeviceMetadata, чужих — из зеркала
+  /// (MapReport); по эфиру чужие её не сообщают.
+  final String? firmwareVersion;
+
   /// Нода не принимает личные сообщения (`User.is_unmessagable`).
   final bool isUnmessagable;
 
@@ -756,6 +810,8 @@ class Node extends DataClass implements Insertable<Node> {
     required this.role,
     this.publicKey,
     this.newPublicKey,
+    this.firstHeard,
+    this.firmwareVersion,
     required this.isUnmessagable,
     required this.hasXeddsaSigned,
     this.lastHeard,
@@ -791,6 +847,12 @@ class Node extends DataClass implements Insertable<Node> {
     }
     if (!nullToAbsent || newPublicKey != null) {
       map['new_public_key'] = Variable<Uint8List>(newPublicKey);
+    }
+    if (!nullToAbsent || firstHeard != null) {
+      map['first_heard'] = Variable<DateTime>(firstHeard);
+    }
+    if (!nullToAbsent || firmwareVersion != null) {
+      map['firmware_version'] = Variable<String>(firmwareVersion);
     }
     map['is_unmessagable'] = Variable<bool>(isUnmessagable);
     map['has_xeddsa_signed'] = Variable<bool>(hasXeddsaSigned);
@@ -855,6 +917,12 @@ class Node extends DataClass implements Insertable<Node> {
       newPublicKey: newPublicKey == null && nullToAbsent
           ? const Value.absent()
           : Value(newPublicKey),
+      firstHeard: firstHeard == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firstHeard),
+      firmwareVersion: firmwareVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firmwareVersion),
       isUnmessagable: Value(isUnmessagable),
       hasXeddsaSigned: Value(hasXeddsaSigned),
       lastHeard: lastHeard == null && nullToAbsent
@@ -914,6 +982,8 @@ class Node extends DataClass implements Insertable<Node> {
       role: serializer.fromJson<int>(json['role']),
       publicKey: serializer.fromJson<Uint8List?>(json['publicKey']),
       newPublicKey: serializer.fromJson<Uint8List?>(json['newPublicKey']),
+      firstHeard: serializer.fromJson<DateTime?>(json['firstHeard']),
+      firmwareVersion: serializer.fromJson<String?>(json['firmwareVersion']),
       isUnmessagable: serializer.fromJson<bool>(json['isUnmessagable']),
       hasXeddsaSigned: serializer.fromJson<bool>(json['hasXeddsaSigned']),
       lastHeard: serializer.fromJson<DateTime?>(json['lastHeard']),
@@ -950,6 +1020,8 @@ class Node extends DataClass implements Insertable<Node> {
       'role': serializer.toJson<int>(role),
       'publicKey': serializer.toJson<Uint8List?>(publicKey),
       'newPublicKey': serializer.toJson<Uint8List?>(newPublicKey),
+      'firstHeard': serializer.toJson<DateTime?>(firstHeard),
+      'firmwareVersion': serializer.toJson<String?>(firmwareVersion),
       'isUnmessagable': serializer.toJson<bool>(isUnmessagable),
       'hasXeddsaSigned': serializer.toJson<bool>(hasXeddsaSigned),
       'lastHeard': serializer.toJson<DateTime?>(lastHeard),
@@ -982,6 +1054,8 @@ class Node extends DataClass implements Insertable<Node> {
     int? role,
     Value<Uint8List?> publicKey = const Value.absent(),
     Value<Uint8List?> newPublicKey = const Value.absent(),
+    Value<DateTime?> firstHeard = const Value.absent(),
+    Value<String?> firmwareVersion = const Value.absent(),
     bool? isUnmessagable,
     bool? hasXeddsaSigned,
     Value<DateTime?> lastHeard = const Value.absent(),
@@ -1011,6 +1085,10 @@ class Node extends DataClass implements Insertable<Node> {
     role: role ?? this.role,
     publicKey: publicKey.present ? publicKey.value : this.publicKey,
     newPublicKey: newPublicKey.present ? newPublicKey.value : this.newPublicKey,
+    firstHeard: firstHeard.present ? firstHeard.value : this.firstHeard,
+    firmwareVersion: firmwareVersion.present
+        ? firmwareVersion.value
+        : this.firmwareVersion,
     isUnmessagable: isUnmessagable ?? this.isUnmessagable,
     hasXeddsaSigned: hasXeddsaSigned ?? this.hasXeddsaSigned,
     lastHeard: lastHeard.present ? lastHeard.value : this.lastHeard,
@@ -1048,6 +1126,12 @@ class Node extends DataClass implements Insertable<Node> {
       newPublicKey: data.newPublicKey.present
           ? data.newPublicKey.value
           : this.newPublicKey,
+      firstHeard: data.firstHeard.present
+          ? data.firstHeard.value
+          : this.firstHeard,
+      firmwareVersion: data.firmwareVersion.present
+          ? data.firmwareVersion.value
+          : this.firmwareVersion,
       isUnmessagable: data.isUnmessagable.present
           ? data.isUnmessagable.value
           : this.isUnmessagable,
@@ -1096,6 +1180,8 @@ class Node extends DataClass implements Insertable<Node> {
           ..write('role: $role, ')
           ..write('publicKey: $publicKey, ')
           ..write('newPublicKey: $newPublicKey, ')
+          ..write('firstHeard: $firstHeard, ')
+          ..write('firmwareVersion: $firmwareVersion, ')
           ..write('isUnmessagable: $isUnmessagable, ')
           ..write('hasXeddsaSigned: $hasXeddsaSigned, ')
           ..write('lastHeard: $lastHeard, ')
@@ -1130,6 +1216,8 @@ class Node extends DataClass implements Insertable<Node> {
     role,
     $driftBlobEquality.hash(publicKey),
     $driftBlobEquality.hash(newPublicKey),
+    firstHeard,
+    firmwareVersion,
     isUnmessagable,
     hasXeddsaSigned,
     lastHeard,
@@ -1163,6 +1251,8 @@ class Node extends DataClass implements Insertable<Node> {
           other.role == this.role &&
           $driftBlobEquality.equals(other.publicKey, this.publicKey) &&
           $driftBlobEquality.equals(other.newPublicKey, this.newPublicKey) &&
+          other.firstHeard == this.firstHeard &&
+          other.firmwareVersion == this.firmwareVersion &&
           other.isUnmessagable == this.isUnmessagable &&
           other.hasXeddsaSigned == this.hasXeddsaSigned &&
           other.lastHeard == this.lastHeard &&
@@ -1194,6 +1284,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
   final Value<int> role;
   final Value<Uint8List?> publicKey;
   final Value<Uint8List?> newPublicKey;
+  final Value<DateTime?> firstHeard;
+  final Value<String?> firmwareVersion;
   final Value<bool> isUnmessagable;
   final Value<bool> hasXeddsaSigned;
   final Value<DateTime?> lastHeard;
@@ -1223,6 +1315,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.role = const Value.absent(),
     this.publicKey = const Value.absent(),
     this.newPublicKey = const Value.absent(),
+    this.firstHeard = const Value.absent(),
+    this.firmwareVersion = const Value.absent(),
     this.isUnmessagable = const Value.absent(),
     this.hasXeddsaSigned = const Value.absent(),
     this.lastHeard = const Value.absent(),
@@ -1253,6 +1347,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.role = const Value.absent(),
     this.publicKey = const Value.absent(),
     this.newPublicKey = const Value.absent(),
+    this.firstHeard = const Value.absent(),
+    this.firmwareVersion = const Value.absent(),
     this.isUnmessagable = const Value.absent(),
     this.hasXeddsaSigned = const Value.absent(),
     this.lastHeard = const Value.absent(),
@@ -1283,6 +1379,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Expression<int>? role,
     Expression<Uint8List>? publicKey,
     Expression<Uint8List>? newPublicKey,
+    Expression<DateTime>? firstHeard,
+    Expression<String>? firmwareVersion,
     Expression<bool>? isUnmessagable,
     Expression<bool>? hasXeddsaSigned,
     Expression<DateTime>? lastHeard,
@@ -1313,6 +1411,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
       if (role != null) 'role': role,
       if (publicKey != null) 'public_key': publicKey,
       if (newPublicKey != null) 'new_public_key': newPublicKey,
+      if (firstHeard != null) 'first_heard': firstHeard,
+      if (firmwareVersion != null) 'firmware_version': firmwareVersion,
       if (isUnmessagable != null) 'is_unmessagable': isUnmessagable,
       if (hasXeddsaSigned != null) 'has_xeddsa_signed': hasXeddsaSigned,
       if (lastHeard != null) 'last_heard': lastHeard,
@@ -1345,6 +1445,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Value<int>? role,
     Value<Uint8List?>? publicKey,
     Value<Uint8List?>? newPublicKey,
+    Value<DateTime?>? firstHeard,
+    Value<String?>? firmwareVersion,
     Value<bool>? isUnmessagable,
     Value<bool>? hasXeddsaSigned,
     Value<DateTime?>? lastHeard,
@@ -1375,6 +1477,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
       role: role ?? this.role,
       publicKey: publicKey ?? this.publicKey,
       newPublicKey: newPublicKey ?? this.newPublicKey,
+      firstHeard: firstHeard ?? this.firstHeard,
+      firmwareVersion: firmwareVersion ?? this.firmwareVersion,
       isUnmessagable: isUnmessagable ?? this.isUnmessagable,
       hasXeddsaSigned: hasXeddsaSigned ?? this.hasXeddsaSigned,
       lastHeard: lastHeard ?? this.lastHeard,
@@ -1424,6 +1528,12 @@ class NodesCompanion extends UpdateCompanion<Node> {
     }
     if (newPublicKey.present) {
       map['new_public_key'] = Variable<Uint8List>(newPublicKey.value);
+    }
+    if (firstHeard.present) {
+      map['first_heard'] = Variable<DateTime>(firstHeard.value);
+    }
+    if (firmwareVersion.present) {
+      map['firmware_version'] = Variable<String>(firmwareVersion.value);
     }
     if (isUnmessagable.present) {
       map['is_unmessagable'] = Variable<bool>(isUnmessagable.value);
@@ -1499,6 +1609,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
           ..write('role: $role, ')
           ..write('publicKey: $publicKey, ')
           ..write('newPublicKey: $newPublicKey, ')
+          ..write('firstHeard: $firstHeard, ')
+          ..write('firmwareVersion: $firmwareVersion, ')
           ..write('isUnmessagable: $isUnmessagable, ')
           ..write('hasXeddsaSigned: $hasXeddsaSigned, ')
           ..write('lastHeard: $lastHeard, ')
@@ -5949,6 +6061,8 @@ typedef $$NodesTableCreateCompanionBuilder =
       Value<int> role,
       Value<Uint8List?> publicKey,
       Value<Uint8List?> newPublicKey,
+      Value<DateTime?> firstHeard,
+      Value<String?> firmwareVersion,
       Value<bool> isUnmessagable,
       Value<bool> hasXeddsaSigned,
       Value<DateTime?> lastHeard,
@@ -5980,6 +6094,8 @@ typedef $$NodesTableUpdateCompanionBuilder =
       Value<int> role,
       Value<Uint8List?> publicKey,
       Value<Uint8List?> newPublicKey,
+      Value<DateTime?> firstHeard,
+      Value<String?> firmwareVersion,
       Value<bool> isUnmessagable,
       Value<bool> hasXeddsaSigned,
       Value<DateTime?> lastHeard,
@@ -6047,6 +6163,16 @@ class $$NodesTableFilterComposer extends Composer<_$AppDatabase, $NodesTable> {
 
   ColumnFilters<Uint8List> get newPublicKey => $composableBuilder(
     column: $table.newPublicKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get firstHeard => $composableBuilder(
+    column: $table.firstHeard,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get firmwareVersion => $composableBuilder(
+    column: $table.firmwareVersion,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6200,6 +6326,16 @@ class $$NodesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get firstHeard => $composableBuilder(
+    column: $table.firstHeard,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get firmwareVersion => $composableBuilder(
+    column: $table.firmwareVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isUnmessagable => $composableBuilder(
     column: $table.isUnmessagable,
     builder: (column) => ColumnOrderings(column),
@@ -6336,6 +6472,16 @@ class $$NodesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<DateTime> get firstHeard => $composableBuilder(
+    column: $table.firstHeard,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get firmwareVersion => $composableBuilder(
+    column: $table.firmwareVersion,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get isUnmessagable => $composableBuilder(
     column: $table.isUnmessagable,
     builder: (column) => column,
@@ -6447,6 +6593,8 @@ class $$NodesTableTableManager
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> publicKey = const Value.absent(),
                 Value<Uint8List?> newPublicKey = const Value.absent(),
+                Value<DateTime?> firstHeard = const Value.absent(),
+                Value<String?> firmwareVersion = const Value.absent(),
                 Value<bool> isUnmessagable = const Value.absent(),
                 Value<bool> hasXeddsaSigned = const Value.absent(),
                 Value<DateTime?> lastHeard = const Value.absent(),
@@ -6476,6 +6624,8 @@ class $$NodesTableTableManager
                 role: role,
                 publicKey: publicKey,
                 newPublicKey: newPublicKey,
+                firstHeard: firstHeard,
+                firmwareVersion: firmwareVersion,
                 isUnmessagable: isUnmessagable,
                 hasXeddsaSigned: hasXeddsaSigned,
                 lastHeard: lastHeard,
@@ -6507,6 +6657,8 @@ class $$NodesTableTableManager
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> publicKey = const Value.absent(),
                 Value<Uint8List?> newPublicKey = const Value.absent(),
+                Value<DateTime?> firstHeard = const Value.absent(),
+                Value<String?> firmwareVersion = const Value.absent(),
                 Value<bool> isUnmessagable = const Value.absent(),
                 Value<bool> hasXeddsaSigned = const Value.absent(),
                 Value<DateTime?> lastHeard = const Value.absent(),
@@ -6536,6 +6688,8 @@ class $$NodesTableTableManager
                 role: role,
                 publicKey: publicKey,
                 newPublicKey: newPublicKey,
+                firstHeard: firstHeard,
+                firmwareVersion: firmwareVersion,
                 isUnmessagable: isUnmessagable,
                 hasXeddsaSigned: hasXeddsaSigned,
                 lastHeard: lastHeard,

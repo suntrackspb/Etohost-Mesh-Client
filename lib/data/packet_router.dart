@@ -20,10 +20,12 @@ class PacketRouter {
     switch (f.whichPayloadVariant()) {
       case FromRadio_PayloadVariant.nodeInfo:
         await _upsertNodeInfo(f.nodeInfo);
+        await db.fillFirstHeard();
       case FromRadio_PayloadVariant.channel:
         await _upsertChannel(f.channel);
       case FromRadio_PayloadVariant.packet:
         await _onPacket(f.packet);
+        await db.fillFirstHeard();
       case FromRadio_PayloadVariant.myInfo:
         // Единственная строка id = 0; дубли от старых версий удаляем.
         await (db.delete(db.myNode)..where((m) => m.id.equals(0).not())).go();
@@ -43,6 +45,12 @@ class PacketRouter {
             metadata: Value(f.metadata.writeToBuffer()),
           ),
         );
+        final me = (await db.select(db.myNode).getSingleOrNull())?.myNodeNum;
+        if (me != null && f.metadata.firmwareVersion.isNotEmpty) {
+          await (db.update(db.nodes)..where((n) => n.num.equals(me))).write(
+            NodesCompanion(firmwareVersion: Value(f.metadata.firmwareVersion)),
+          );
+        }
       case FromRadio_PayloadVariant.config:
         await _saveConfig(
           'config.${f.config.whichPayloadVariant().name}',

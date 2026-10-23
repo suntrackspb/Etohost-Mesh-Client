@@ -8,6 +8,8 @@ import '../../data/database.dart';
 import '../../data/node_row_info.dart';
 import '../../ui/kit/kit.dart';
 import 'node_detail_page.dart';
+import '../../data/hardware_catalog.dart';
+import '../../data/node_details.dart';
 import '../../data/node_layout.dart';
 import 'node_filter_sheet.dart';
 import 'node_layout_sheet.dart';
@@ -225,6 +227,10 @@ class NodeTile extends ConsumerWidget {
       if (on(NodeRowField.id)) nodeIdString(node.num),
       if (on(NodeRowField.role)) roleName(node.role),
       if (on(NodeRowField.preset) && preset != null) preset,
+      if (on(NodeRowField.hardware) && node.hwModel != 0)
+        hardwareName(node.hwModel),
+      if (on(NodeRowField.firmware) && node.firmwareVersion != null)
+        shortFirmware(node.firmwareVersion!),
     ];
 
     return MeshTile(

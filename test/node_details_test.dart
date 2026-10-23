@@ -28,4 +28,9 @@ void main() {
     );
     expect(normalizeNote('   '), '');
   });
+
+  test('короткая версия прошивки', () {
+    expect(shortFirmware('2.7.15.567b8ea'), '2.7.15');
+    expect(shortFirmware('2.8'), '2.8');
+  });
 }

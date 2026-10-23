@@ -68,6 +68,9 @@ class NodeDetailPage extends ConsumerWidget {
             );
           }
           final isMe = n.num == me;
+          if (!isMe && n.onMirror && n.firmwareVersion == null) {
+            ref.watch(mirrorNodeDetailProvider(n.num));
+          }
           final block = directBlock(n);
           return ListView(
             padding: const EdgeInsets.all(Tokens.s16),
@@ -152,6 +155,9 @@ class _DetailsCard extends StatelessWidget {
       ('Роль', roleTitle(n.role)),
       ('Модель', hardwareName(n.hwModel)),
       ('Номер', '${n.num}'),
+      if (n.firmwareVersion != null) ('Прошивка', n.firmwareVersion!),
+      if (n.firstHeard != null)
+        ('Первое обнаружение', lastHeardText(n.firstHeard!)),
       if (n.lastHeard != null) ('Слышали', lastHeardText(n.lastHeard!)),
       if (n.hopsAway != null) ('Хопов', '${n.hopsAway}'),
       if (n.snr != null)
