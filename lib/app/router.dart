@@ -20,6 +20,7 @@ import '../features/settings/radio/channels_page.dart';
 import '../features/settings/radio/config_section_page.dart';
 import '../features/settings/radio/config_sections.dart';
 import '../features/settings/radio/user_config_page.dart';
+import '../features/settings/message_filter_page.dart';
 import '../features/settings/settings_page.dart';
 import '../ui/kit/kit.dart';
 import 'shell.dart';
@@ -159,6 +160,7 @@ final appRouter = GoRouter(
                 _route('backup', (_) => const BackupPage()),
                 _route('data', (_) => const DataSettingsPage()),
                 _route('mirror', (_) => const MirrorSettingsPage()),
+                _route('message-filter', (_) => const MessageFilterPage()),
                 _route('report', (_) => const ReportPage()),
               ],
             ),

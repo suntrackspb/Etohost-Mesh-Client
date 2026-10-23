@@ -25,6 +25,7 @@ class AlertWatcher {
     required this.settings,
     required this.isChatVisible,
     required this.onAlert,
+    this.isFiltered,
     DateTime Function()? now,
   }) : _now = now ?? DateTime.now;
 
@@ -37,6 +38,9 @@ class AlertWatcher {
   /// Чат открыт и приложение на экране — уведомление не нужно.
   final bool Function(String chat) isChatVisible;
   final void Function(MessageAlert a) onAlert;
+
+  /// Сообщение скрыто фильтром сообщений в этом чате — не уведомляем.
+  final bool Function(String chat, String text)? isFiltered;
   final DateTime Function() _now;
 
   StreamSubscription? _sub;
@@ -123,6 +127,7 @@ class AlertWatcher {
 
     final chat = direct ? 'dm:${m.fromNum}' : m.channelKey;
     if (isChatVisible(chat)) return null;
+    if (isFiltered?.call(chat, m.body) ?? false) return null;
 
     final name = sender == null
         ? nodeIdString(m.fromNum)

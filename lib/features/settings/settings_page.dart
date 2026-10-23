@@ -74,6 +74,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   onTap: () => context.go('/settings/data'),
                 ),
                 MeshTile(
+                  title: 'Фильтр сообщений',
+                  leading: const Icon(Icons.filter_alt_outlined),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.go('/settings/message-filter'),
+                ),
+                MeshTile(
                   title: 'Зеркало',
                   leading: const Icon(Icons.public),
                   trailing: Text(

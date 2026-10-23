@@ -21,6 +21,7 @@ import '../core/update/update_checker.dart';
 import '../data/recent_reactions.dart';
 import '../data/chat_search.dart';
 import '../data/appearance.dart';
+import '../data/message_filter.dart';
 import '../data/screen_orientation.dart';
 import '../data/database.dart';
 import '../data/node_row_info.dart';
@@ -780,6 +781,28 @@ final orientationApplierProvider = Provider<void>((ref) {
   final o = ref.watch(screenOrientationProvider).value;
   if (o != null) SystemChrome.setPreferredOrientations(o.preferred);
 });
+
+/// Фильтр сообщений: включён ли и слова.
+final messageFilterProvider = StreamProvider<MessageFilter>((ref) {
+  final on = ref.watch(_messageFilterOnProvider).value ?? false;
+  return _setting(
+    ref,
+    AppSettingKeys.messageFilterWords,
+  ).map((s) => MessageFilter(enabled: on, words: decodeStringList(s)));
+});
+
+final _messageFilterOnProvider = StreamProvider<bool>(
+  (ref) =>
+      _setting(ref, AppSettingKeys.messageFilterOn).map((v) => v == 'true'),
+);
+
+/// Чаты (ChatTarget.id), где фильтр сообщений выключен.
+final messageFilterOffChatsProvider = StreamProvider<Set<String>>(
+  (ref) => _setting(
+    ref,
+    AppSettingKeys.messageFilterOffChats,
+  ).map((s) => decodeStringList(s).toSet()),
+);
 
 /// Цвет акцента, из которого строится тема.
 final accentProvider = StreamProvider<Accent>(

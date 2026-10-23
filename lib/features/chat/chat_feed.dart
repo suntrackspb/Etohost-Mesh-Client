@@ -17,6 +17,7 @@ import '../../data/bubble_groups.dart';
 import '../../data/chat_days.dart';
 import '../../data/database.dart';
 import '../../data/delivery.dart';
+import '../../data/message_filter.dart';
 import '../../data/message_meta.dart';
 import '../../data/notify/message_alerts.dart';
 import '../../data/message_sender.dart';
@@ -62,6 +63,9 @@ class ChatFeed extends ConsumerStatefulWidget {
 
 class _ChatFeedState extends ConsumerState<ChatFeed> {
   Message? _replyTo;
+
+  /// «Показать отфильтрованные» — на время открытого чата.
+  bool _showFiltered = false;
   bool _loadingMore = false;
 
   /// Зеркало отдало всю историю (или её нет).
@@ -147,6 +151,22 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
   }
 
   /// Подгрузить старше: сначала из БД, когда там кончилось — страница зеркала.
+  /// Выключить или снова включить фильтр сообщений в этом чате.
+  Future<void> _toggleFilterHere(bool offNow) async {
+    final db = ref.read(databaseProvider);
+    final off = decodeStringList(
+      await db.getSetting(AppSettingKeys.messageFilterOffChats),
+    );
+    await db.setSetting(
+      AppSettingKeys.messageFilterOffChats,
+      encodeStringList([
+        for (final c in off)
+          if (c != widget.id) c,
+        if (!offNow) widget.id,
+      ]),
+    );
+  }
+
   Future<void> _loadMore(int loaded) async {
     if (_loadingMore) return;
     final limit = feedLimitProvider(widget.id);
@@ -214,6 +234,15 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
     }
     final mirrorHistory =
         target is ChannelTarget && ref.watch(mirrorActiveProvider);
+    final filter = ref.watch(messageFilterProvider).value;
+    final filterOffHere =
+        ref.watch(messageFilterOffChatsProvider).value?.contains(id) ?? false;
+    final feed = filterFeed(
+      messages.value ?? const [],
+      filter,
+      disabledHere: filterOffHere,
+      showFiltered: _showFiltered,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -236,6 +265,15 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
             icon: const Icon(Icons.search),
             onPressed: () => _search(nodes),
           ),
+          if (filter?.enabled == true)
+            _FilterMenu(
+              count: feed.filtered.length,
+              shown: _showFiltered,
+              offHere: filterOffHere,
+              onToggleShown: () =>
+                  setState(() => _showFiltered = !_showFiltered),
+              onToggleHere: () => _toggleFilterHere(filterOffHere),
+            ),
           const LinkBadge(),
         ],
       ),
@@ -254,7 +292,8 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
                   ready: _entryReady,
                   unread: ref.watch(unreadCountProvider(id)).value ?? 0,
                   onSeen: _seen,
-                  messages: list,
+                  messages: feed.shown,
+                  filtered: feed.filtered,
                   canLoadMore:
                       list.length >= ref.watch(feedLimitProvider(id)) ||
                       (mirrorHistory && !_mirrorDone),
@@ -431,9 +470,13 @@ class _MessageList extends ConsumerStatefulWidget {
     required this.canWrite,
     required this.onReply,
     required this.onReact,
+    this.filtered = const {},
   });
 
   final String feedId;
+
+  /// Скрытые фильтром, но показанные по «Показать отфильтрованные».
+  final Set<Message> filtered;
 
   /// Входящие новее — «новые»: над самым старым из них разделитель.
   final DateTime? unreadAfter;
@@ -669,6 +712,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
                   ? mentionFill
                   : null,
               highlighted: _highlight == m.packetId,
+              filtered: widget.filtered.contains(m),
               onOpenQuote: m.replyId == null || byPacket[m.replyId] == null
                   ? null
                   : () => _jumpTo(visible, m.replyId!),
@@ -860,6 +904,7 @@ class _Bubble extends StatelessWidget {
     required this.pos,
     required this.mention,
     required this.highlighted,
+    this.filtered = false,
     required this.onOpenQuote,
     required this.message,
     required this.author,
@@ -895,6 +940,9 @@ class _Bubble extends StatelessWidget {
 
   /// Подсветка после перехода по цитате.
   final bool highlighted;
+
+  /// Скрыто фильтром сообщений, показано по запросу — пометка.
+  final bool filtered;
 
   /// Тап по цитате; null — исходного сообщения нет в загруженной ленте.
   final VoidCallback? onOpenQuote;
@@ -959,6 +1007,13 @@ class _Bubble extends StatelessWidget {
               GestureDetector(
                 onTap: onOpenQuote,
                 child: _Quote(quoted, quotedAuthor),
+              ),
+            if (filtered)
+              Text(
+                'Отфильтрованные',
+                style: text.labelSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             LinkText(message.body),
             MessageImages(message.body),
@@ -1224,6 +1279,51 @@ class _SourceIcons extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Меню фильтра сообщений в шапке чата (как у Android).
+class _FilterMenu extends StatelessWidget {
+  const _FilterMenu({
+    required this.count,
+    required this.shown,
+    required this.offHere,
+    required this.onToggleShown,
+    required this.onToggleHere,
+  });
+
+  final int count;
+  final bool shown;
+  final bool offHere;
+  final VoidCallback onToggleShown;
+  final VoidCallback onToggleHere;
+
+  @override
+  Widget build(BuildContext context) => PopupMenuButton<VoidCallback>(
+    tooltip: 'Фильтр сообщений',
+    icon: Badge(
+      isLabelVisible: count > 0 && !shown && !offHere,
+      label: Text('$count'),
+      child: Icon(
+        offHere ? Icons.filter_alt_off_outlined : Icons.filter_alt_outlined,
+      ),
+    ),
+    onSelected: (f) => f(),
+    itemBuilder: (_) => [
+      if (count > 0 && !offHere)
+        PopupMenuItem(
+          value: onToggleShown,
+          child: Text(
+            shown
+                ? 'Скрыть $count отфильтрованных'
+                : 'Показать $count отфильтрованных',
+          ),
+        ),
+      PopupMenuItem(
+        value: onToggleHere,
+        child: Text(offHere ? 'Включить фильтрацию' : 'Отключить фильтрацию'),
+      ),
+    ],
+  );
 }
 
 /// Сколько шлюзов зеркала приняли сообщение; нажатие — карта ретрансляций.

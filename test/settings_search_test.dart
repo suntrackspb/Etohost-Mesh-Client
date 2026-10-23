@@ -41,7 +41,7 @@ void main() {
 
   test('индекс: все разделы и поля, пути существуют у каждого', () {
     final idx = settingsIndex();
-    expect(idx.where((e) => e.section == null).length, 31);
+    expect(idx.where((e) => e.section == null).length, 32);
     expect(idx.where((e) => e.section != null).length, greaterThan(100));
     final hits = searchSettings(idx, 'wifi');
     expect(hits.map((e) => e.route), contains('network'));

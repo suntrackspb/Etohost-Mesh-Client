@@ -11,6 +11,7 @@ const _pages = [
   ('Приложение', 'app'),
   ('Данные', 'data'),
   ('Зеркало', 'mirror'),
+  ('Фильтр сообщений', 'message-filter'),
   ('LoRa', 'lora'),
   ('Каналы', 'channels'),
   ('Безопасность', 'security'),

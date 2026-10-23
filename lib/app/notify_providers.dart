@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/notify/local_notifier.dart';
 import '../core/radio/journal.dart';
+import '../data/message_filter.dart';
 import '../data/database.dart';
 import '../data/notify/alert_watcher.dart';
 import '../data/notify/message_alerts.dart';
@@ -38,6 +39,18 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
   final open = ref.read(openChatsProvider);
   final journal = ref.read(journalProvider);
   var settings = const AlertSettings();
+  MessageFilter? filter;
+  var filterOff = const <String>{};
+  ref.listen(
+    messageFilterProvider,
+    (_, f) => filter = f.value ?? filter,
+    fireImmediately: true,
+  );
+  ref.listen(
+    messageFilterOffChatsProvider,
+    (_, s) => filterOff = s.value ?? filterOff,
+    fireImmediately: true,
+  );
   ref.listen(
     alertSettingsProvider,
     (_, s) => settings = s.value ?? settings,
@@ -51,6 +64,8 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
     isChatVisible: (chat) =>
         open.isOpen(chat) &&
         WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
+    isFiltered: (chat, text) =>
+        filter?.hides(text, disabledHere: filterOff.contains(chat)) ?? false,
     onAlert: (a) => notifier
         .show(a.id, a.title, a.body, payload: a.chat)
         .catchError(
