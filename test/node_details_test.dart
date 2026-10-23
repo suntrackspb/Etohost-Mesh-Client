@@ -20,4 +20,12 @@ void main() {
     expect(bearingText(350), 'С 350°');
     expect(bearingText(200), 'Ю 200°');
   });
+
+  test('заметка обрезается', () {
+    expect(
+      normalizeNote('  ретранслятор на крыше \n\n'),
+      'ретранслятор на крыше',
+    );
+    expect(normalizeNote('   '), '');
+  });
 }

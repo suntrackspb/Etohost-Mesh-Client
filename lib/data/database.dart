@@ -35,6 +35,9 @@ abstract final class AppSettingKeys {
   static const orientation = 'app.orientation';
   static const nodeFilter = 'nodes.filter';
   static const nodeLayout = 'nodes.layout';
+
+  /// Личная заметка о ноде — в настройках, чтобы пережить удаление ноды.
+  static String nodeNote(int num) => 'node.note.$num';
   static const messageFilterOn = 'messages.filter.on';
   static const messageFilterWords = 'messages.filter.words';
   static const messageFilterOffChats = 'messages.filter.offChats';

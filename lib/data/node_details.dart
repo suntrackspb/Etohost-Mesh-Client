@@ -22,3 +22,6 @@ String bearingText(double deg) {
   const names = ['С', 'СВ', 'В', 'ЮВ', 'Ю', 'ЮЗ', 'З', 'СЗ'];
   return '${names[((deg + 22.5) % 360) ~/ 45]} ${deg.round()}°';
 }
+
+/// Заметка перед сохранением: без пробелов по краям и пустых строк в конце.
+String normalizeNote(String s) => s.trim();

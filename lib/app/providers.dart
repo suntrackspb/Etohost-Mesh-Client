@@ -810,6 +810,12 @@ final nodeLayoutProvider = StreamProvider<NodeLayout>(
   (ref) => _setting(ref, AppSettingKeys.nodeLayout).map(NodeLayout.decode),
 );
 
+/// Личная заметка о ноде; пусто — нет.
+final nodeNoteProvider = StreamProvider.family<String, int>(
+  (ref, node) =>
+      _setting(ref, AppSettingKeys.nodeNote(node)).map((v) => v ?? ''),
+);
+
 /// Цвет акцента, из которого строится тема.
 final accentProvider = StreamProvider<Accent>(
   (ref) => _setting(ref, AppSettingKeys.accent).map(parseAccent),

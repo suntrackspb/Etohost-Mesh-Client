@@ -85,6 +85,7 @@ class NodeDetailPage extends ConsumerWidget {
                 ),
               _DetailsCard(n),
               if (hasPosition(n)) _PositionCard(n, isMe ? null : own),
+              _NoteCard(n.num),
               TracerouteSection(n.num),
               if (!isMe) DeleteNodeButton(n),
             ],
@@ -302,6 +303,62 @@ class _PositionCard extends StatelessWidget {
               '${bearingText(bearingDeg(from, to))}',
             ),
           ),
+      ],
+    );
+  }
+}
+
+/// Личная заметка о ноде: видна только на этом устройстве.
+class _NoteCard extends ConsumerWidget {
+  const _NoteCard(this.num);
+
+  final int num;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final note = ref.watch(nodeNoteProvider(num)).value ?? '';
+    return SectionCard(
+      title: 'Заметка',
+      children: [
+        MeshTile(
+          title: note.isEmpty ? 'Добавить заметку' : note,
+          subtitle: note.isEmpty ? 'Видна только вам' : null,
+          trailing: const Icon(Icons.edit_outlined),
+          onTap: () async {
+            final c = TextEditingController(text: note);
+            final v = await showDialog<String>(
+              context: context,
+              builder: (d) => AlertDialog(
+                title: const Text('Заметка'),
+                content: TextField(
+                  controller: c,
+                  autofocus: true,
+                  minLines: 1,
+                  maxLines: 6,
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(d),
+                    child: const Text('Отмена'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(d, c.text),
+                    child: const Text('Сохранить'),
+                  ),
+                ],
+              ),
+            );
+            c.dispose();
+            if (v != null) {
+              await saveSetting(
+                ref,
+                AppSettingKeys.nodeNote(num),
+                normalizeNote(v),
+              );
+            }
+          },
+        ),
       ],
     );
   }
