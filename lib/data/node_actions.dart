@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import '../core/proto/mesh.dart';
 import '../core/radio/send_queue.dart';
 import 'database.dart';
+import 'telemetry.dart';
 
 /// Действия с нодой из карточки — как в официальном iOS-клиенте.
 /// hop_limit не задаём никогда: решает прошивка (масштабирование хопов в 2.8).
@@ -161,7 +162,14 @@ class NodeActions {
   }
 
   /// Запросить LocalStats (телеметрия ответит TELEMETRY_APP).
-  Future<DeliveryResult> requestLocalStats(int num) {
+  Future<DeliveryResult> requestLocalStats(int num) =>
+      _requestTelemetry(num, Telemetry(localStats: LocalStats()));
+
+  /// Запросить телеметрию типа [kind]: нода ответит текущими значениями.
+  Future<DeliveryResult> requestTelemetry(int num, TelemetryKind kind) =>
+      _requestTelemetry(num, kind.request());
+
+  Future<DeliveryResult> _requestTelemetry(int num, Telemetry t) {
     _me();
     return _send(
       MeshPacket(
@@ -170,7 +178,7 @@ class NodeActions {
         wantAck: true,
         decoded: Data(
           portnum: PortNum.TELEMETRY_APP,
-          payload: Telemetry(localStats: LocalStats()).writeToBuffer(),
+          payload: t.writeToBuffer(),
           wantResponse: true,
         ),
       ),

@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../data/telemetry.dart';
+import '../features/nodes/telemetry_ui.dart';
+
 import '../features/chat/chat_page.dart';
 import '../features/connection/connection_page.dart';
 import '../features/journal/journal_page.dart';
@@ -178,6 +181,13 @@ final appRouter = GoRouter(
       (s) => NodeDetailPage(
         num: int.parse(s.pathParameters['num']!),
         standalone: true,
+      ),
+    ),
+    _route(
+      '/node/:num/telemetry/:kind',
+      (s) => TelemetryPage(
+        num: int.parse(s.pathParameters['num']!),
+        kind: TelemetryKind.values.byName(s.pathParameters['kind']!),
       ),
     ),
   ],

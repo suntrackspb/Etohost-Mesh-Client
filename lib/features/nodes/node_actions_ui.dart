@@ -11,7 +11,7 @@ import '../../ui/kit/kit.dart';
 import 'nodes_page.dart';
 
 /// Выполнить действие и сообщить итог; логика — в [NodeActions].
-Future<void> _run(
+Future<void> runNodeAction(
   BuildContext context,
   Future<Object?> Function() action,
   String ok,
@@ -83,7 +83,7 @@ class NodeActionsCard extends ConsumerWidget {
     final canSend = ref.watch(canSendProvider) && n.onRadio;
     final a = ref.read(nodeActionsProvider);
     VoidCallback? run(Future<Object?> Function() f, String ok) =>
-        canSend ? () => _run(context, f, ok) : null;
+        canSend ? () => runNodeAction(context, f, ok) : null;
     return SectionCard(
       title: 'Действия',
       children: [
@@ -119,7 +119,7 @@ class NodeActionsCard extends ConsumerWidget {
           title: const Text('Избранное'),
           value: n.isFavorite,
           onChanged: canSend
-              ? (v) => _run(
+              ? (v) => runNodeAction(
                   context,
                   () => a.setFavorite(n.num, v),
                   v ? 'Добавлено в избранное' : 'Убрано из избранного',
@@ -131,7 +131,7 @@ class NodeActionsCard extends ConsumerWidget {
           title: const Text('Игнорировать'),
           value: n.isIgnored,
           onChanged: canSend
-              ? (v) => _run(
+              ? (v) => runNodeAction(
                   context,
                   () => a.setIgnored(n.num, v),
                   v ? 'Нода игнорируется' : 'Нода больше не игнорируется',
@@ -162,7 +162,7 @@ class OwnNodeActionsCard extends ConsumerWidget {
             _Action(
               Icons.badge_outlined,
               'Отправить Nodeinfo',
-              () => _run(
+              () => runNodeAction(
                 context,
                 a.broadcastNodeInfo,
                 'NodeInfo отправлена в сеть',
@@ -172,7 +172,7 @@ class OwnNodeActionsCard extends ConsumerWidget {
               _Action(
                 Icons.my_location,
                 'Отправить позицию',
-                () => _run(
+                () => runNodeAction(
                   context,
                   a.broadcastPosition,
                   'Позиция отправлена в сеть',
@@ -229,7 +229,7 @@ class DeleteNodeButton extends ConsumerWidget {
           );
           if (yes == true && context.mounted) {
             final a = ref.read(nodeActionsProvider);
-            await _run(context, () => a.remove(n.num), 'Нода удалена');
+            await runNodeAction(context, () => a.remove(n.num), 'Нода удалена');
           }
         },
       ),

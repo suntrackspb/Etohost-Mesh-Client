@@ -314,3 +314,44 @@ class WarningNote extends StatelessWidget {
     ),
   );
 }
+
+/// Сетка «подпись — значение» в две колонки (сведения о ноде, телеметрия).
+/// Третье поле — цвет значения; null — акцентный.
+class InfoGrid extends StatelessWidget {
+  const InfoGrid(this.items, {super.key});
+
+  final List<(String, String, Color?)> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final accent = Theme.of(context).colorScheme.primary;
+    return Padding(
+      padding: const EdgeInsets.all(Tokens.s8),
+      child: LayoutBuilder(
+        builder: (_, c) => Wrap(
+          runSpacing: Tokens.s8,
+          children: [
+            for (final (k, v, color) in items)
+              SizedBox(
+                width: (c.maxWidth / 2).floorToDouble(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(k, style: t.labelSmall),
+                    SelectableText(
+                      v,
+                      style: t.bodyMedium?.copyWith(
+                        color: color ?? accent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

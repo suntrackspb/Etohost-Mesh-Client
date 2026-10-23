@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:drift/drift.dart' show OrderingTerm;
+import 'package:drift/drift.dart' show OrderingTerm, BooleanExpressionOperators;
 import 'package:flutter/services.dart' show SystemChrome;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -42,6 +42,7 @@ import '../mirror/mirror_models.dart';
 import '../mirror/mirror_realtime.dart';
 import 'position_service.dart';
 import '../data/radio_stats.dart';
+import '../data/telemetry.dart';
 
 /// База данных приложения. В тестах подменяется на in-memory.
 /// Общая база: настройки приложения и недавние подключения.
@@ -634,6 +635,28 @@ final tracerouteHistoryProvider =
             ..limit(20))
           .watch()
           .map((l) => [for (final r in l) TracerouteResult.parse(r, me)]);
+    });
+
+/// Замеры телеметрии ноды одного типа по возрастанию времени (последние
+/// 2000 — хватает на недели при обычных интервалах).
+final telemetryProvider =
+    StreamProvider.family<List<TelemetrySample>, (int, TelemetryKind)>((
+      ref,
+      key,
+    ) {
+      final (num, kind) = key;
+      final db = ref.watch(databaseProvider);
+      return (db.select(db.telemetryLog)
+            ..where((t) => t.nodeNum.equals(num) & t.kind.equals(kind.variant))
+            ..orderBy([(t) => OrderingTerm.desc(t.time)])
+            ..limit(2000))
+          .watch()
+          .map(
+            (l) => [
+              for (final r in l.reversed)
+                parseSample(kind, r.time, Telemetry.fromBuffer(r.data)),
+            ]..removeWhere((s) => s.isEmpty),
+          );
     });
 
 /// Можно ли сейчас отправлять (нода подключена и конфиг загружен).

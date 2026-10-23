@@ -23,10 +23,12 @@ import '../../data/message_sender.dart';
 import '../chat/chat_page.dart';
 import '../../ui/kit/kit.dart';
 import 'node_actions_ui.dart';
+import 'telemetry_ui.dart';
 import 'nodes_page.dart';
 import '../../app/link_badge.dart';
 
-final _nodeProvider = StreamProvider.family<Node?, int>((ref, id) {
+/// Одна нода по номеру.
+final nodeProvider = StreamProvider.family<Node?, int>((ref, id) {
   final db = ref.watch(databaseProvider);
   return (db.select(
     db.nodes,
@@ -44,9 +46,9 @@ class NodeDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final node = ref.watch(_nodeProvider(num));
+    final node = ref.watch(nodeProvider(num));
     final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
-    final own = me == null ? null : ref.watch(_nodeProvider(me)).value;
+    final own = me == null ? null : ref.watch(nodeProvider(me)).value;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: standalone,
@@ -92,6 +94,7 @@ class NodeDetailPage extends ConsumerWidget {
               _BoardCard(n.hwModel),
               _DetailsCard(n),
               if (hasPosition(n)) _PositionCard(n, isMe ? null : own),
+              TelemetrySection(n),
               _NoteCard(n.num),
               TracerouteSection(n.num),
               if (!isMe) DeleteNodeButton(n),
@@ -184,38 +187,11 @@ class _DetailsCard extends StatelessWidget {
       ('Шифрование', n.publicKey?.isNotEmpty == true ? 'PKI' : 'нет ключа'),
       if (n.hasXeddsaSigned) ('Подпись', 'XEdDSA'),
     ];
-    final t = Theme.of(context).textTheme;
     final key = n.publicKey;
     return SectionCard(
       title: 'Сведения',
       children: [
-        Padding(
-          padding: const EdgeInsets.all(Tokens.s8),
-          child: LayoutBuilder(
-            builder: (_, c) => Wrap(
-              runSpacing: Tokens.s8,
-              children: [
-                for (final (k, v) in items)
-                  SizedBox(
-                    width: (c.maxWidth / 2).floorToDouble(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(k, style: t.labelSmall),
-                        SelectableText(
-                          v,
-                          style: t.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
+        InfoGrid([for (final (k, v) in items) (k, v, null)]),
         if (key != null && key.isNotEmpty)
           MeshTile(
             title: 'Публичный ключ',
