@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +14,7 @@ import '../../core/desktop/desktop_tray.dart';
 import '../../core/geo/geo.dart';
 import '../../data/appearance.dart';
 import '../../data/database.dart';
+import '../../data/screen_orientation.dart';
 import '../../data/notify/message_alerts.dart';
 import '../../data/position_sharer.dart';
 import '../../ui/kit/kit.dart';
@@ -26,6 +29,8 @@ class AppSettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(appThemeProvider).value ?? AppTheme.system;
     final accent = ref.watch(accentProvider).value ?? accents.first;
+    final orientation =
+        ref.watch(screenOrientationProvider).value ?? ScreenOrientation.auto;
     final mentionAv = ref.watch(mentionColorProvider);
     final mention = mentionAv.hasValue
         ? mentionAv.value
@@ -142,6 +147,31 @@ class AppSettingsPage extends ConsumerWidget {
               ),
             ],
           ),
+          if (orientationSupported)
+            SectionCard(
+              title: 'Ориентация экрана',
+              children: [
+                for (final o in ScreenOrientation.values)
+                  ListTile(
+                    title: Text(o.title),
+                    subtitle: switch (o) {
+                      ScreenOrientation.auto => const Text(
+                        'Поворачивается вслед за телефоном',
+                      ),
+                      ScreenOrientation.portraitDown when Platform.isIOS =>
+                        const Text('На iPhone с Face ID не поддерживается'),
+                      _ => null,
+                    },
+                    trailing: o == orientation
+                        ? Icon(
+                            Icons.check,
+                            color: Theme.of(context).colorScheme.primary,
+                          )
+                        : null,
+                    onTap: () => save(AppSettingKeys.orientation, o.name),
+                  ),
+              ],
+            ),
           if (DesktopTray.supported)
             SectionCard(
               title: 'Окно',

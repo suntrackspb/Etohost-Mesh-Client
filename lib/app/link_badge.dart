@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../core/radio/radio_session.dart';
 import '../data/database.dart';
 import '../data/node_dbs.dart';
+import '../mirror/mirror_realtime.dart';
 import '../ui/kit/kit.dart';
 import 'providers.dart';
 
@@ -20,6 +21,14 @@ LinkLevel linkLevel(RadioState s) => switch (s) {
   RadioState.waitingReconnect => LinkLevel.connecting,
 };
 
+/// Состояние зеркала для значка; null — зеркало выключено, значка нет.
+LinkLevel? mirrorLevel(MirrorState? s) => switch (s) {
+  null => null,
+  MirrorState.connected => LinkLevel.connected,
+  MirrorState.waiting => LinkLevel.disconnected,
+  MirrorState.idle || MirrorState.connecting => LinkLevel.connecting,
+};
+
 /// Нода для бейджа: подключённая, а без связи — последняя (её база открыта).
 final linkNodeProvider = StreamProvider<Node?>((ref) {
   final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
@@ -33,7 +42,8 @@ final linkNodeProvider = StreamProvider<Node?>((ref) {
 
 /// Короткое имя своей ноды в шапке любого экрана: жёлтое — подключаемся,
 /// зелёное — на связи, красное — нет связи (последняя нода).
-/// Нажатие — вкладка «Связь».
+/// Нажатие — вкладка «Связь». Перед именем — значок зеркала тех же цветов
+/// (при включённом зеркале); нажатие на него — настройки зеркала.
 class LinkBadge extends ConsumerWidget {
   const LinkBadge({super.key});
 
@@ -41,45 +51,71 @@ class LinkBadge extends ConsumerWidget {
   static const _green = Color(0xFF34C759);
   static const _red = Color(0xFFFF453A);
 
+  static Color _color(LinkLevel l) => switch (l) {
+    LinkLevel.connecting => _yellow,
+    LinkLevel.connected => _green,
+    LinkLevel.disconnected => _red,
+  };
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final level = linkLevel(ref.watch(radioProvider.select((r) => r.state)));
+    final mirror = mirrorLevel(ref.watch(mirrorRealtimeProvider)?.state);
     final node = ref.watch(linkNodeProvider).value;
     final name = node?.shortName ?? '';
-    if (name.isEmpty) return const SizedBox.shrink();
-    final color = switch (level) {
-      LinkLevel.connecting => _yellow,
-      LinkLevel.connected => _green,
-      LinkLevel.disconnected => _red,
-    };
+    if (name.isEmpty && mirror == null) return const SizedBox.shrink();
     final status = switch (level) {
       LinkLevel.connecting => 'подключение',
       LinkLevel.connected => 'подключена',
       LinkLevel.disconnected => 'не подключена',
     };
-    final badge = Tooltip(
-      message: '${node!.longName.isEmpty ? name : node.longName}: $status',
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Tokens.s8),
-        onTap: () => context.go('/connection'),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Tokens.s8,
-            vertical: Tokens.s4,
-          ),
-          child: Text(
-            name,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
+    final mirrorStatus = switch (mirror) {
+      LinkLevel.connecting => 'подключение',
+      LinkLevel.connected => 'на связи',
+      _ => 'нет связи',
+    };
+    const pad = EdgeInsets.symmetric(
+      horizontal: Tokens.s4,
+      vertical: Tokens.s4,
     );
     return Padding(
       padding: const EdgeInsets.only(right: Tokens.s8),
-      child: Center(child: badge),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (mirror != null)
+            Tooltip(
+              message: 'Зеркало: $mirrorStatus',
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => context.go('/settings/mirror'),
+                child: Padding(
+                  padding: pad,
+                  child: Icon(Icons.public, size: 18, color: _color(mirror)),
+                ),
+              ),
+            ),
+          if (name.isNotEmpty)
+            Tooltip(
+              message:
+                  '${node!.longName.isEmpty ? name : node.longName}: $status',
+              child: InkWell(
+                borderRadius: BorderRadius.circular(Tokens.s8),
+                onTap: () => context.go('/connection'),
+                child: Padding(
+                  padding: pad,
+                  child: Text(
+                    name,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: _color(level),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

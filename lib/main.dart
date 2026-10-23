@@ -91,6 +91,7 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     ref.listen(keepAliveProvider, (_, _) {});
     ref.listen(messageAlertsProvider, (_, _) {});
     ref.listen(desktopTrayProvider, (_, _) {});
+    ref.listen(orientationApplierProvider, (_, _) {});
     final theme = ref.watch(appThemeProvider).value ?? AppTheme.system;
     final accent = ref.watch(accentProvider).value ?? accents.first;
     return toastsHost(

@@ -78,12 +78,27 @@ const OwnDevice _anyDevice = (
   primaryPublic: false,
 );
 
+/// Поля экрана «Приложение» — он собран вручную, не из ConfigSectionSpec.
+const _appFields = [
+  ('Тема', 'Оформление', 'Система, светлая, тёмная или чёрная (OLED)'),
+  ('Цвет акцента', 'Оформление', null),
+  ('Обращения ко мне', 'Оформление', 'Цвет упоминаний и ответов на ваше'),
+  ('Ориентация экрана', null, 'Авто, книжная, альбомная, перевёрнутые'),
+];
+
 List<SettingsEntry>? _cache;
 
 /// Все разделы и поля настроек для поиска.
 List<SettingsEntry> settingsIndex() => _cache ??= [
   for (final (title, route) in _pages)
     SettingsEntry(title: title, route: route),
+  for (final (title, group, help) in _appFields)
+    SettingsEntry(
+      title: title,
+      route: 'app',
+      section: group == null ? 'Приложение' : 'Приложение › $group',
+      help: help,
+    ),
   for (final (route, spec) in _specs)
     for (final f in spec.fields(_anyDevice))
       SettingsEntry(

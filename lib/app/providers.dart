@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show OrderingTerm;
+import 'package:flutter/services.dart' show SystemChrome;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -20,6 +21,7 @@ import '../core/update/update_checker.dart';
 import '../data/recent_reactions.dart';
 import '../data/chat_search.dart';
 import '../data/appearance.dart';
+import '../data/screen_orientation.dart';
 import '../data/database.dart';
 import '../data/node_row_info.dart';
 import '../data/map_style.dart';
@@ -742,6 +744,22 @@ final appThemeProvider = StreamProvider<AppTheme>(
 final mentionColorProvider = StreamProvider<Accent?>(
   (ref) => _setting(ref, AppSettingKeys.mentionColor).map(parseMentionColor),
 );
+
+/// Ориентация экрана: авто (по датчику) или закреплённая.
+final screenOrientationProvider = StreamProvider<ScreenOrientation>(
+  (ref) =>
+      _setting(ref, AppSettingKeys.orientation).map(ScreenOrientation.parse),
+);
+
+/// Ориентация есть только на телефонах и планшетах.
+final orientationSupported = Platform.isIOS || Platform.isAndroid;
+
+/// Применяет настройку ориентации; держится живым из корня приложения.
+final orientationApplierProvider = Provider<void>((ref) {
+  if (!orientationSupported) return;
+  final o = ref.watch(screenOrientationProvider).value;
+  if (o != null) SystemChrome.setPreferredOrientations(o.preferred);
+});
 
 /// Цвет акцента, из которого строится тема.
 final accentProvider = StreamProvider<Accent>(

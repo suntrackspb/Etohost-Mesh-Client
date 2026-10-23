@@ -184,6 +184,17 @@ def patch_apple():
                        "\t<key>NSBonjourServices</key>\n\t<array>\n\t\t<string>_meshtastic._tcp</string>\n"
                        "\t</array>\n</dict>\n</plist>\n", f.read_text())
             f.write_text(s)
+    # Настройка «Ориентация»: перевёрнутая книжная и на iPhone (по умолчанию
+    # только на iPad). iPhone с Face ID её всё равно не поддерживают.
+    if ios_plist.exists():
+        s = ios_plist.read_text()
+        m = re.search(r"(<key>UISupportedInterfaceOrientations</key>\s*<array>)(.*?)(</array>)", s, re.S)
+        if m and "PortraitUpsideDown" not in m.group(2):
+            s = s[:m.end(1)] + m.group(2).replace(
+                "<string>UIInterfaceOrientationPortrait</string>",
+                "<string>UIInterfaceOrientationPortrait</string>\n\t\t<string>UIInterfaceOrientationPortraitUpsideDown</string>",
+                1) + s[m.start(3):]
+            ios_plist.write_text(s)
     plist_add(ROOT / "macos/Runner/Info.plist", {
         "NSBluetoothAlwaysUsageDescription": BT_TEXT,
         "NSLocationUsageDescription": LOC_TEXT,
