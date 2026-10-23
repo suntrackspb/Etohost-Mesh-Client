@@ -33,6 +33,7 @@ abstract final class AppSettingKeys {
   static const accent = 'app.accent';
   static const mentionColor = 'app.mentionColor';
   static const orientation = 'app.orientation';
+  static const nodeFilter = 'nodes.filter';
 
   /// MQTT-прокси в этом приложении ('true'/'false', по умолчанию — да):
   /// выключить пересылку, не меняя настройку ноды.

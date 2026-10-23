@@ -299,10 +299,30 @@ final nodesProvider = StreamProvider<List<Node>>(
       .watchNodes(includeMirror: ref.watch(mirrorActiveProvider)),
 );
 
-/// Текущий фильтр списка нод (в памяти, на время сессии).
+/// Текущий фильтр списка нод и карты. Сохраняется в настройках
+/// ([nodeFilterPersistProvider]), поиск — только на время сессии.
 final nodeFilterProvider = StateProvider<NodeFilter>(
   (ref) => const NodeFilter(),
 );
+
+/// Загружает сохранённый фильтр при запуске и сохраняет изменения;
+/// держится живым из корня приложения.
+final nodeFilterPersistProvider = Provider<void>((ref) {
+  final db = ref.watch(databaseProvider);
+  var loaded = false;
+  db.getSetting(AppSettingKeys.nodeFilter).then((s) {
+    final query = ref.read(nodeFilterProvider).query;
+    ref.read(nodeFilterProvider.notifier).state = NodeFilter.decode(
+      s,
+    ).copyWith(query: query);
+    loaded = true;
+  });
+  ref.listen(nodeFilterProvider, (prev, f) {
+    if (!loaded) return;
+    final v = f.encode();
+    if (prev?.encode() != v) db.setSetting(AppSettingKeys.nodeFilter, v);
+  });
+});
 
 /// Список нод после фильтра и сортировки.
 final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {

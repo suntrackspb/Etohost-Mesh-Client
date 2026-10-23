@@ -15,6 +15,17 @@ String roleName(int role) {
       .join();
 }
 
+/// Роль для подписи в фильтре: «Client Base», «Router Late».
+String roleTitle(int role) {
+  final r = Config_DeviceConfig_Role.valueOf(role);
+  if (r == null) return '$role';
+  return r.name
+      .toLowerCase()
+      .split('_')
+      .map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1))
+      .join(' ');
+}
+
 /// Пресет ноды: из зеркала, а для слышимых в эфире — наш собственный.
 String? nodePreset(Node n, String? ownPreset) =>
     n.modemPreset ?? (n.onRadio ? ownPreset : null);

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
 import '../../data/node_filter.dart';
+import '../../data/node_row_info.dart';
 import '../../ui/kit/kit.dart';
 
 /// Панель фильтров списка нод. Состояние — в [nodeFilterProvider].
@@ -29,6 +30,9 @@ class NodeFilterSheet extends ConsumerWidget {
     final f = ref.watch(nodeFilterProvider);
     void set(NodeFilter v) => ref.read(nodeFilterProvider.notifier).state = v;
     final mirror = ref.watch(mirrorActiveProvider);
+    final present = {
+      for (final n in ref.watch(nodesProvider).value ?? const []) n.role,
+    };
 
     Widget label(String t) => Padding(
       padding: const EdgeInsets.only(top: Tokens.s16, bottom: Tokens.s8),
@@ -99,6 +103,28 @@ class NodeFilterSheet extends ConsumerWidget {
                   ),
               ],
             ),
+            label('Роли'),
+            Wrap(
+              spacing: Tokens.s8,
+              runSpacing: Tokens.s4,
+              children: [
+                ChoiceChip(
+                  label: const Text('все'),
+                  selected: f.roles.isEmpty,
+                  onSelected: (_) => set(f.copyWith(roles: const {})),
+                ),
+                for (final r in roleChoices({...present, ...f.roles}))
+                  FilterChip(
+                    label: Text(roleTitle(r)),
+                    selected: f.roles.contains(r),
+                    onSelected: (on) => set(
+                      f.copyWith(
+                        roles: on ? {...f.roles, r} : ({...f.roles}..remove(r)),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             if (mirror) ...[
               label('Источник'),
               Wrap(
@@ -123,6 +149,20 @@ class NodeFilterSheet extends ConsumerWidget {
               title: const Text('Только избранные'),
               value: f.favoritesOnly,
               onChanged: (v) => set(f.copyWith(favoritesOnly: v)),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Только зашифрованные'),
+              subtitle: const Text('Есть публичный ключ (PKI)'),
+              value: f.encryptedOnly,
+              onChanged: (v) => set(f.copyWith(encryptedOnly: v)),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Только подписанные'),
+              subtitle: const Text('Подписывают пакеты (прошивка 2.8)'),
+              value: f.signedOnly,
+              onChanged: (v) => set(f.copyWith(signedOnly: v)),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,

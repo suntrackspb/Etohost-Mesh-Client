@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:etohost_mesh/data/database.dart';
 import 'package:etohost_mesh/data/node_filter.dart';
@@ -14,15 +16,19 @@ Node n(
   bool mirror = false,
   int? hops,
   double? snr,
+  int role = 0,
+  bool key = false,
+  bool signed = false,
 }) => Node(
   num: num,
   userId: '',
   longName: name,
   shortName: '',
   hwModel: 0,
-  role: 0,
+  role: role,
+  publicKey: key ? Uint8List(32) : null,
   isUnmessagable: false,
-  hasXeddsaSigned: false,
+  hasXeddsaSigned: signed,
   lastHeard: heard,
   snr: snr,
   hopsAway: hops,
@@ -116,5 +122,52 @@ void main() {
       ).apply(l, me: 4, area: area).map((e) => e.num),
       [4, 1, 3],
     );
+  });
+
+  test('роли: пусто — все, иначе только выбранные', () {
+    final l = [n(1, role: 0), n(2, role: 2), n(3, role: 5), n(4, role: 11)];
+    const all = NodeFilter(onlineHours: null);
+    expect(nums(all, l).toSet(), {1, 2, 3, 4});
+    // Кто может меня ретранслировать: Client, Client Base, Router, Router Late.
+    expect(nums(all.copyWith(roles: {0, 12, 2, 11}), l).toSet(), {1, 2, 4});
+    expect(nums(all.copyWith(roles: {5}), l), [3]);
+  });
+
+  test('только зашифрованные и только подписанные', () {
+    final l = [n(1), n(2, key: true), n(3, key: true, signed: true)];
+    const all = NodeFilter(onlineHours: null);
+    expect(nums(all.copyWith(encryptedOnly: true), l).toSet(), {2, 3});
+    expect(nums(all.copyWith(signedOnly: true), l), [3]);
+    expect(all.copyWith(signedOnly: true).active, isTrue);
+  });
+
+  test('сохранение: всё кроме поиска, битое — по умолчанию', () {
+    const f = NodeFilter(
+      query: 'abc',
+      onlineHours: null,
+      maxHops: 1,
+      roles: {2, 11},
+      encryptedOnly: true,
+      sort: NodeSort.snr,
+      source: NodeSource.radio,
+    );
+    final back = NodeFilter.decode(f.encode());
+    expect(back.query, '');
+    expect(back.onlineHours, isNull);
+    expect(back.maxHops, 1);
+    expect(back.roles, {2, 11});
+    expect(back.encryptedOnly, isTrue);
+    expect(back.sort, NodeSort.snr);
+    expect(back.source, NodeSource.radio);
+    expect(NodeFilter.decode('мусор').onlineHours, defaultOnlineHours);
+    expect(NodeFilter.decode(null).active, isFalse);
+  });
+
+  test('роли — порядок документации, Router Client только если есть', () {
+    expect(roleChoices({}), filterRoles);
+    expect(roleChoices({}).first, 0);
+    expect(roleChoices({}).last, 11); // ROUTER_LATE
+    expect(roleChoices({}), isNot(contains(3)));
+    expect(roleChoices({3}).last, 3);
   });
 }
