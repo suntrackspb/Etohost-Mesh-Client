@@ -71,6 +71,11 @@ class RadioSession extends ChangeNotifier {
   RadioTarget? target;
   DateTime? connectedSince;
   DateTime? lastRx;
+
+  /// Счётчик входящего (FromRadio и логи): ответ на heartbeat — «пришло
+  /// что-то после отправки». Не по времени: на Windows ответ приходит в ту
+  /// же миллисекунду, и `isAfter` его не видит.
+  int _rxSeq = 0;
   int packetCount = 0;
   int disconnects = 0;
   int attempts = 0;
@@ -175,7 +180,7 @@ class RadioSession extends ChangeNotifier {
 
   Future<void> _sendHeartbeat() async {
     final t = _t;
-    final sent = DateTime.now();
+    final sent = _rxSeq;
     try {
       await send(ToRadio(heartbeat: Heartbeat()));
     } catch (e) {
@@ -185,8 +190,7 @@ class RadioSession extends ChangeNotifier {
     _heartbeatCheck?.cancel();
     _heartbeatCheck = Timer(heartbeatReply, () {
       if (t == null || !identical(t, _t)) return;
-      final rx = lastRx;
-      if (rx != null && rx.isAfter(sent)) {
+      if (_rxSeq != sent) {
         _heartbeatAnswers = true;
       } else if (_heartbeatAnswers && silentDrop(t)) {
         _onClosed(t, 'нода не ответила на heartbeat');
@@ -204,6 +208,7 @@ class RadioSession extends ChangeNotifier {
     }
     packetCount++;
     lastRx = DateTime.now();
+    _rxSeq++;
     if (f.hasMyInfo()) {
       myInfo = f.myInfo;
       myNodeNum = f.myInfo.myNodeNum;
@@ -302,6 +307,7 @@ class RadioSession extends ChangeNotifier {
 
   void _onLog(NodeLogChunk chunk) {
     lastRx = DateTime.now();
+    _rxSeq++;
     switch (chunk) {
       case NodeLogRecord(:final bytes):
         try {
