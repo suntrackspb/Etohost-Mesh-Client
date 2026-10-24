@@ -208,11 +208,16 @@ class DoubleFieldSpec extends FieldSpec<double> {
     required this.min,
     required this.max,
     this.unit,
+    this.decimals,
   });
 
   final double min;
   final double max;
   final String? unit;
+
+  /// Знаков после точки при показе (частота — 3, как в Android: float32
+  /// 869.075 приходит как 869.0750122…). null — как есть.
+  final int? decimals;
 
   @override
   double normalize(double value) => value.clamp(min, max);

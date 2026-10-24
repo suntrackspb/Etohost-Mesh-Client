@@ -1,9 +1,24 @@
 /// Кусок текста сообщения: обычный текст или ссылка.
 typedef TextPart = ({String text, Uri? link});
 
-final _url = RegExp(r'(?:https?://|www\.)[^\s<>"]+', caseSensitive: false);
+/// Зоны, по которым адрес без http(s):// и www. считаем ссылкой
+/// («tmesh.ru/s/w»). Только известные — иначе «2.7.18» или «file.txt».
+const _bareZones =
+    'ru|su|com|net|org|io|me|info|biz|dev|app|online|site|xyz|pro|club|'
+    'tech|cc|co|tv|by|kz|ua|uz|de|eu|uk|fm|gg|ly|to';
 
-/// Делит текст на куски, выделяя ссылки http(s)://… и www.…
+final _url = RegExp(
+  r'(?:https?://|www\.)[^\s<>"]+'
+  // Голый домен: не после буквы, @ (почта) или точки; затем путь.
+  r'|(?<![\w@.\-/])(?:[\p{L}\d](?:[\p{L}\d\-]*[\p{L}\d])?\.)+'
+  '(?:$_bareZones)'
+  r'(?![\p{L}\d\-])(?:[/?#][^\s<>"]*)?',
+  caseSensitive: false,
+  unicode: true,
+);
+
+/// Делит текст на куски, выделяя ссылки http(s)://…, www.… и голые
+/// домены известных зон (tmesh.ru/s/w) — им подставляется https://.
 /// Хвостовая пунктуация («.», «,», «)» и т.п.) в ссылку не входит.
 List<TextPart> splitLinks(String text) {
   final parts = <TextPart>[];
@@ -19,7 +34,7 @@ List<TextPart> splitLinks(String text) {
       raw = raw.substring(0, raw.length - 1);
     }
     final uri = Uri.tryParse(
-      raw.toLowerCase().startsWith('www.') ? 'https://$raw' : raw,
+      raw.toLowerCase().startsWith(RegExp('https?://')) ? raw : 'https://$raw',
     );
     if (uri == null || uri.host.isEmpty) continue;
     if (m.start > pos) {

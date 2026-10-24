@@ -306,6 +306,7 @@ abstract final class LoraSection {
         min: 0,
         max: 3000,
         unit: 'МГц',
+        decimals: 3,
       ),
       const IntFieldSpec(
         'txPower',
@@ -330,7 +331,15 @@ abstract final class LoraSection {
     return firmwareAtLeast(fw, 2, 7) && patch >= 18;
   }
 
-  static Map<String, Object?> read(Config_LoRaConfig c) => {
+  /// Значение вне вариантов (например, явное 5 у пресета с 4/5) — сразу
+  /// «по пресету», как normalizeCodingRateOverride в Android.
+  static Map<String, Object?> read(Config_LoRaConfig c) {
+    final v = _read(c);
+    adjust(v);
+    return v;
+  }
+
+  static Map<String, Object?> _read(Config_LoRaConfig c) => {
     'region': c.region.value,
     'usePreset': c.usePreset,
     'modemPreset': c.modemPreset.value,

@@ -30,4 +30,18 @@ void main() {
       'https://en.wikipedia.org/wiki/A_(b)',
     );
   });
+
+  test('голые домены известных зон — ссылки, остальное нет', () {
+    Uri? link(String t) =>
+        splitLinks(t).where((p) => p.link != null).firstOrNull?.link;
+    expect(
+      link('Настройки и сообщество: tmesh.ru/s/w').toString(),
+      'https://tmesh.ru/s/w',
+    );
+    expect(link('зайди на i.jab.su.').toString(), 'https://i.jab.su');
+    expect(link('прошивка 2.7.18'), isNull);
+    expect(link('файл config.yaml'), isNull);
+    expect(link('пиши на a@tmesh.ru'), isNull);
+    expect(link('https://x.ru/tmesh.ru').toString(), 'https://x.ru/tmesh.ru');
+  });
 }

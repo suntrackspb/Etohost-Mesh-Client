@@ -3,6 +3,10 @@ import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'notify_channels.dart';
+
+export 'notify_channels.dart';
+
 /// Локальные уведомления (без push-сервера и сертификатов): показываются,
 /// пока приложение живо — на экране, в фоне (iOS — bluetooth-central,
 /// Android — foreground service) или свёрнуто на десктопе.
@@ -17,24 +21,48 @@ class LocalNotifier {
   /// Нажатие на уведомление: payload (id чата).
   Stream<String> get taps => _taps.stream;
 
-  /// Канал Android для сообщений (подпись — Meshtastic-Android ru).
-  static const _channel = AndroidNotificationDetails(
-    'messages',
-    'Уведомления о сообщениях',
-    channelDescription: 'Личные сообщения, ответы, реакции и упоминания.',
-    importance: Importance.high,
-    priority: Priority.high,
-    category: AndroidNotificationCategory.message,
-  );
-
-  static const _details = NotificationDetails(
-    android: _channel,
-    iOS: DarwinNotificationDetails(presentSound: true),
-    macOS: DarwinNotificationDetails(presentSound: true),
-    linux: LinuxNotificationDetails(
+  NotificationDetails _details(NotifyChannel c) => NotificationDetails(
+    android: AndroidNotificationDetails(
+      c.id,
+      c.name,
+      channelDescription: c.description,
+      importance: Importance.high,
+      priority: Priority.high,
+      category: AndroidNotificationCategory.message,
+    ),
+    iOS: const DarwinNotificationDetails(presentSound: true),
+    macOS: const DarwinNotificationDetails(presentSound: true),
+    linux: const LinuxNotificationDetails(
       category: LinuxNotificationCategory.imReceived,
     ),
   );
+
+  /// Каналы и группы Android заранее — чтобы в системных настройках
+  /// приложения они были сразу и по группам; старый общий канал убираем.
+  Future<void> _androidChannels() async {
+    final a = _p
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (a == null) return;
+    for (final g in NotifyGroup.values) {
+      await a.createNotificationChannelGroup(
+        AndroidNotificationChannelGroup(g.id, g.name),
+      );
+    }
+    for (final c in NotifyChannel.values) {
+      await a.createNotificationChannel(
+        AndroidNotificationChannel(
+          c.id,
+          c.name,
+          description: c.description,
+          groupId: c.group.id,
+          importance: Importance.high,
+        ),
+      );
+    }
+    await a.deleteNotificationChannel(channelId: NotifyChannel.legacyId);
+  }
 
   Future<void> init() async {
     if (_ready) return;
@@ -65,6 +93,7 @@ class LocalNotifier {
     // Приложение запустили нажатием на уведомление. На Linux плагин
     // этого не умеет (UnimplementedError) — и без проверки init падал,
     // а с ним и все уведомления.
+    if (Platform.isAndroid) await _androidChannels();
     if (Platform.isLinux) return;
     final launch = await _p.getNotificationAppLaunchDetails();
     final p = launch?.notificationResponse?.payload;
@@ -108,13 +137,14 @@ class LocalNotifier {
     String title,
     String body, {
     String? payload,
+    NotifyChannel channel = NotifyChannel.direct,
   }) async {
     await init();
     await _p.show(
       id: id,
       title: title,
       body: body,
-      notificationDetails: _details,
+      notificationDetails: _details(channel),
       payload: payload,
     );
   }

@@ -284,4 +284,22 @@ abstract final class ChannelEdit {
     if (ok) await db.upsertChannel(ch);
     return ok;
   }
+
+  /// Удалить канал из списка — как крестик в Android: роль «Отключен»,
+  /// остальное как было (так же удаляют в iOS — сменой роли).
+  /// Первичный не удаляется.
+  static Future<bool> disable(
+    AdminSettings admin,
+    AppDatabase db,
+    MeshChannel row,
+  ) {
+    if (row.role == Channel_Role.PRIMARY.value) {
+      throw StateError('первичный канал не удаляется');
+    }
+    final base = settingsOf(row);
+    return save(admin, db, base, row.index, {
+      ...read(base, row.role),
+      'role': Channel_Role.DISABLED.value,
+    });
+  }
 }

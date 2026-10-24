@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/providers.dart';
+import '../../../app/toasts.dart';
 import '../../../app/settings_providers.dart';
 import '../../../core/proto/mesh.dart';
 import '../../../data/database.dart';
@@ -36,21 +37,7 @@ class ChannelsPage extends ConsumerWidget {
         children: [
           SectionCard(
             children: [
-              for (final c in rows)
-                MeshTile(
-                  leading: CircleAvatar(child: Text('${c.index}')),
-                  title: c.name.isNotEmpty
-                      ? c.name
-                      : c.role == 1
-                      ? preset
-                      : 'Channel ${c.index}',
-                  subtitle: c.role == 1 ? 'Первичный' : 'Второй',
-                  trailing: Icon(
-                    (c.psk?.length ?? 0) > 1 ? Icons.lock : Icons.lock_open,
-                    size: 18,
-                  ),
-                  onTap: () => context.go('/settings/channels/${c.index}'),
-                ),
+              for (final c in rows) _ChannelTile(c, preset: preset),
               if (free != null)
                 MeshTile(
                   leading: const Icon(Icons.add_box_outlined),
@@ -76,6 +63,88 @@ class ChannelsPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// Строка канала: значки позиции, MQTT uplink/downlink и замка, крестик
+/// «Удалить» — как ChannelCard в Android.
+class _ChannelTile extends ConsumerWidget {
+  const _ChannelTile(this.c, {required this.preset});
+
+  final MeshChannel c;
+  final String preset;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ChannelEdit.settingsOf(c);
+    final primary = c.role == Channel_Role.PRIMARY.value;
+    final name = c.name.isNotEmpty
+        ? c.name
+        : primary
+        ? preset
+        : 'Channel ${c.index}';
+    final canSend = ref.watch(canSendProvider);
+    Widget icon(IconData i, String tip) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: Tooltip(message: tip, child: Icon(i, size: 18)),
+    );
+    return MeshTile(
+      leading: CircleAvatar(child: Text('${c.index}')),
+      title: name,
+      subtitle: primary ? 'Первичный' : 'Второй',
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (s.moduleSettings.positionPrecision > 0)
+            icon(Icons.location_on, 'Поделиться местоположением'),
+          if (s.uplinkEnabled)
+            icon(Icons.cloud_upload_outlined, 'MQTT Uplink включён'),
+          if (s.downlinkEnabled)
+            icon(Icons.cloud_download_outlined, 'MQTT Downlink включён'),
+          icon(
+            (c.psk?.length ?? 0) > 1 ? Icons.lock : Icons.lock_open,
+            (c.psk?.length ?? 0) > 1 ? 'Зашифрован' : 'Без шифрования',
+          ),
+          if (!primary)
+            IconButton(
+              tooltip: 'Удалить',
+              icon: const Icon(Icons.close),
+              onPressed: canSend ? () => _delete(context, ref, name) : null,
+            ),
+        ],
+      ),
+      onTap: () => context.go('/settings/channels/${c.index}'),
+    );
+  }
+
+  Future<void> _delete(BuildContext context, WidgetRef ref, String name) async {
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: Text('Удалить канал «$name»?'),
+        content: const Text('Канал будет отключен на ноде.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(d, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(d).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(d, true),
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
+    if (yes != true) return;
+    final ok = await ChannelEdit.disable(
+      ref.read(adminSettingsProvider),
+      ref.read(databaseProvider),
+      c,
+    );
+    if (!ok) toasts.error('Нода не подтвердила');
   }
 }
 

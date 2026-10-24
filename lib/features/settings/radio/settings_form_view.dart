@@ -99,24 +99,25 @@ class SettingsFormView extends StatelessWidget {
         ),
       ),
     ),
-    DoubleFieldSpec(:final min, :final max, :final unit) => MeshTile(
-      title: f.label,
-      subtitle: f.help,
-      trailing: SizedBox(
-        width: 140,
-        child: _TextInput(
-          key: ValueKey(f.key),
-          value: _num(form.value<double>(f.key)),
-          suffix: unit,
-          number: true,
-          decimal: true,
-          onChanged: (v) {
-            final n = double.tryParse(v.replaceAll(',', '.'));
-            if (n != null) form.set(f.key, n.clamp(min, max));
-          },
+    DoubleFieldSpec(:final min, :final max, :final unit, :final decimals) =>
+      MeshTile(
+        title: f.label,
+        subtitle: f.help,
+        trailing: SizedBox(
+          width: 140,
+          child: _TextInput(
+            key: ValueKey(f.key),
+            value: _num(form.value<double>(f.key), decimals),
+            suffix: unit,
+            number: true,
+            decimal: true,
+            onChanged: (v) {
+              final n = double.tryParse(v.replaceAll(',', '.'));
+              if (n != null) form.set(f.key, n.clamp(min, max));
+            },
+          ),
         ),
       ),
-    ),
     ChoiceFieldSpec(:final helpFor, :final confirmFor) => _ChoiceTile(
       label: f.label,
       help: [
@@ -168,7 +169,11 @@ Future<bool> _confirm(BuildContext context, String text) async =>
     true;
 
 /// Дробное без лишнего «.0».
-String _num(double v) => v == v.roundToDouble() ? v.toStringAsFixed(0) : '$v';
+String _num(double v, [int? decimals]) => v == v.roundToDouble()
+    ? v.toStringAsFixed(0)
+    : decimals != null
+    ? v.toStringAsFixed(decimals)
+    : '$v';
 
 /// Выбор из списка: подпись и справка сверху, список на всю ширину —
 /// длинные названия регионов и пресетов не помещаются справа.

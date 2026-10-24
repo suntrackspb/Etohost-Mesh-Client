@@ -1,7 +1,15 @@
+import '../../core/notify/notify_channels.dart';
 import '../database.dart';
 
 /// Повод уведомить о сообщении.
 enum AlertKind { direct, reaction, reply, mention }
+
+/// Канал уведомлений Android для вида уведомления.
+NotifyChannel notifyChannelFor(AlertKind k) => switch (k) {
+  AlertKind.direct => NotifyChannel.direct,
+  AlertKind.reaction => NotifyChannel.reactions,
+  AlertKind.reply || AlertKind.mention => NotifyChannel.replies,
+};
 
 /// Какие уведомления включены (настройки приложения, по умолчанию все).
 class AlertSettings {

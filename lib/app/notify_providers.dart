@@ -77,7 +77,13 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
     isFiltered: (chat, text) =>
         filter?.hides(text, disabledHere: filterOff.contains(chat)) ?? false,
     onAlert: (a) => notifier
-        .show(a.id, a.title, a.body, payload: a.chat)
+        .show(
+          a.id,
+          a.title,
+          a.body,
+          payload: a.chat,
+          channel: notifyChannelFor(a.kind),
+        )
         .catchError(
           (Object e) => journal.add(JournalKind.app, 'Уведомление: $e'),
         ),
@@ -95,7 +101,13 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
     enabled: () => traceOn,
     // id не пересекаются с сообщениями (там id строки messages).
     onAlert: (a) => notifier
-        .show(0x40000000 + a.id, a.title, a.body, payload: tracePayload(a.id))
+        .show(
+          0x40000000 + a.id,
+          a.title,
+          a.body,
+          payload: tracePayload(a.id),
+          channel: NotifyChannel.traceroutes,
+        )
         .catchError(
           (Object e) => journal.add(JournalKind.app, 'Уведомление: $e'),
         ),
