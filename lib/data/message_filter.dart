@@ -75,6 +75,28 @@ List<String> decodeStringList(String? s) {
 
 String encodeStringList(List<String> l) => jsonEncode(l);
 
+/// Сообщения игнорируемых нод ([ignored]): реакции убираются всегда,
+/// остальное — убирается или, при [showHidden], остаётся в [shown] и
+/// попадает в [hidden] (показывается свёрнутым). Свои — не трогаем.
+({List<Message> shown, Set<Message> hidden}) hideIgnored(
+  List<Message> all,
+  Set<int> ignored, {
+  required bool Function(Message m) isReaction,
+  bool showHidden = false,
+}) {
+  if (ignored.isEmpty) return (shown: all, hidden: const {});
+  final shown = <Message>[], hidden = <Message>{};
+  for (final m in all) {
+    if (m.isOutgoing || !ignored.contains(m.fromNum)) {
+      shown.add(m);
+    } else if (showHidden && !isReaction(m)) {
+      shown.add(m);
+      hidden.add(m);
+    }
+  }
+  return (shown: shown, hidden: hidden);
+}
+
 /// Лента после фильтра: [shown] — что показать, [filtered] — скрытые
 /// фильтром (при [showFiltered] они остаются в [shown] с пометкой).
 /// Свои сообщения не фильтруются.

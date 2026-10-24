@@ -33,6 +33,7 @@ class AlertContext {
     this.targetIsMine = false,
     this.senderIgnored = false,
     this.channelMuted = false,
+    this.senderMuted = false,
   });
 
   final int me;
@@ -42,6 +43,9 @@ class AlertContext {
   final bool targetIsMine;
   final bool senderIgnored;
   final bool channelMuted;
+
+  /// Уведомления от этой ноды отключены в её карточке.
+  final bool senderMuted;
 }
 
 /// Решение «уведомлять ли» — чистая функция, без UI и платформы.
@@ -51,7 +55,9 @@ abstract final class MessageAlerts {
   static const maxAge = Duration(minutes: 10);
 
   static AlertKind? classify(Message m, AlertContext c) {
-    if (m.isOutgoing || m.fromNum == c.me || c.senderIgnored) return null;
+    if (m.isOutgoing || m.fromNum == c.me || c.senderIgnored || c.senderMuted) {
+      return null;
+    }
     final direct = m.toNum == c.me;
     // Личка от этого не «замолкает»: mute — настройка канала.
     if (!direct && c.channelMuted) return null;

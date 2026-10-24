@@ -85,7 +85,10 @@ class NodeDetailPage extends ConsumerWidget {
               else
                 NodeActionsCard(
                   n,
-                  onWrite: block == null
+                  onWrite:
+                      block == null ||
+                          (ref.watch(hasDirectChatProvider(n.num)).value ??
+                              false)
                       ? () => context.go(
                           ChatPage.location(DirectTarget(n.num).id),
                         )
@@ -186,6 +189,7 @@ class _DetailsCard extends StatelessWidget {
       ('Источник', nodeSourceText(n)),
       ('Шифрование', n.publicKey?.isNotEmpty == true ? 'PKI' : 'нет ключа'),
       if (n.hasXeddsaSigned) ('Подпись', 'XEdDSA'),
+      if (n.isUnmessagable) ('Сообщения', 'Неконтролируемый'),
     ];
     final key = n.publicKey;
     return SectionCard(
@@ -261,25 +265,37 @@ class _PositionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const OsmAttribution(),
+                const OsmAttribution(compact: true),
               ],
             ),
           ),
         ),
         MeshTile(
           title: coords,
-          subtitle: [
-            if (n.altitude != null) 'высота ${n.altitude} м',
-            'нажмите — открыть в Картах, удержите — скопировать',
-          ].join('\n'),
-          onTap: () => launchUrl(
-            Uri.parse('https://maps.apple.com/?q=${p.latitude},${p.longitude}'),
-            mode: LaunchMode.externalApplication,
+          subtitle: n.altitude != null ? 'высота ${n.altitude} м' : null,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: 'Открыть в Картах',
+                icon: const Icon(Icons.map_outlined),
+                onPressed: () => launchUrl(
+                  Uri.parse(
+                    'https://maps.apple.com/?q=${p.latitude},${p.longitude}',
+                  ),
+                  mode: LaunchMode.externalApplication,
+                ),
+              ),
+              IconButton(
+                tooltip: 'Скопировать',
+                icon: const Icon(Icons.copy),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: coords));
+                  toasts.show('Координаты скопированы');
+                },
+              ),
+            ],
           ),
-          onLongPress: () {
-            Clipboard.setData(ClipboardData(text: coords));
-            toasts.show('Координаты скопированы');
-          },
         ),
         if (from != null)
           MeshTile(
@@ -366,12 +382,16 @@ class _BoardCard extends StatelessWidget {
       title: hardwareSectionTitle(hwModel, info),
       children: [
         Padding(
-          padding: const EdgeInsets.all(Tokens.s8),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Tokens.s16,
+            vertical: Tokens.s8,
+          ),
           child: Row(
             children: [
               if (assets.isEmpty)
-                SizedBox.square(
-                  dimension: 96,
+                SizedBox(
+                  width: 112,
+                  height: 64,
                   child: Icon(
                     Icons.developer_board,
                     size: 56,
@@ -380,8 +400,9 @@ class _BoardCard extends StatelessWidget {
                 )
               else
                 for (final a in assets)
-                  SizedBox.square(
-                    dimension: assets.length == 1 ? 96 : 64,
+                  SizedBox(
+                    width: assets.length == 1 ? 112 : 64,
+                    height: 64,
                     child: SvgPicture.asset(a, fit: BoxFit.contain),
                   ),
               const SizedBox(width: Tokens.s16),

@@ -57,6 +57,11 @@ class _MapPageState extends ConsumerState<MapPage> {
       builder: (_) => _SearchSheet(points),
     );
     if (p == null || !mounted) return;
+    _focus(p);
+  }
+
+  /// Показать точку крупно и подсветить на несколько секунд.
+  void _focus(MapPoint p) {
     _map.move(LatLng(p.lat, p.lon), _focusZoom);
     _foundTimer?.cancel();
     setState(() => _found = p.num);
@@ -131,6 +136,18 @@ class _MapPageState extends ConsumerState<MapPage> {
   @override
   Widget build(BuildContext context) {
     final points = ref.watch(mapPointsProvider);
+    // «Перейти к ноде» из карточки: центрируем, когда карта готова.
+    final focus = ref.watch(mapFocusProvider);
+    if (focus != null && _ready) {
+      final p = points.where((p) => p.num == focus).firstOrNull;
+      if (p != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ref.read(mapFocusProvider.notifier).state = null;
+          _focus(p);
+        });
+      }
+    }
     final filter = ref.watch(nodeFilterProvider);
     final query = filter.query.trim();
     // Поиск из списка нод действует и на карте — значок и плашка об этом.

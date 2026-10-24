@@ -234,6 +234,16 @@ class AppSettingsPage extends ConsumerWidget {
                 value: images,
                 onChanged: (v) => save(AppSettingKeys.showImages, '$v'),
               ),
+              SwitchListTile(
+                title: const Text('Показывать скрытые сообщения'),
+                subtitle: const Text(
+                  'Сообщения игнорируемых нод — свёрнутыми, раскрываются '
+                  'нажатием. Выключено — их не видно совсем',
+                ),
+                value: ref.watch(showIgnoredMessagesProvider).value ?? false,
+                onChanged: (v) =>
+                    save(AppSettingKeys.showIgnoredMessages, '$v'),
+              ),
             ],
           ),
           SectionCard(

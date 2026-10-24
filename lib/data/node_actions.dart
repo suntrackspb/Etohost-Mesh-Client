@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import '../core/proto/mesh.dart';
 import '../core/radio/send_queue.dart';
 import 'database.dart';
+import 'message_sender.dart' show directBlock;
 import 'telemetry.dart';
 
 /// Действия с нодой из карточки — как в официальном iOS-клиенте.
@@ -53,14 +56,17 @@ class NodeActions {
     return ok;
   }
 
-  Future<bool> setIgnored(int num, bool ignored) async {
-    final ok = await _admin(
+  /// Игнор: флаг в нашей базе ставится всегда — он же прячет сообщения из
+  /// зеркала. [radio] — нода есть в базе своей ноды и она подключена: тогда
+  /// команда уходит и ей (перестанет принимать пакеты от этой ноды).
+  Future<bool> setIgnored(int num, bool ignored, {required bool radio}) async {
+    await _update(num, NodesCompanion(isIgnored: Value(ignored)));
+    if (!radio) return true;
+    return _admin(
       ignored
           ? AdminMessage(setIgnoredNode: num)
           : AdminMessage(removeIgnoredNode: num),
     );
-    if (ok) await _update(num, NodesCompanion(isIgnored: Value(ignored)));
-    return ok;
   }
 
   /// Удалить из NodeDB своей ноды и из локальной базы.
@@ -118,7 +124,32 @@ class NodeActions {
 
   /// Разослать свою позицию всем (координаты своей ноды из базы).
   /// Без подтверждения, hop_limit не задаём.
-  Future<DeliveryResult> broadcastPosition() async {
+  Future<DeliveryResult> broadcastPosition() async => _send(
+    MeshPacket(
+      id: _nextId(),
+      to: 0xffffffff,
+      decoded: Data(
+        portnum: PortNum.POSITION_APP,
+        payload: (await _ownPosition()).writeToBuffer(),
+      ),
+    ),
+  );
+
+  /// Отправить свою позицию ноде и попросить её ответную.
+  Future<DeliveryResult> exchangePosition(int num) async => _send(
+    MeshPacket(
+      id: _nextId(),
+      to: num,
+      wantAck: true,
+      decoded: Data(
+        portnum: PortNum.POSITION_APP,
+        payload: (await _ownPosition()).writeToBuffer(),
+        wantResponse: true,
+      ),
+    ),
+  );
+
+  Future<Position> _ownPosition() async {
     final me = _me();
     final own = await (db.select(
       db.nodes,
@@ -126,21 +157,11 @@ class NodeActions {
     if (own == null || !hasPosition(own)) {
       throw StateError('у своей ноды нет координат');
     }
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    return _send(
-      MeshPacket(
-        id: _nextId(),
-        to: 0xffffffff,
-        decoded: Data(
-          portnum: PortNum.POSITION_APP,
-          payload: Position(
-            latitudeI: (own.latitude! * 1e7).round(),
-            longitudeI: (own.longitude! * 1e7).round(),
-            altitude: own.altitude,
-            time: now,
-          ).writeToBuffer(),
-        ),
-      ),
+    return Position(
+      latitudeI: (own.latitude! * 1e7).round(),
+      longitudeI: (own.longitude! * 1e7).round(),
+      altitude: own.altitude,
+      time: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }
 
@@ -244,4 +265,18 @@ class TracerouteResult {
     }
     return TracerouteResult(time: rec.time, towards: towards, back: back);
   }
+}
+
+/// Ссылка-контакт для QR, как в официальных клиентах:
+/// `https://meshtastic.org/v/#` + SharedContact в base64url без «=».
+/// null — делиться нечем: без ключа или нода не принимает личные.
+String? contactUrl(Node n, {required bool own}) {
+  if (directBlock(n) != null) return null;
+  final c = SharedContact(
+    nodeNum: n.num,
+    user: ownUser(n),
+    manuallyVerified: own,
+  );
+  final b64 = base64Url.encode(c.writeToBuffer()).replaceAll('=', '');
+  return 'https://meshtastic.org/v/#$b64';
 }

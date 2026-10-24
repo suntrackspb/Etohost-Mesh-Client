@@ -16,7 +16,7 @@ import 'node_detail_page.dart';
 import 'nodes_page.dart';
 
 /// Раздел «Телеметрия» карточки ноды: типы, по которым есть замеры, —
-/// последние значения сеткой (как «Сведения») и переход к графикам; внизу —
+/// строка со временем последнего замера ведёт к графикам; внизу —
 /// запрос любого типа.
 class TelemetrySection extends ConsumerWidget {
   const TelemetrySection(this.n, {super.key});
@@ -31,35 +31,39 @@ class TelemetrySection extends ConsumerWidget {
         k: ?ref.watch(telemetryProvider((n.num, k))).value?.lastOrNull,
     };
     final a = ref.read(nodeActionsProvider);
-    final error = Theme.of(context).colorScheme.error;
     return SectionCard(
       title: 'Телеметрия',
       children: [
-        for (final MapEntry(key: k, value: s) in last.entries) ...[
+        for (final MapEntry(key: k, value: s) in last.entries)
           MeshTile(
             title: k.title,
             subtitle: lastHeardText(s.time),
             trailing: const Icon(Icons.show_chart),
             onTap: () => context.push(TelemetryPage.location(n.num, k)),
           ),
-          InfoGrid(sampleItems(k, s, error)),
-        ],
         MeshTile(
           title: 'Запросить телеметрию',
           subtitle: last.isEmpty
               ? 'Замеров по радио пока нет'
               : 'Нода ответит текущими значениями',
-          trailing: PopupMenuButton<TelemetryKind>(
+          // Не тип телеметрии — «Локальная статистика» (LocalStats).
+          trailing: PopupMenuButton<Object>(
             enabled: canSend,
             icon: const Icon(Icons.refresh),
             onSelected: (k) => runNodeAction(
               context,
-              () => a.requestTelemetry(n.num, k),
+              () => k is TelemetryKind
+                  ? a.requestTelemetry(n.num, k)
+                  : a.requestLocalStats(n.num),
               'Запрос отправлен — ждём ответ',
             ),
             itemBuilder: (_) => [
               for (final k in TelemetryKind.values)
                 PopupMenuItem(value: k, child: Text(k.title)),
+              const PopupMenuItem(
+                value: 'localStats',
+                child: Text('Локальная статистика'),
+              ),
             ],
           ),
         ),

@@ -327,7 +327,10 @@ class InfoGrid extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     final accent = Theme.of(context).colorScheme.primary;
     return Padding(
-      padding: const EdgeInsets.all(Tokens.s8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Tokens.s16,
+        vertical: Tokens.s8,
+      ),
       child: LayoutBuilder(
         builder: (_, c) => Wrap(
           runSpacing: Tokens.s8,

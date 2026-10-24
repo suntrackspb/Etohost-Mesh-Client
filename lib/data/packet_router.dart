@@ -92,7 +92,9 @@ class PacketRouter {
             hopsAway: Value(n.hasHopsAway() ? n.hopsAway : null),
             viaMqtt: Value(n.viaMqtt),
             isFavorite: Value(n.isFavorite),
-            isIgnored: Value(n.isIgnored),
+            // Игнор бывает только нашим (нода из зеркала) — радио его
+            // не снимает, только ставит.
+            isIgnored: n.isIgnored ? const Value(true) : const Value.absent(),
             hasXeddsaSigned: Value(n.hasXeddsaSigned),
             latitude: Value(hasPos ? pos.latitudeI / 1e7 : null),
             longitude: Value(hasPos ? pos.longitudeI / 1e7 : null),

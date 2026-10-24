@@ -853,6 +853,35 @@ final nodeNoteProvider = StreamProvider.family<String, int>(
       _setting(ref, AppSettingKeys.nodeNote(node)).map((v) => v ?? ''),
 );
 
+/// Уведомления от ноды отключены.
+final nodeMutedProvider = StreamProvider.family<bool, int>(
+  (ref, node) =>
+      _setting(ref, AppSettingKeys.nodeMuted(node)).map((v) => v == 'true'),
+);
+
+/// Сообщения игнорируемых нод показывать свёрнутыми (по умолчанию — нет).
+final showIgnoredMessagesProvider = StreamProvider<bool>(
+  (ref) =>
+      _setting(ref, AppSettingKeys.showIgnoredMessages).map((v) => v == 'true'),
+);
+
+/// Есть ли переписка в личке с нодой (для «Написать» у неконтролируемых).
+final hasDirectChatProvider = StreamProvider.family<bool, int>((ref, peer) {
+  final db = ref.watch(databaseProvider);
+  return (db.select(db.messages)
+        ..where(
+          (m) =>
+              m.toNum.equals(0xffffffff).not() &
+              (m.fromNum.equals(peer) | m.toNum.equals(peer)),
+        )
+        ..limit(1))
+      .watch()
+      .map((l) => l.isNotEmpty);
+});
+
+/// Нода, которую карта должна показать при открытии («Перейти к ноде»).
+final mapFocusProvider = StateProvider<int?>((ref) => null);
+
 /// Цвет акцента, из которого строится тема.
 final accentProvider = StreamProvider<Accent>(
   (ref) => _setting(ref, AppSettingKeys.accent).map(parseAccent),

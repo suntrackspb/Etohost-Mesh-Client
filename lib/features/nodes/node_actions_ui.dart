@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../app/toasts.dart';
 import '../../app/providers.dart';
@@ -32,7 +35,8 @@ Future<void> runNodeAction(
   toasts.show(text);
 }
 
-/// Кнопка действия карточки: иконка с подписью.
+/// Кнопка действия карточки: иконка с подписью; кнопки ряда делят ширину
+/// поровну.
 class _Action extends StatelessWidget {
   const _Action(this.icon, this.label, this.onTap);
 
@@ -41,78 +45,132 @@ class _Action extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 96,
-    child: InkWell(
-      borderRadius: BorderRadius.circular(Tokens.s8),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: Tokens.s8),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: onTap == null
-                  ? Theme.of(context).disabledColor
-                  : Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: Tokens.s4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.labelSmall,
-            ),
-          ],
-        ),
+  Widget build(BuildContext context) => InkWell(
+    borderRadius: BorderRadius.circular(Tokens.s8),
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: Tokens.s8,
+        horizontal: Tokens.s4,
+      ),
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: onTap == null
+                ? Theme.of(context).disabledColor
+                : Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(height: Tokens.s4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ],
       ),
     ),
   );
 }
 
-/// Действия с чужой нодой. Админ-действия — только для нод из эфира.
+/// Ряд крупных кнопок на всю ширину карточки.
+class _ActionRow extends StatelessWidget {
+  const _ActionRow(this.actions);
+
+  final List<_Action> actions;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: Tokens.s4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [for (final a in actions) Expanded(child: a)],
+    ),
+  );
+}
+
+/// Своя нода (для «Обменяться местоположением» нужны её координаты).
+final _ownNodeProvider = StreamProvider<Node?>((ref) {
+  final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
+  if (me == null) return Stream.value(null);
+  final db = ref.watch(databaseProvider);
+  return (db.select(
+    db.nodes,
+  )..where((n) => n.num.equals(me))).watchSingleOrNull();
+});
+
+/// Действия с чужой нодой: сверху частые кнопками, ниже — строки.
+/// Команды по радио — только для нод из эфира; игнор и уведомления
+/// работают и без подключения (прячут и сообщения из зеркала).
 class NodeActionsCard extends ConsumerWidget {
   const NodeActionsCard(this.n, {super.key, this.onWrite});
 
   final Node n;
 
-  /// null — написать нельзя (нет ключа и т. п.).
+  /// null — кнопки «Написать» нет (нода не принимает личные и т. п.).
   final VoidCallback? onWrite;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final canSend = ref.watch(canSendProvider) && n.onRadio;
+    final own = ref.watch(_ownNodeProvider).value;
+    final muted = ref.watch(nodeMutedProvider(n.num)).value ?? false;
     final a = ref.read(nodeActionsProvider);
+    final url = contactUrl(n, own: false);
     VoidCallback? run(Future<Object?> Function() f, String ok) =>
         canSend ? () => runNodeAction(context, f, ok) : null;
     return SectionCard(
       title: 'Действия',
       children: [
-        Wrap(
-          alignment: WrapAlignment.spaceEvenly,
-          children: [
+        _ActionRow([
+          if (onWrite != null)
             _Action(Icons.chat_outlined, 'Написать', onWrite),
-            _Action(
-              Icons.route,
-              'Трассировка маршрута',
-              run(
-                () => a.traceroute(n.num),
-                'Трассировка отправлена — ждём ответ',
-              ),
+          _Action(
+            Icons.route,
+            'Трассировка маршрута',
+            run(
+              () => a.traceroute(n.num),
+              'Трассировка отправлена — ждём ответ',
             ),
-            _Action(
-              Icons.badge_outlined,
-              'Обменяться NodeInfo',
-              run(() => a.exchangeNodeInfo(n.num), 'NodeInfo отправлена'),
-            ),
-            _Action(
-              Icons.query_stats,
-              'Запросить статистику',
-              run(
-                () => a.requestLocalStats(n.num),
-                'Запрос статистики отправлен',
-              ),
-            ),
-          ],
+          ),
+          _Action(
+            Icons.badge_outlined,
+            'Обменяться NodeInfo',
+            run(() => a.exchangeNodeInfo(n.num), 'NodeInfo отправлена'),
+          ),
+          _Action(
+            Icons.share_location,
+            'Обменяться местоположением',
+            own != null && hasPosition(own)
+                ? run(
+                    () => a.exchangePosition(n.num),
+                    'Позиция отправлена — ждём ответную',
+                  )
+                : null,
+          ),
+        ]),
+        if (hasPosition(n))
+          MeshTile(
+            leading: const Icon(Icons.map_outlined),
+            title: 'Перейти к ноде',
+            onTap: () {
+              ref.read(mapFocusProvider.notifier).state = n.num;
+              context.go('/map');
+            },
+          ),
+        if (url != null)
+          MeshTile(
+            leading: const Icon(Icons.qr_code_2),
+            title: 'Поделиться QR контакта',
+            onTap: () => showContactQr(context, n, url),
+          ),
+        SwitchListTile(
+          secondary: const Icon(Icons.notifications_off_outlined),
+          title: const Text('Отключить уведомления'),
+          value: muted,
+          onChanged: (v) => ref
+              .read(databaseProvider)
+              .setSetting(AppSettingKeys.nodeMuted(n.num), '$v'),
         ),
         SwitchListTile(
           secondary: const Icon(Icons.star_border),
@@ -130,20 +188,61 @@ class NodeActionsCard extends ConsumerWidget {
           secondary: const Icon(Icons.block),
           title: const Text('Игнорировать'),
           value: n.isIgnored,
-          onChanged: canSend
-              ? (v) => runNodeAction(
-                  context,
-                  () => a.setIgnored(n.num, v),
-                  v ? 'Нода игнорируется' : 'Нода больше не игнорируется',
-                )
-              : null,
+          onChanged: (v) => runNodeAction(
+            context,
+            () => a.setIgnored(n.num, v, radio: canSend),
+            v ? 'Нода игнорируется' : 'Нода больше не игнорируется',
+          ),
         ),
       ],
     );
   }
 }
 
-/// Действия своей ноды: разослать NodeInfo и позицию (если есть координаты).
+/// QR со ссылкой-контактом: сканируется официальными клиентами.
+Future<void> showContactQr(BuildContext context, Node n, String url) =>
+    showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(n.longName.isEmpty ? nodeIdString(n.num) : n.longName),
+        content: SizedBox(
+          width: 260,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ColoredBox(
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(Tokens.s8),
+                  child: QrImageView(data: url, size: 244),
+                ),
+              ),
+              const SizedBox(height: Tokens.s8),
+              const Text(
+                'Отсканируйте в Meshtastic, чтобы добавить контакт',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: url));
+              toasts.show('Ссылка скопирована');
+            },
+            child: const Text('Скопировать ссылку'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text('Закрыть'),
+          ),
+        ],
+      ),
+    );
+
+/// Действия своей ноды: разослать NodeInfo и позицию (если есть координаты),
+/// показать свой QR контакта.
 class OwnNodeActionsCard extends ConsumerWidget {
   const OwnNodeActionsCard(this.n, {super.key});
 
@@ -151,14 +250,15 @@ class OwnNodeActionsCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!ref.watch(canSendProvider)) return const SizedBox.shrink();
+    final canSend = ref.watch(canSendProvider);
     final a = ref.read(nodeActionsProvider);
+    final url = contactUrl(n, own: true);
+    if (!canSend && url == null) return const SizedBox.shrink();
     return SectionCard(
       title: 'Действия',
       children: [
-        Wrap(
-          alignment: WrapAlignment.spaceEvenly,
-          children: [
+        if (canSend)
+          _ActionRow([
             _Action(
               Icons.badge_outlined,
               'Отправить Nodeinfo',
@@ -168,18 +268,24 @@ class OwnNodeActionsCard extends ConsumerWidget {
                 'NodeInfo отправлена в сеть',
               ),
             ),
-            if (hasPosition(n))
-              _Action(
-                Icons.my_location,
-                'Отправить позицию',
-                () => runNodeAction(
-                  context,
-                  a.broadcastPosition,
-                  'Позиция отправлена в сеть',
-                ),
-              ),
-          ],
-        ),
+            _Action(
+              Icons.my_location,
+              'Отправить позицию',
+              hasPosition(n)
+                  ? () => runNodeAction(
+                      context,
+                      a.broadcastPosition,
+                      'Позиция отправлена в сеть',
+                    )
+                  : null,
+            ),
+          ]),
+        if (url != null)
+          MeshTile(
+            leading: const Icon(Icons.qr_code_2),
+            title: 'Поделиться QR контакта',
+            onTap: () => showContactQr(context, n, url),
+          ),
       ],
     );
   }

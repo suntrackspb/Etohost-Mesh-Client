@@ -208,6 +208,11 @@ class NodeTile extends ConsumerWidget {
           message: 'Есть координаты',
           child: Icon(Icons.location_on, size: 14, color: muted),
         ),
+      if (node.isUnmessagable)
+        Tooltip(
+          message: 'Неконтролируемый',
+          child: Icon(Icons.mobile_off, size: 14, color: muted),
+        ),
       if (on(NodeRowField.signal) && node.snr != null)
         item(
           Icons.signal_cellular_alt,

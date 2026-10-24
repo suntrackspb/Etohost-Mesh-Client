@@ -121,6 +121,8 @@ class AlertWatcher {
         targetIsMine: mine,
         senderIgnored: sender?.isIgnored ?? false,
         channelMuted: muted,
+        senderMuted:
+            await db.getSetting(AppSettingKeys.nodeMuted(m.fromNum)) == 'true',
       ),
     );
     if (kind == null || !settings().allows(kind)) return null;

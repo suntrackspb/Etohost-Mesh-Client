@@ -237,8 +237,19 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
     final filter = ref.watch(messageFilterProvider).value;
     final filterOffHere =
         ref.watch(messageFilterOffChatsProvider).value?.contains(id) ?? false;
-    final feed = filterFeed(
+    // Игнорируемые ноды: сообщения из зеркала прячем (радио их и так
+    // не пропускает), по настройке — показываем свёрнутыми.
+    final ign = hideIgnored(
       messages.value ?? const [],
+      {
+        for (final n in nodes.values)
+          if (n.isIgnored) n.num,
+      },
+      isReaction: isReaction,
+      showHidden: ref.watch(showIgnoredMessagesProvider).value ?? false,
+    );
+    final feed = filterFeed(
+      ign.shown,
       filter,
       disabledHere: filterOffHere,
       showFiltered: _showFiltered,
@@ -294,6 +305,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
                   onSeen: _seen,
                   messages: feed.shown,
                   filtered: feed.filtered,
+                  ignored: ign.hidden,
                   canLoadMore:
                       list.length >= ref.watch(feedLimitProvider(id)) ||
                       (mirrorHistory && !_mirrorDone),
@@ -475,12 +487,16 @@ class _MessageList extends ConsumerStatefulWidget {
     required this.onReply,
     required this.onReact,
     this.filtered = const {},
+    this.ignored = const {},
   });
 
   final String feedId;
 
   /// Скрытые фильтром, но показанные по «Показать отфильтрованные».
   final Set<Message> filtered;
+
+  /// От игнорируемых нод — показываются свёрнутыми.
+  final Set<Message> ignored;
 
   /// Входящие новее — «новые»: над самым старым из них разделитель.
   final DateTime? unreadAfter;
@@ -717,6 +733,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
                   : null,
               highlighted: _highlight == m.packetId,
               filtered: widget.filtered.contains(m),
+              ignored: widget.ignored.contains(m),
               onOpenQuote: m.replyId == null || byPacket[m.replyId] == null
                   ? null
                   : () => _jumpTo(visible, m.replyId!),
@@ -909,6 +926,7 @@ class _Bubble extends StatelessWidget {
     required this.mention,
     required this.highlighted,
     this.filtered = false,
+    this.ignored = false,
     required this.onOpenQuote,
     required this.message,
     required this.author,
@@ -947,6 +965,9 @@ class _Bubble extends StatelessWidget {
 
   /// Скрыто фильтром сообщений, показано по запросу — пометка.
   final bool filtered;
+
+  /// От игнорируемой ноды: текст свёрнут, раскрывается нажатием.
+  final bool ignored;
 
   /// Тап по цитате; null — исходного сообщения нет в загруженной ленте.
   final VoidCallback? onOpenQuote;
@@ -1019,8 +1040,12 @@ class _Bubble extends StatelessWidget {
                   color: scheme.onSurfaceVariant,
                 ),
               ),
-            LinkText(message.body),
-            MessageImages(message.body),
+            if (ignored)
+              _HiddenBody(message.body)
+            else ...[
+              LinkText(message.body),
+              MessageImages(message.body),
+            ],
             if (reactions.isNotEmpty)
               Align(
                 alignment: Alignment.centerLeft,
@@ -1789,4 +1814,34 @@ class _PkiIcon extends StatelessWidget {
       color: encrypted ? StatusColors.ok : StatusColors.warn,
     ),
   );
+}
+
+/// Свёрнутое сообщение игнорируемой ноды; нажатие раскрывает текст.
+class _HiddenBody extends StatefulWidget {
+  const _HiddenBody(this.body);
+
+  final String body;
+
+  @override
+  State<_HiddenBody> createState() => _HiddenBodyState();
+}
+
+class _HiddenBodyState extends State<_HiddenBody> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_open) return LinkText(widget.body);
+    final t = Theme.of(context);
+    return InkWell(
+      onTap: () => setState(() => _open = true),
+      child: Text(
+        'Сообщение от игнорируемой ноды — показать',
+        style: t.textTheme.bodySmall?.copyWith(
+          color: t.colorScheme.onSurfaceVariant,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+    );
+  }
 }

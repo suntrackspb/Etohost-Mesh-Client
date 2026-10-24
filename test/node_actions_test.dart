@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:etohost_mesh/core/proto/mesh.dart';
@@ -47,11 +49,24 @@ void main() {
     expect((await node(0x42)).isFavorite, isTrue);
   });
 
-  test('без подтверждения флаг не меняется', () async {
-    status = DeliveryStatus.timeout;
-    expect(await actions().setIgnored(0x42, true), isFalse);
-    expect((await node(0x42)).isIgnored, isFalse);
+  test('игнор без радио — только наш флаг, пакетов нет', () async {
+    expect(await actions().setIgnored(0x42, true, radio: false), isTrue);
+    expect(sent, isEmpty);
+    expect((await node(0x42)).isIgnored, isTrue);
   });
+
+  test(
+    'игнор по радио: команда своей ноде, флаг ставится и без ответа',
+    () async {
+      status = DeliveryStatus.timeout;
+      expect(await actions().setIgnored(0x42, true, radio: true), isFalse);
+      expect(
+        AdminMessage.fromBuffer(sent.single.decoded.payload).setIgnoredNode,
+        0x42,
+      );
+      expect((await node(0x42)).isIgnored, isTrue);
+    },
+  );
 
   test('удаление убирает ноду из базы', () async {
     expect(await actions().remove(0x42), isTrue);
@@ -123,5 +138,42 @@ void main() {
     expect(r.towards.map((h) => h.snr), [null, 5.0, null]);
     expect(r.back.map((h) => h.num), [0x42, 0x11, 0xAA]);
     expect(r.back.last.snr, 1.0);
+  });
+
+  test('обмен позицией: своя позиция ноде с запросом ответа', () async {
+    await (db.update(db.nodes)..where((n) => n.num.equals(0xAA))).write(
+      const NodesCompanion(latitude: Value(59.9), longitude: Value(30.3)),
+    );
+    await actions().exchangePosition(0x42);
+    final p = sent.single;
+    expect(p.to, 0x42);
+    expect(p.decoded.portnum, PortNum.POSITION_APP);
+    expect(p.decoded.wantResponse, isTrue);
+    expect(p.hopLimit, 0);
+    expect(Position.fromBuffer(p.decoded.payload).latitudeI, 599000000);
+  });
+
+  test(
+    'обмен позицией без своих координат — ошибка, ничего не отправлено',
+    () async {
+      expect(() => actions().exchangePosition(0x42), throwsStateError);
+      expect(sent, isEmpty);
+    },
+  );
+
+  test('QR контакта: ссылка официального формата, без ключа — нет', () async {
+    expect(contactUrl(await node(0x42), own: false), isNull);
+    await (db.update(db.nodes)..where((n) => n.num.equals(0x42))).write(
+      NodesCompanion(publicKey: Value(Uint8List(32))),
+    );
+    final url = contactUrl(await node(0x42), own: false)!;
+    expect(url, startsWith('https://meshtastic.org/v/#'));
+    var b64 = url.split('#').last;
+    expect(b64, isNot(contains('=')));
+    b64 += '=' * ((4 - b64.length % 4) % 4);
+    final c = SharedContact.fromBuffer(base64Url.decode(b64));
+    expect(c.nodeNum, 0x42);
+    expect(c.user.longName, 'n66');
+    expect(c.user.publicKey, hasLength(32));
   });
 }

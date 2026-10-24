@@ -110,7 +110,10 @@ class OsmTiles extends ConsumerWidget {
 }
 
 class OsmAttribution extends ConsumerWidget {
-  const OsmAttribution({super.key});
+  const OsmAttribution({super.key, this.compact = false});
+
+  /// Маленькая карта: строка мелким шрифтом в углу вместо кнопки.
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -118,13 +121,27 @@ class OsmAttribution extends ConsumerWidget {
       ref.watch(mapStyleProvider).value ?? MapStyle.auto,
       Theme.of(context).brightness,
     );
-    return SimpleAttributionWidget(
-      source: Text(switch (source) {
-        TileSource.carto => 'OpenStreetMap contributors © CARTO',
-        TileSource.topo =>
-          'OpenStreetMap contributors, SRTM © OpenTopoMap (CC-BY-SA)',
-        TileSource.osm => 'OpenStreetMap contributors',
-      }),
-    );
+    final text = switch (source) {
+      TileSource.carto => 'OpenStreetMap contributors © CARTO',
+      TileSource.topo =>
+        'OpenStreetMap contributors, SRTM © OpenTopoMap (CC-BY-SA)',
+      TileSource.osm => 'OpenStreetMap contributors',
+    };
+    if (compact) {
+      return Align(
+        alignment: Alignment.bottomRight,
+        child: ColoredBox(
+          color: Colors.white70,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            child: Text(
+              '© $text',
+              style: const TextStyle(fontSize: 9, color: Colors.black87),
+            ),
+          ),
+        ),
+      );
+    }
+    return SimpleAttributionWidget(source: Text(text));
   }
 }

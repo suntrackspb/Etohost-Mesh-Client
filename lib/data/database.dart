@@ -38,6 +38,12 @@ abstract final class AppSettingKeys {
 
   /// Личная заметка о ноде — в настройках, чтобы пережить удаление ноды.
   static String nodeNote(int num) => 'node.note.$num';
+
+  /// Без уведомлений от ноды (как «Mute notifications» в iOS).
+  static String nodeMuted(int num) => 'node.mute.$num';
+
+  /// Сообщения игнорируемых нод: показывать свёрнутыми (по умолчанию — нет).
+  static const showIgnoredMessages = 'messages.showIgnored';
   static const messageFilterOn = 'messages.filter.on';
   static const messageFilterWords = 'messages.filter.words';
   static const messageFilterOffChats = 'messages.filter.offChats';
