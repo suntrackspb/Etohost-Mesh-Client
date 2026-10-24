@@ -632,10 +632,27 @@ final tracerouteHistoryProvider =
       return (db.select(db.traceroutes)
             ..where((t) => t.targetNum.equals(target))
             ..orderBy([(t) => OrderingTerm.desc(t.time)])
-            ..limit(20))
+            ..limit(200))
           .watch()
           .map((l) => [for (final r in l) TracerouteResult.parse(r, me)]);
     });
+
+/// Одна трассировка по id строки журнала.
+final tracerouteProvider = StreamProvider.family<TracerouteResult?, int>((
+  ref,
+  id,
+) {
+  final db = ref.watch(databaseProvider);
+  final me = ref.watch(radioProvider.select((r) => r.myNodeNum)) ?? 0;
+  return (db.select(db.traceroutes)..where((t) => t.id.equals(id)))
+      .watchSingleOrNull()
+      .map((r) => r == null ? null : TracerouteResult.parse(r, me));
+});
+
+/// Часы для статусов «ждём ответ» → «нет ответа».
+final clockProvider = StreamProvider.autoDispose<DateTime>(
+  (ref) => Stream.periodic(const Duration(seconds: 10), (_) => DateTime.now()),
+);
 
 /// Замеры телеметрии ноды одного типа по возрастанию времени (последние
 /// 2000 — хватает на недели при обычных интервалах).

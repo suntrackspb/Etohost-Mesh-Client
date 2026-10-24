@@ -77,22 +77,41 @@ class NodeActions {
   }
 
   /// Трассировка: ответ придёт TRACEROUTE_APP с request_id = id запроса
-  /// (его сохраняет PacketRouter). Возвращает id запроса.
+  /// (PacketRouter заполнит запись). Запись в журнале создаётся сразу —
+  /// без ответа она остаётся «нет ответа». Возвращает id запроса.
   Future<(int, DeliveryResult)> traceroute(int num) async {
     _me();
     final id = _nextId();
-    final r = await _send(
-      MeshPacket(
-        id: id,
-        to: num,
-        wantAck: true,
-        decoded: Data(
-          portnum: PortNum.TRACEROUTE_APP,
-          payload: RouteDiscovery().writeToBuffer(),
-          wantResponse: true,
+    final row = await db
+        .into(db.traceroutes)
+        .insert(
+          TraceroutesCompanion.insert(
+            requestId: id,
+            targetNum: num,
+            time: DateTime.now(),
+            data: Uint8List(0),
+            answered: const Value(false),
+          ),
+        );
+    final DeliveryResult r;
+    try {
+      r = await _send(
+        MeshPacket(
+          id: id,
+          to: num,
+          wantAck: true,
+          decoded: Data(
+            portnum: PortNum.TRACEROUTE_APP,
+            payload: RouteDiscovery().writeToBuffer(),
+            wantResponse: true,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (_) {
+      // Не ушла — в журнал не пишем.
+      await (db.delete(db.traceroutes)..where((t) => t.id.equals(row))).go();
+      rethrow;
+    }
     return (id, r);
   }
 
@@ -233,12 +252,25 @@ typedef Hop = ({int num, double? snr});
 /// включая начальную и конечную ноду.
 class TracerouteResult {
   const TracerouteResult({
+    this.id = 0,
+    this.target = 0,
     required this.time,
     required this.towards,
     required this.back,
+    this.answered = true,
   });
 
+  /// Строка журнала (`traceroutes.id`).
+  final int id;
+
+  /// До кого трассировка.
+  final int target;
+
+  /// Время запроса (у старых записей — время ответа).
   final DateTime time;
+
+  /// false — ответа пока нет (см. [traceStatus]); пути пусты.
+  final bool answered;
   final List<Hop> towards;
 
   /// Пусто — обратный путь неизвестен (старая прошивка).
@@ -250,6 +282,16 @@ class TracerouteResult {
 
   /// [me] — своя нода (начало пути), запись — ответ цели.
   factory TracerouteResult.parse(TracerouteRecord rec, int me) {
+    if (!rec.answered) {
+      return TracerouteResult(
+        id: rec.id,
+        target: rec.targetNum,
+        time: rec.time,
+        towards: const [],
+        back: const [],
+        answered: false,
+      );
+    }
     final rd = RouteDiscovery.fromBuffer(rec.data);
     final there = [me, ...rd.route, rec.targetNum];
     final towards = [
@@ -263,7 +305,13 @@ class TracerouteResult {
         back.add((num: path[i], snr: i == 0 ? null : _snr(rd.snrBack, i - 1)));
       }
     }
-    return TracerouteResult(time: rec.time, towards: towards, back: back);
+    return TracerouteResult(
+      id: rec.id,
+      target: rec.targetNum,
+      time: rec.time,
+      towards: towards,
+      back: back,
+    );
   }
 }
 

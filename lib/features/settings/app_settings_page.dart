@@ -221,6 +221,12 @@ class AppSettingsPage extends ConsumerWidget {
                 AppSettingKeys.notifyMention,
                 alerts.mention,
               ),
+              alert(
+                'Трассировка маршрута',
+                'Пришёл ответ на трассировку',
+                AppSettingKeys.notifyTraceroute,
+                ref.watch(notifyTracerouteProvider).value ?? true,
+              ),
             ],
           ),
           SectionCard(

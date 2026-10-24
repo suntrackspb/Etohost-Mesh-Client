@@ -10,6 +10,8 @@ import '../data/database.dart';
 import '../data/notify/alert_watcher.dart';
 import '../data/notify/message_alerts.dart';
 import '../data/notify/open_chats.dart';
+import '../data/notify/trace_alerts.dart';
+import '../features/nodes/traceroute_ui.dart';
 import '../features/chat/chat_page.dart';
 import 'desktop_tray_provider.dart';
 import 'providers.dart';
@@ -28,6 +30,14 @@ final alertSettingsProvider = StreamProvider<AlertSettings>(
       mention: on(AppSettingKeys.notifyMention),
     );
   }),
+);
+
+/// Уведомлять о пришедших трассировках (по умолчанию да).
+final notifyTracerouteProvider = StreamProvider<bool>(
+  (ref) => ref
+      .watch(databaseProvider)
+      .watchSettings()
+      .map((s) => s[AppSettingKeys.notifyTraceroute] != 'false'),
 );
 
 final localNotifierProvider = Provider<LocalNotifier>((ref) => LocalNotifier());
@@ -73,8 +83,31 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
         ),
   );
 
-  final taps = notifier.taps.listen((chat) {
-    appRouter.go(ChatPage.location(chat));
+  var traceOn = true;
+  ref.listen(
+    notifyTracerouteProvider,
+    (_, v) => traceOn = v.value ?? traceOn,
+    fireImmediately: true,
+  );
+  final traces = TraceAlertWatcher(
+    db,
+    me: () => ref.read(radioProvider).myNodeNum,
+    enabled: () => traceOn,
+    // id не пересекаются с сообщениями (там id строки messages).
+    onAlert: (a) => notifier
+        .show(0x40000000 + a.id, a.title, a.body, payload: tracePayload(a.id))
+        .catchError(
+          (Object e) => journal.add(JournalKind.app, 'Уведомление: $e'),
+        ),
+  );
+
+  final taps = notifier.taps.listen((p) {
+    final trace = traceIdFromPayload(p);
+    if (trace != null) {
+      appRouter.push(TraceroutePage.location(trace));
+    } else {
+      appRouter.go(ChatPage.location(p));
+    }
     // Десктоп: окно могло быть в трее или свёрнуто.
     ref.read(desktopTrayProvider)?.bringToFront();
   });
@@ -88,6 +121,7 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
       }
     }
     await watcher.start();
+    await traces.start();
   }().catchError(
     (Object e) => journal.add(JournalKind.app, 'Уведомления не запущены: $e'),
   );
@@ -95,6 +129,7 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
   ref.onDispose(() {
     taps.cancel();
     watcher.dispose();
+    traces.dispose();
   });
   return watcher;
 });

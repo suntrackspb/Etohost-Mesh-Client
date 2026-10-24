@@ -57,6 +57,7 @@ abstract final class AppSettingKeys {
   static const notifyReaction = 'notify.reaction';
   static const notifyReply = 'notify.reply';
   static const notifyMention = 'notify.mention';
+  static const notifyTraceroute = 'notify.traceroute';
 
   /// Разрешение на уведомления уже спрашивали ('true').
   static const notifyAsked = 'notify.asked';
@@ -294,6 +295,10 @@ class Traceroutes extends Table {
   IntColumn get targetNum => integer()();
   DateTimeColumn get time => dateTime()();
   BlobColumn get data => blob()();
+
+  /// false — запрос ушёл, ответа нет (data пусто). Записи до v11
+  /// создавались только по ответу.
+  BoolColumn get answered => boolean().withDefault(const Constant(true))();
 }
 
 /// Соседи из NeighborInfo: кто кого слышит напрямую.
@@ -389,7 +394,7 @@ class AppDatabase extends _$AppDatabase {
   final AppDatabase? settings;
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -434,6 +439,7 @@ class AppDatabase extends _$AppDatabase {
       await m.addColumn(nodes, nodes.firstHeard);
       await m.addColumn(nodes, nodes.firmwareVersion);
     },
+    11: (m) => m.addColumn(traceroutes, traceroutes.answered),
   };
 
   /// Миграция целиком или никак: drift сам транзакцию не открывает, а

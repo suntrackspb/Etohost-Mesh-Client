@@ -24,6 +24,7 @@ import '../chat/chat_page.dart';
 import '../../ui/kit/kit.dart';
 import 'node_actions_ui.dart';
 import 'telemetry_ui.dart';
+import 'traceroute_ui.dart';
 import 'nodes_page.dart';
 import '../../app/link_badge.dart';
 
@@ -96,10 +97,10 @@ class NodeDetailPage extends ConsumerWidget {
                 ),
               _BoardCard(n.hwModel),
               _DetailsCard(n),
+              TracerouteCard(n.num),
               if (hasPosition(n)) _PositionCard(n, isMe ? null : own),
               TelemetrySection(n),
               _NoteCard(n.num),
-              TracerouteSection(n.num),
               if (!isMe) DeleteNodeButton(n),
             ],
           );

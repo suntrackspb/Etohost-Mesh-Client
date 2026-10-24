@@ -174,17 +174,33 @@ class PacketRouter {
         }
       case PortNum.TRACEROUTE_APP:
         // Ответ на наш запрос: request_id ≠ 0, отправитель — цель трассировки.
+        // Запись создана при отправке — заполняем; нет её — новая.
         if (d.requestId != 0) {
-          await db
-              .into(db.traceroutes)
-              .insert(
-                TraceroutesCompanion.insert(
-                  requestId: d.requestId,
-                  targetNum: p.from,
-                  time: _time(_rxTime(p)),
-                  data: Uint8List.fromList(d.payload),
-                ),
-              );
+          final data = Uint8List.fromList(d.payload);
+          final n =
+              await (db.update(db.traceroutes)..where(
+                    (t) =>
+                        t.requestId.equals(d.requestId) &
+                        t.targetNum.equals(p.from),
+                  ))
+                  .write(
+                    TraceroutesCompanion(
+                      data: Value(data),
+                      answered: const Value(true),
+                    ),
+                  );
+          if (n == 0) {
+            await db
+                .into(db.traceroutes)
+                .insert(
+                  TraceroutesCompanion.insert(
+                    requestId: d.requestId,
+                    targetNum: p.from,
+                    time: _time(_rxTime(p)),
+                    data: data,
+                  ),
+                );
+          }
         }
       case PortNum.NEIGHBORINFO_APP:
         await _onNeighbors(NeighborInfo.fromBuffer(d.payload), _rxTime(p));

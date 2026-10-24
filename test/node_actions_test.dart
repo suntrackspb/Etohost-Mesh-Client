@@ -89,6 +89,25 @@ void main() {
     expect(User.fromBuffer(sent[1].decoded.payload).longName, 'n170');
   });
 
+  test('трассировка сразу пишется в журнал без ответа', () async {
+    final (id, _) = await actions().traceroute(0x42);
+    final rec = (await db.select(db.traceroutes).get()).single;
+    expect(rec.requestId, id);
+    expect(rec.targetNum, 0x42);
+    expect(TracerouteResult.parse(rec, 0xAA).answered, isFalse);
+  });
+
+  test('трассировка не ушла — записи нет', () async {
+    final a = NodeActions(
+      db,
+      (p) => throw StateError('нет связи'),
+      () => 0xAA,
+      () => 1,
+    );
+    await expectLater(a.traceroute(0x42), throwsStateError);
+    expect(await db.select(db.traceroutes).get(), isEmpty);
+  });
+
   test('рассылка своей NodeInfo — всем, без ответа и hop_limit', () async {
     await actions().broadcastNodeInfo();
     final p = sent.single;
@@ -131,6 +150,7 @@ void main() {
         targetNum: 0x42,
         time: DateTime(2026),
         data: rd.writeToBuffer(),
+        answered: true,
       ),
       0xAA,
     );

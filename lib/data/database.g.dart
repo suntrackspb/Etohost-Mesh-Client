@@ -4196,8 +4196,30 @@ class $TraceroutesTable extends Traceroutes
     type: DriftSqlType.blob,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _answeredMeta = const VerificationMeta(
+    'answered',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, requestId, targetNum, time, data];
+  late final GeneratedColumn<bool> answered = GeneratedColumn<bool>(
+    'answered',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("answered" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    requestId,
+    targetNum,
+    time,
+    data,
+    answered,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -4245,6 +4267,12 @@ class $TraceroutesTable extends Traceroutes
     } else if (isInserting) {
       context.missing(_dataMeta);
     }
+    if (data.containsKey('answered')) {
+      context.handle(
+        _answeredMeta,
+        answered.isAcceptableOrUnknown(data['answered']!, _answeredMeta),
+      );
+    }
     return context;
   }
 
@@ -4274,6 +4302,10 @@ class $TraceroutesTable extends Traceroutes
         DriftSqlType.blob,
         data['${effectivePrefix}data'],
       )!,
+      answered: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}answered'],
+      )!,
     );
   }
 
@@ -4290,12 +4322,17 @@ class TracerouteRecord extends DataClass
   final int targetNum;
   final DateTime time;
   final Uint8List data;
+
+  /// false — запрос ушёл, ответа нет (data пусто). Записи до v11
+  /// создавались только по ответу.
+  final bool answered;
   const TracerouteRecord({
     required this.id,
     required this.requestId,
     required this.targetNum,
     required this.time,
     required this.data,
+    required this.answered,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4305,6 +4342,7 @@ class TracerouteRecord extends DataClass
     map['target_num'] = Variable<int>(targetNum);
     map['time'] = Variable<DateTime>(time);
     map['data'] = Variable<Uint8List>(data);
+    map['answered'] = Variable<bool>(answered);
     return map;
   }
 
@@ -4315,6 +4353,7 @@ class TracerouteRecord extends DataClass
       targetNum: Value(targetNum),
       time: Value(time),
       data: Value(data),
+      answered: Value(answered),
     );
   }
 
@@ -4329,6 +4368,7 @@ class TracerouteRecord extends DataClass
       targetNum: serializer.fromJson<int>(json['targetNum']),
       time: serializer.fromJson<DateTime>(json['time']),
       data: serializer.fromJson<Uint8List>(json['data']),
+      answered: serializer.fromJson<bool>(json['answered']),
     );
   }
   @override
@@ -4340,6 +4380,7 @@ class TracerouteRecord extends DataClass
       'targetNum': serializer.toJson<int>(targetNum),
       'time': serializer.toJson<DateTime>(time),
       'data': serializer.toJson<Uint8List>(data),
+      'answered': serializer.toJson<bool>(answered),
     };
   }
 
@@ -4349,12 +4390,14 @@ class TracerouteRecord extends DataClass
     int? targetNum,
     DateTime? time,
     Uint8List? data,
+    bool? answered,
   }) => TracerouteRecord(
     id: id ?? this.id,
     requestId: requestId ?? this.requestId,
     targetNum: targetNum ?? this.targetNum,
     time: time ?? this.time,
     data: data ?? this.data,
+    answered: answered ?? this.answered,
   );
   TracerouteRecord copyWithCompanion(TraceroutesCompanion data) {
     return TracerouteRecord(
@@ -4363,6 +4406,7 @@ class TracerouteRecord extends DataClass
       targetNum: data.targetNum.present ? data.targetNum.value : this.targetNum,
       time: data.time.present ? data.time.value : this.time,
       data: data.data.present ? data.data.value : this.data,
+      answered: data.answered.present ? data.answered.value : this.answered,
     );
   }
 
@@ -4373,7 +4417,8 @@ class TracerouteRecord extends DataClass
           ..write('requestId: $requestId, ')
           ..write('targetNum: $targetNum, ')
           ..write('time: $time, ')
-          ..write('data: $data')
+          ..write('data: $data, ')
+          ..write('answered: $answered')
           ..write(')'))
         .toString();
   }
@@ -4385,6 +4430,7 @@ class TracerouteRecord extends DataClass
     targetNum,
     time,
     $driftBlobEquality.hash(data),
+    answered,
   );
   @override
   bool operator ==(Object other) =>
@@ -4394,7 +4440,8 @@ class TracerouteRecord extends DataClass
           other.requestId == this.requestId &&
           other.targetNum == this.targetNum &&
           other.time == this.time &&
-          $driftBlobEquality.equals(other.data, this.data));
+          $driftBlobEquality.equals(other.data, this.data) &&
+          other.answered == this.answered);
 }
 
 class TraceroutesCompanion extends UpdateCompanion<TracerouteRecord> {
@@ -4403,12 +4450,14 @@ class TraceroutesCompanion extends UpdateCompanion<TracerouteRecord> {
   final Value<int> targetNum;
   final Value<DateTime> time;
   final Value<Uint8List> data;
+  final Value<bool> answered;
   const TraceroutesCompanion({
     this.id = const Value.absent(),
     this.requestId = const Value.absent(),
     this.targetNum = const Value.absent(),
     this.time = const Value.absent(),
     this.data = const Value.absent(),
+    this.answered = const Value.absent(),
   });
   TraceroutesCompanion.insert({
     this.id = const Value.absent(),
@@ -4416,6 +4465,7 @@ class TraceroutesCompanion extends UpdateCompanion<TracerouteRecord> {
     required int targetNum,
     required DateTime time,
     required Uint8List data,
+    this.answered = const Value.absent(),
   }) : requestId = Value(requestId),
        targetNum = Value(targetNum),
        time = Value(time),
@@ -4426,6 +4476,7 @@ class TraceroutesCompanion extends UpdateCompanion<TracerouteRecord> {
     Expression<int>? targetNum,
     Expression<DateTime>? time,
     Expression<Uint8List>? data,
+    Expression<bool>? answered,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4433,6 +4484,7 @@ class TraceroutesCompanion extends UpdateCompanion<TracerouteRecord> {
       if (targetNum != null) 'target_num': targetNum,
       if (time != null) 'time': time,
       if (data != null) 'data': data,
+      if (answered != null) 'answered': answered,
     });
   }
 
@@ -4442,6 +4494,7 @@ class TraceroutesCompanion extends UpdateCompanion<TracerouteRecord> {
     Value<int>? targetNum,
     Value<DateTime>? time,
     Value<Uint8List>? data,
+    Value<bool>? answered,
   }) {
     return TraceroutesCompanion(
       id: id ?? this.id,
@@ -4449,6 +4502,7 @@ class TraceroutesCompanion extends UpdateCompanion<TracerouteRecord> {
       targetNum: targetNum ?? this.targetNum,
       time: time ?? this.time,
       data: data ?? this.data,
+      answered: answered ?? this.answered,
     );
   }
 
@@ -4470,6 +4524,9 @@ class TraceroutesCompanion extends UpdateCompanion<TracerouteRecord> {
     if (data.present) {
       map['data'] = Variable<Uint8List>(data.value);
     }
+    if (answered.present) {
+      map['answered'] = Variable<bool>(answered.value);
+    }
     return map;
   }
 
@@ -4480,7 +4537,8 @@ class TraceroutesCompanion extends UpdateCompanion<TracerouteRecord> {
           ..write('requestId: $requestId, ')
           ..write('targetNum: $targetNum, ')
           ..write('time: $time, ')
-          ..write('data: $data')
+          ..write('data: $data, ')
+          ..write('answered: $answered')
           ..write(')'))
         .toString();
   }
@@ -7985,6 +8043,7 @@ typedef $$TraceroutesTableCreateCompanionBuilder =
       required int targetNum,
       required DateTime time,
       required Uint8List data,
+      Value<bool> answered,
     });
 typedef $$TraceroutesTableUpdateCompanionBuilder =
     TraceroutesCompanion Function({
@@ -7993,6 +8052,7 @@ typedef $$TraceroutesTableUpdateCompanionBuilder =
       Value<int> targetNum,
       Value<DateTime> time,
       Value<Uint8List> data,
+      Value<bool> answered,
     });
 
 class $$TraceroutesTableFilterComposer
@@ -8026,6 +8086,11 @@ class $$TraceroutesTableFilterComposer
 
   ColumnFilters<Uint8List> get data => $composableBuilder(
     column: $table.data,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get answered => $composableBuilder(
+    column: $table.answered,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -8063,6 +8128,11 @@ class $$TraceroutesTableOrderingComposer
     column: $table.data,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get answered => $composableBuilder(
+    column: $table.answered,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TraceroutesTableAnnotationComposer
@@ -8088,6 +8158,9 @@ class $$TraceroutesTableAnnotationComposer
 
   GeneratedColumn<Uint8List> get data =>
       $composableBuilder(column: $table.data, builder: (column) => column);
+
+  GeneratedColumn<bool> get answered =>
+      $composableBuilder(column: $table.answered, builder: (column) => column);
 }
 
 class $$TraceroutesTableTableManager
@@ -8126,12 +8199,14 @@ class $$TraceroutesTableTableManager
                 Value<int> targetNum = const Value.absent(),
                 Value<DateTime> time = const Value.absent(),
                 Value<Uint8List> data = const Value.absent(),
+                Value<bool> answered = const Value.absent(),
               }) => TraceroutesCompanion(
                 id: id,
                 requestId: requestId,
                 targetNum: targetNum,
                 time: time,
                 data: data,
+                answered: answered,
               ),
           createCompanionCallback:
               ({
@@ -8140,12 +8215,14 @@ class $$TraceroutesTableTableManager
                 required int targetNum,
                 required DateTime time,
                 required Uint8List data,
+                Value<bool> answered = const Value.absent(),
               }) => TraceroutesCompanion.insert(
                 id: id,
                 requestId: requestId,
                 targetNum: targetNum,
                 time: time,
                 data: data,
+                answered: answered,
               ),
           withReferenceMapper: (p0) => p0
               .map(

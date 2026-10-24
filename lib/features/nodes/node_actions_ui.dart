@@ -11,7 +11,6 @@ import '../../core/radio/send_queue.dart';
 import '../../data/database.dart';
 import '../../data/node_actions.dart';
 import '../../ui/kit/kit.dart';
-import 'nodes_page.dart';
 
 /// Выполнить действие и сообщить итог; логика — в [NodeActions].
 Future<void> runNodeAction(
@@ -350,40 +349,3 @@ String nodeSourceText(Node n) => switch ((n.onRadio, n.onMirror)) {
   (false, true) => 'Зеркало',
   _ => '—',
 };
-
-/// История трассировок до ноды.
-class TracerouteSection extends ConsumerWidget {
-  const TracerouteSection(this.num, {super.key});
-
-  final int num;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final list = ref.watch(tracerouteHistoryProvider(num)).value ?? const [];
-    if (list.isEmpty) return const SizedBox.shrink();
-    final names = {
-      for (final n in ref.watch(nodesProvider).value ?? <Node>[])
-        n.num: n.shortName.isNotEmpty ? n.shortName : nodeIdString(n.num),
-    };
-    String path(List<Hop> hops) => hops
-        .map(
-          (h) =>
-              '${names[h.num] ?? nodeIdString(h.num)}'
-              '${h.snr == null ? '' : ' (${h.snr!.toStringAsFixed(1)} дБ)'}',
-        )
-        .join(' → ');
-    return SectionCard(
-      title: 'Трассировка',
-      children: [
-        for (final r in list)
-          MeshTile(
-            title: lastHeardText(r.time),
-            subtitle: [
-              'Туда: ${path(r.towards)}',
-              if (r.back.isNotEmpty) 'Обратно: ${path(r.back)}',
-            ].join('\n'),
-          ),
-      ],
-    );
-  }
-}

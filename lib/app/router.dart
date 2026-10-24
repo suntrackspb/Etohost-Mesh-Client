@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../data/telemetry.dart';
 import '../features/nodes/telemetry_ui.dart';
+import '../features/nodes/traceroute_ui.dart';
 
 import '../features/chat/chat_page.dart';
 import '../features/connection/connection_page.dart';
@@ -189,6 +190,14 @@ final appRouter = GoRouter(
         num: int.parse(s.pathParameters['num']!),
         kind: TelemetryKind.values.byName(s.pathParameters['kind']!),
       ),
+    ),
+    _route(
+      '/node/:num/traceroutes',
+      (s) => TracerouteLogPage(num: int.parse(s.pathParameters['num']!)),
+    ),
+    _route(
+      '/traceroute/:id',
+      (s) => TraceroutePage(id: int.parse(s.pathParameters['id']!)),
     ),
   ],
 );
