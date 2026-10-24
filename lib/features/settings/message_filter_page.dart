@@ -54,7 +54,7 @@ class _MessageFilterPageState extends ConsumerState<MessageFilterPage> {
         actions: const [LinkBadge()],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(Tokens.s16),
+        padding: pagePadding(context),
         children: [
           SectionCard(
             children: [

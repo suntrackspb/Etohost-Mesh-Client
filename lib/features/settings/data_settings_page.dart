@@ -20,7 +20,7 @@ class DataSettingsPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Данные'), actions: const [LinkBadge()]),
       body: ListView(
-        padding: const EdgeInsets.all(Tokens.s16),
+        padding: pagePadding(context),
         children: [
           SectionCard(
             title: 'Базы нод',

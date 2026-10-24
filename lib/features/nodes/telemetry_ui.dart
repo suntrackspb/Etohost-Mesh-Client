@@ -147,7 +147,7 @@ class _TelemetryPageState extends ConsumerState<TelemetryPage> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(Tokens.s16),
+        padding: pagePadding(context),
         children: [
           if (node != null)
             Padding(

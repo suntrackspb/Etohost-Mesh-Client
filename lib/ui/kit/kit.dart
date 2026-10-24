@@ -358,3 +358,13 @@ class InfoGrid extends StatelessWidget {
     );
   }
 }
+
+/// Отступы прокручиваемой страницы: [Tokens.s16] со всех сторон плюс
+/// системная панель снизу (кнопки навигации Android, полоска iOS). Свой
+/// `padding` у ListView отключает её учёт — без этого низ под кнопками.
+EdgeInsets pagePadding(BuildContext context) => EdgeInsets.fromLTRB(
+  Tokens.s16,
+  Tokens.s16,
+  Tokens.s16,
+  Tokens.s16 + MediaQuery.paddingOf(context).bottom,
+);

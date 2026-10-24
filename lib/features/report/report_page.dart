@@ -50,7 +50,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
         actions: const [LinkBadge()],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(Tokens.s16),
+        padding: pagePadding(context),
         children: [
           const SectionCard(
             title: 'Что будет отправлено',

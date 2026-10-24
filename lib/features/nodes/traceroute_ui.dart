@@ -160,7 +160,7 @@ class TraceroutePage extends ConsumerWidget {
             SizedBox(height: h * 0.42, child: _RouteMap(r, nodes, c)),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(Tokens.s16),
+              padding: pagePadding(context),
               children: [
                 Text(
                   '${dateTimeText(r.time)} · ${traceSummary(r, now)}',

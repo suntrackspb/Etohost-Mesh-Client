@@ -132,7 +132,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
         actions: const [LinkBadge()],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(Tokens.s16),
+        padding: pagePadding(context),
         children: [
           _StatusCard(radio: radio),
           _RecentCard(onConnect: _connect),

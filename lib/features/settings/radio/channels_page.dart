@@ -32,7 +32,7 @@ class ChannelsPage extends ConsumerWidget {
         actions: const [LinkBadge()],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(Tokens.s16),
+        padding: pagePadding(context),
         children: [
           SectionCard(
             children: [
@@ -130,7 +130,7 @@ class _ChannelEditPageState extends ConsumerState<ChannelEditPage> {
         actions: const [LinkBadge()],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(Tokens.s16),
+        padding: pagePadding(context),
         children: [
           AbsorbPointer(
             absorbing: !canSend,

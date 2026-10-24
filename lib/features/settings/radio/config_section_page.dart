@@ -154,7 +154,7 @@ class _ConfigSectionPageState<C> extends ConsumerState<ConfigSectionPage<C>> {
         });
       }
       body = ListView(
-        padding: const EdgeInsets.all(Tokens.s16),
+        padding: pagePadding(context),
         children: [
           AbsorbPointer(
             absorbing: !canSend,

@@ -76,7 +76,7 @@ class _UserConfigPageState extends ConsumerState<UserConfigPage> {
       }
 
       body = ListView(
-        padding: const EdgeInsets.all(Tokens.s16),
+        padding: pagePadding(context),
         children: [
           SectionCard(
             children: [

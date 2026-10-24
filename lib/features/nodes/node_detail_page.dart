@@ -80,7 +80,7 @@ class NodeDetailPage extends ConsumerWidget {
           final block = directBlock(n);
           final pos = nodePositionBy(n, ref.watch(positionRulesProvider));
           return ListView(
-            padding: const EdgeInsets.all(Tokens.s16),
+            padding: pagePadding(context),
             children: [
               _Header(n),
               if (n.newPublicKey != null) const _KeyMismatch(),
