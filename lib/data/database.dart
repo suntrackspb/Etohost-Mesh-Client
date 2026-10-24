@@ -80,6 +80,7 @@ abstract final class AppSettingKeys {
 
   /// Группировать близкие ноды на карте: 'true'/'false', по умолчанию да.
   static const mapCluster = 'map.cluster';
+  static const mapCorrection = 'map.correction';
 
   /// Недавние реакции: JSON-список эмодзи, последний — первым.
   static const recentReactions = 'chat.recentReactions';
@@ -168,8 +169,17 @@ class Nodes extends Table {
   BoolColumn get viaMqtt => boolean().withDefault(const Constant(false))();
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
   BoolColumn get isIgnored => boolean().withDefault(const Constant(false))();
+
+  /// Координаты из эфира (пишет только радио).
   RealColumn get latitude => real().nullable()();
   RealColumn get longitude => real().nullable()();
+
+  /// Координаты из зеркала (пишет только зеркало); [mirrorCorrected] —
+  /// зеркало исправило положение по соседям (глушилка, выброс).
+  RealColumn get mirrorLat => real().nullable()();
+  RealColumn get mirrorLon => real().nullable()();
+  BoolColumn get mirrorCorrected =>
+      boolean().withDefault(const Constant(false))();
   IntColumn get altitude => integer().nullable()();
   IntColumn get batteryLevel => integer().nullable()();
   RealColumn get voltage => real().nullable()();
@@ -394,7 +404,7 @@ class AppDatabase extends _$AppDatabase {
   final AppDatabase? settings;
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -440,6 +450,17 @@ class AppDatabase extends _$AppDatabase {
       await m.addColumn(nodes, nodes.firmwareVersion);
     },
     11: (m) => m.addColumn(traceroutes, traceroutes.answered),
+    12: (m) async {
+      await m.addColumn(nodes, nodes.mirrorLat);
+      await m.addColumn(nodes, nodes.mirrorLon);
+      await m.addColumn(nodes, nodes.mirrorCorrected);
+      // Раньше координаты зеркала писались в общие поля: у нод не из эфира
+      // переносим их в поля зеркала. Признак коррекции придёт с синхронизацией.
+      await customStatement(
+        'UPDATE nodes SET mirror_lat = latitude, mirror_lon = longitude, '
+        'latitude = NULL, longitude = NULL WHERE on_radio = 0',
+      );
+    },
   };
 
   /// Миграция целиком или никак: drift сам транзакцию не открывает, а

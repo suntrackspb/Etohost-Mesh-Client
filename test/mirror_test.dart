@@ -269,15 +269,16 @@ void main() {
           publicKey: List.filled(32, '02').join(),
           lastLat: 59.9,
           lastLon: 30.3,
+          positionCorrected: true,
         ),
       ]);
       final n = (await db.watchNodes().first).single;
       expect(n.publicKey, mine);
       expect(n.lastHeard!.isAfter(old), isTrue);
-      // Имя из эфира приоритетнее, координат в эфире нет — берём с зеркала.
+      // Имя из эфира приоритетнее; координаты зеркала — в свои поля.
       expect(n.longName, 'Radio');
-      expect(n.latitude, 59.9);
-      expect(n.longitude, 30.3);
+      expect(n.latitude, isNull);
+      expect((n.mirrorLat, n.mirrorLon, n.mirrorCorrected), (59.9, 30.3, true));
       expect(n.onRadio && n.onMirror, isTrue);
     });
 

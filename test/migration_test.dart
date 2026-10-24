@@ -14,11 +14,11 @@ void main() {
 
   setUpAll(() => verifier = SchemaVerifier(GeneratedHelper()));
 
-  for (final from in [5, 6, 7, 8, 9, 10]) {
-    test('миграция $from → 11 даёт текущую схему', () async {
+  for (final from in [5, 6, 7, 8, 9, 10, 11]) {
+    test('миграция $from → 12 даёт текущую схему', () async {
       final schema = await verifier.schemaAt(from);
       final db = AppDatabase(schema.newConnection());
-      await verifier.migrateAndValidate(db, 11);
+      await verifier.migrateAndValidate(db, 12);
       await db.close();
     });
   }
@@ -54,7 +54,7 @@ void main() {
       expect(cols, isNot(contains('rssi')));
 
       final db = AppDatabase(schema.newConnection());
-      await verifier.migrateAndValidate(db, 11);
+      await verifier.migrateAndValidate(db, 12);
       await db.close();
     },
   );

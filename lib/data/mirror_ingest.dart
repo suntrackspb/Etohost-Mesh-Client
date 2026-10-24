@@ -126,11 +126,11 @@ class MirrorIngest {
               longName: fill(n.longName, old?.longName),
               shortName: fill(n.shortName, old?.shortName),
               hwModel: fill(n.hwModel, old?.hwModel == 0 ? null : old?.hwModel),
-              latitude: hasPos
-                  ? fill(n.lastLat, old?.latitude)
-                  : const Value.absent(),
-              longitude: hasPos
-                  ? fill(n.lastLon, old?.longitude)
+              // Координаты зеркала — в свои поля; радио их не трогает.
+              mirrorLat: hasPos ? Value(n.lastLat) : const Value.absent(),
+              mirrorLon: hasPos ? Value(n.lastLon) : const Value.absent(),
+              mirrorCorrected: hasPos
+                  ? Value(n.positionCorrected)
                   : const Value.absent(),
               batteryLevel: fill(n.batteryLevel, old?.batteryLevel),
               snr: fill(n.lastSnr, old?.snr),

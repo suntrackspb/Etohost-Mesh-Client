@@ -40,6 +40,7 @@ void main() {
       role: 0,
       isUnmessagable: false,
       hasXeddsaSigned: false,
+      mirrorCorrected: false,
       viaMqtt: false,
       isFavorite: false,
       isIgnored: false,

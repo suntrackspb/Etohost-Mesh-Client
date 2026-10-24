@@ -383,10 +383,17 @@ class _NodeMarker extends StatelessWidget {
         : p.isMe
         ? scheme.tertiary
         : p.isFavorite
-        ? scheme.secondary
+        ? _favoriteColor
+        : p.corrected
+        ? _correctedColor
         : scheme.surface;
+    final thick = highlight || p.isMe || p.isFavorite || p.corrected;
     return Tooltip(
-      message: p.mirrorOnly ? '${p.title} (зеркало)' : p.title,
+      message: [
+        p.title,
+        if (p.mirrorOnly) '(зеркало)',
+        if (p.corrected) '· скорректировано',
+      ].join(' '),
       child: GestureDetector(
         onTap: onTap,
         child: Opacity(
@@ -397,10 +404,7 @@ class _NodeMarker extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: ring,
-                    width: highlight || p.isMe || p.isFavorite ? 3 : 2,
-                  ),
+                  border: Border.all(color: ring, width: thick ? 3 : 2),
                   boxShadow: [
                     const BoxShadow(blurRadius: 3, color: Color(0x55000000)),
                     if (highlight)
@@ -414,14 +418,18 @@ class _NodeMarker extends StatelessWidget {
                 child: NodeAvatar(
                   nodeNum: p.num,
                   shortName: p.label,
-                  size: size - (highlight || p.isMe || p.isFavorite ? 6 : 4),
+                  size: size - (thick ? 6 : 4),
                 ),
               ),
               if (p.isFavorite)
                 Positioned(
                   right: -4,
                   top: -4,
-                  child: Icon(Icons.star, size: 16, color: scheme.secondary),
+                  child: const Icon(
+                    Icons.star,
+                    size: 16,
+                    color: _favoriteColor,
+                  ),
                 ),
             ],
           ),
@@ -491,6 +499,13 @@ class _SearchSheetState extends State<_SearchSheet> {
   }
 }
 
+/// Избранные — золотистым, как звёздочка в списке нод.
+const _favoriteColor = Colors.amber;
+
+/// Положение исправлено зеркалом по соседям — фиолетовая рамка, как на
+/// карте зеркала.
+const _correctedColor = Color(0xFF9C27B0);
+
 /// «Слои»: подложка и группировка нод — то, что меняют редко.
 class _LayersMenu extends ConsumerWidget {
   const _LayersMenu({required this.cluster});
@@ -499,13 +514,19 @@ class _LayersMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final style = ref.watch(mapStyleProvider).value ?? MapStyle.auto;
+    final correction = ref.watch(positionCorrectionProvider).value ?? false;
     final db = ref.read(databaseProvider);
     return PopupMenuButton<Object>(
       tooltip: 'Слои',
       icon: const Icon(Icons.layers_outlined),
-      onSelected: (v) => v is MapStyle
-          ? db.setSetting(AppSettingKeys.mapStyle, v.name)
-          : db.setSetting(AppSettingKeys.mapCluster, '${!cluster}'),
+      onSelected: (v) => switch (v) {
+        MapStyle s => db.setSetting(AppSettingKeys.mapStyle, s.name),
+        #correction => db.setSetting(
+          AppSettingKeys.mapCorrection,
+          '${!correction}',
+        ),
+        _ => db.setSetting(AppSettingKeys.mapCluster, '${!cluster}'),
+      },
       itemBuilder: (_) => [
         ...[
           for (final s in availableMapStyles())
@@ -520,6 +541,11 @@ class _LayersMenu extends ConsumerWidget {
           value: #cluster,
           checked: cluster,
           child: const Text('Группировать ноды'),
+        ),
+        CheckedPopupMenuItem<Object>(
+          value: #correction,
+          checked: correction,
+          child: const Text('Корректировка позиций'),
         ),
       ],
     );

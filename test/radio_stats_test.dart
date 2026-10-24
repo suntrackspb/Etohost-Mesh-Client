@@ -14,6 +14,7 @@ void main() {
       role: 0,
       isUnmessagable: false,
       hasXeddsaSigned: false,
+      mirrorCorrected: false,
       lastHeard: heard,
       viaMqtt: false,
       isFavorite: false,

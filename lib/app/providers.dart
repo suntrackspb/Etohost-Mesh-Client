@@ -343,6 +343,7 @@ final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {
           ],
           me: me,
           area: area,
+          correction: ref.watch(positionCorrectionProvider).value ?? false,
         ),
       );
 });
@@ -351,7 +352,8 @@ final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {
 final mapPointsProvider = Provider<List<MapPoint>>((ref) {
   final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
   final nodes = ref.watch(filteredNodesProvider).value ?? const [];
-  return mapPoints(nodes, me: me);
+  final correction = ref.watch(positionCorrectionProvider).value ?? false;
+  return mapPoints(nodes, me: me, correction: correction);
 });
 
 final channelsProvider = StreamProvider<List<MeshChannel>>(
@@ -907,6 +909,12 @@ final accentProvider = StreamProvider<Accent>(
 /// Вращение карты жестом (по умолчанию выключено — север всегда сверху).
 final mapRotateProvider = StreamProvider<bool>(
   (ref) => _setting(ref, AppSettingKeys.mapRotate).map((v) => v == 'true'),
+);
+
+/// Корректировка позиций: исправленные зеркалом координаты важнее
+/// остальных (по умолчанию выключена).
+final positionCorrectionProvider = StreamProvider<bool>(
+  (ref) => _setting(ref, AppSettingKeys.mapCorrection).map((v) => v == 'true'),
 );
 
 /// Группировка близких нод на карте (по умолчанию включена).

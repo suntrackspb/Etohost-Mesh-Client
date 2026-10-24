@@ -246,6 +246,43 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _mirrorLatMeta = const VerificationMeta(
+    'mirrorLat',
+  );
+  @override
+  late final GeneratedColumn<double> mirrorLat = GeneratedColumn<double>(
+    'mirror_lat',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _mirrorLonMeta = const VerificationMeta(
+    'mirrorLon',
+  );
+  @override
+  late final GeneratedColumn<double> mirrorLon = GeneratedColumn<double>(
+    'mirror_lon',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _mirrorCorrectedMeta = const VerificationMeta(
+    'mirrorCorrected',
+  );
+  @override
+  late final GeneratedColumn<bool> mirrorCorrected = GeneratedColumn<bool>(
+    'mirror_corrected',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("mirror_corrected" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _altitudeMeta = const VerificationMeta(
     'altitude',
   );
@@ -384,6 +421,9 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     isIgnored,
     latitude,
     longitude,
+    mirrorLat,
+    mirrorLon,
+    mirrorCorrected,
     altitude,
     batteryLevel,
     voltage,
@@ -537,6 +577,27 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
       context.handle(
         _longitudeMeta,
         longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta),
+      );
+    }
+    if (data.containsKey('mirror_lat')) {
+      context.handle(
+        _mirrorLatMeta,
+        mirrorLat.isAcceptableOrUnknown(data['mirror_lat']!, _mirrorLatMeta),
+      );
+    }
+    if (data.containsKey('mirror_lon')) {
+      context.handle(
+        _mirrorLonMeta,
+        mirrorLon.isAcceptableOrUnknown(data['mirror_lon']!, _mirrorLonMeta),
+      );
+    }
+    if (data.containsKey('mirror_corrected')) {
+      context.handle(
+        _mirrorCorrectedMeta,
+        mirrorCorrected.isAcceptableOrUnknown(
+          data['mirror_corrected']!,
+          _mirrorCorrectedMeta,
+        ),
       );
     }
     if (data.containsKey('altitude')) {
@@ -700,6 +761,18 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         DriftSqlType.double,
         data['${effectivePrefix}longitude'],
       ),
+      mirrorLat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}mirror_lat'],
+      ),
+      mirrorLon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}mirror_lon'],
+      ),
+      mirrorCorrected: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}mirror_corrected'],
+      )!,
       altitude: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}altitude'],
@@ -781,8 +854,16 @@ class Node extends DataClass implements Insertable<Node> {
   final bool viaMqtt;
   final bool isFavorite;
   final bool isIgnored;
+
+  /// Координаты из эфира (пишет только радио).
   final double? latitude;
   final double? longitude;
+
+  /// Координаты из зеркала (пишет только зеркало); [mirrorCorrected] —
+  /// зеркало исправило положение по соседям (глушилка, выброс).
+  final double? mirrorLat;
+  final double? mirrorLon;
+  final bool mirrorCorrected;
   final int? altitude;
   final int? batteryLevel;
   final double? voltage;
@@ -822,6 +903,9 @@ class Node extends DataClass implements Insertable<Node> {
     required this.isIgnored,
     this.latitude,
     this.longitude,
+    this.mirrorLat,
+    this.mirrorLon,
+    required this.mirrorCorrected,
     this.altitude,
     this.batteryLevel,
     this.voltage,
@@ -874,6 +958,13 @@ class Node extends DataClass implements Insertable<Node> {
     if (!nullToAbsent || longitude != null) {
       map['longitude'] = Variable<double>(longitude);
     }
+    if (!nullToAbsent || mirrorLat != null) {
+      map['mirror_lat'] = Variable<double>(mirrorLat);
+    }
+    if (!nullToAbsent || mirrorLon != null) {
+      map['mirror_lon'] = Variable<double>(mirrorLon);
+    }
+    map['mirror_corrected'] = Variable<bool>(mirrorCorrected);
     if (!nullToAbsent || altitude != null) {
       map['altitude'] = Variable<int>(altitude);
     }
@@ -941,6 +1032,13 @@ class Node extends DataClass implements Insertable<Node> {
       longitude: longitude == null && nullToAbsent
           ? const Value.absent()
           : Value(longitude),
+      mirrorLat: mirrorLat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mirrorLat),
+      mirrorLon: mirrorLon == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mirrorLon),
+      mirrorCorrected: Value(mirrorCorrected),
       altitude: altitude == null && nullToAbsent
           ? const Value.absent()
           : Value(altitude),
@@ -994,6 +1092,9 @@ class Node extends DataClass implements Insertable<Node> {
       isIgnored: serializer.fromJson<bool>(json['isIgnored']),
       latitude: serializer.fromJson<double?>(json['latitude']),
       longitude: serializer.fromJson<double?>(json['longitude']),
+      mirrorLat: serializer.fromJson<double?>(json['mirrorLat']),
+      mirrorLon: serializer.fromJson<double?>(json['mirrorLon']),
+      mirrorCorrected: serializer.fromJson<bool>(json['mirrorCorrected']),
       altitude: serializer.fromJson<int?>(json['altitude']),
       batteryLevel: serializer.fromJson<int?>(json['batteryLevel']),
       voltage: serializer.fromJson<double?>(json['voltage']),
@@ -1032,6 +1133,9 @@ class Node extends DataClass implements Insertable<Node> {
       'isIgnored': serializer.toJson<bool>(isIgnored),
       'latitude': serializer.toJson<double?>(latitude),
       'longitude': serializer.toJson<double?>(longitude),
+      'mirrorLat': serializer.toJson<double?>(mirrorLat),
+      'mirrorLon': serializer.toJson<double?>(mirrorLon),
+      'mirrorCorrected': serializer.toJson<bool>(mirrorCorrected),
       'altitude': serializer.toJson<int?>(altitude),
       'batteryLevel': serializer.toJson<int?>(batteryLevel),
       'voltage': serializer.toJson<double?>(voltage),
@@ -1066,6 +1170,9 @@ class Node extends DataClass implements Insertable<Node> {
     bool? isIgnored,
     Value<double?> latitude = const Value.absent(),
     Value<double?> longitude = const Value.absent(),
+    Value<double?> mirrorLat = const Value.absent(),
+    Value<double?> mirrorLon = const Value.absent(),
+    bool? mirrorCorrected,
     Value<int?> altitude = const Value.absent(),
     Value<int?> batteryLevel = const Value.absent(),
     Value<double?> voltage = const Value.absent(),
@@ -1099,6 +1206,9 @@ class Node extends DataClass implements Insertable<Node> {
     isIgnored: isIgnored ?? this.isIgnored,
     latitude: latitude.present ? latitude.value : this.latitude,
     longitude: longitude.present ? longitude.value : this.longitude,
+    mirrorLat: mirrorLat.present ? mirrorLat.value : this.mirrorLat,
+    mirrorLon: mirrorLon.present ? mirrorLon.value : this.mirrorLon,
+    mirrorCorrected: mirrorCorrected ?? this.mirrorCorrected,
     altitude: altitude.present ? altitude.value : this.altitude,
     batteryLevel: batteryLevel.present ? batteryLevel.value : this.batteryLevel,
     voltage: voltage.present ? voltage.value : this.voltage,
@@ -1148,6 +1258,11 @@ class Node extends DataClass implements Insertable<Node> {
       isIgnored: data.isIgnored.present ? data.isIgnored.value : this.isIgnored,
       latitude: data.latitude.present ? data.latitude.value : this.latitude,
       longitude: data.longitude.present ? data.longitude.value : this.longitude,
+      mirrorLat: data.mirrorLat.present ? data.mirrorLat.value : this.mirrorLat,
+      mirrorLon: data.mirrorLon.present ? data.mirrorLon.value : this.mirrorLon,
+      mirrorCorrected: data.mirrorCorrected.present
+          ? data.mirrorCorrected.value
+          : this.mirrorCorrected,
       altitude: data.altitude.present ? data.altitude.value : this.altitude,
       batteryLevel: data.batteryLevel.present
           ? data.batteryLevel.value
@@ -1192,6 +1307,9 @@ class Node extends DataClass implements Insertable<Node> {
           ..write('isIgnored: $isIgnored, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
+          ..write('mirrorLat: $mirrorLat, ')
+          ..write('mirrorLon: $mirrorLon, ')
+          ..write('mirrorCorrected: $mirrorCorrected, ')
           ..write('altitude: $altitude, ')
           ..write('batteryLevel: $batteryLevel, ')
           ..write('voltage: $voltage, ')
@@ -1228,6 +1346,9 @@ class Node extends DataClass implements Insertable<Node> {
     isIgnored,
     latitude,
     longitude,
+    mirrorLat,
+    mirrorLon,
+    mirrorCorrected,
     altitude,
     batteryLevel,
     voltage,
@@ -1263,6 +1384,9 @@ class Node extends DataClass implements Insertable<Node> {
           other.isIgnored == this.isIgnored &&
           other.latitude == this.latitude &&
           other.longitude == this.longitude &&
+          other.mirrorLat == this.mirrorLat &&
+          other.mirrorLon == this.mirrorLon &&
+          other.mirrorCorrected == this.mirrorCorrected &&
           other.altitude == this.altitude &&
           other.batteryLevel == this.batteryLevel &&
           other.voltage == this.voltage &&
@@ -1296,6 +1420,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
   final Value<bool> isIgnored;
   final Value<double?> latitude;
   final Value<double?> longitude;
+  final Value<double?> mirrorLat;
+  final Value<double?> mirrorLon;
+  final Value<bool> mirrorCorrected;
   final Value<int?> altitude;
   final Value<int?> batteryLevel;
   final Value<double?> voltage;
@@ -1327,6 +1454,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.isIgnored = const Value.absent(),
     this.latitude = const Value.absent(),
     this.longitude = const Value.absent(),
+    this.mirrorLat = const Value.absent(),
+    this.mirrorLon = const Value.absent(),
+    this.mirrorCorrected = const Value.absent(),
     this.altitude = const Value.absent(),
     this.batteryLevel = const Value.absent(),
     this.voltage = const Value.absent(),
@@ -1359,6 +1489,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.isIgnored = const Value.absent(),
     this.latitude = const Value.absent(),
     this.longitude = const Value.absent(),
+    this.mirrorLat = const Value.absent(),
+    this.mirrorLon = const Value.absent(),
+    this.mirrorCorrected = const Value.absent(),
     this.altitude = const Value.absent(),
     this.batteryLevel = const Value.absent(),
     this.voltage = const Value.absent(),
@@ -1391,6 +1524,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Expression<bool>? isIgnored,
     Expression<double>? latitude,
     Expression<double>? longitude,
+    Expression<double>? mirrorLat,
+    Expression<double>? mirrorLon,
+    Expression<bool>? mirrorCorrected,
     Expression<int>? altitude,
     Expression<int>? batteryLevel,
     Expression<double>? voltage,
@@ -1423,6 +1559,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
       if (isIgnored != null) 'is_ignored': isIgnored,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (mirrorLat != null) 'mirror_lat': mirrorLat,
+      if (mirrorLon != null) 'mirror_lon': mirrorLon,
+      if (mirrorCorrected != null) 'mirror_corrected': mirrorCorrected,
       if (altitude != null) 'altitude': altitude,
       if (batteryLevel != null) 'battery_level': batteryLevel,
       if (voltage != null) 'voltage': voltage,
@@ -1457,6 +1596,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Value<bool>? isIgnored,
     Value<double?>? latitude,
     Value<double?>? longitude,
+    Value<double?>? mirrorLat,
+    Value<double?>? mirrorLon,
+    Value<bool>? mirrorCorrected,
     Value<int?>? altitude,
     Value<int?>? batteryLevel,
     Value<double?>? voltage,
@@ -1489,6 +1631,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
       isIgnored: isIgnored ?? this.isIgnored,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      mirrorLat: mirrorLat ?? this.mirrorLat,
+      mirrorLon: mirrorLon ?? this.mirrorLon,
+      mirrorCorrected: mirrorCorrected ?? this.mirrorCorrected,
       altitude: altitude ?? this.altitude,
       batteryLevel: batteryLevel ?? this.batteryLevel,
       voltage: voltage ?? this.voltage,
@@ -1565,6 +1710,15 @@ class NodesCompanion extends UpdateCompanion<Node> {
     if (longitude.present) {
       map['longitude'] = Variable<double>(longitude.value);
     }
+    if (mirrorLat.present) {
+      map['mirror_lat'] = Variable<double>(mirrorLat.value);
+    }
+    if (mirrorLon.present) {
+      map['mirror_lon'] = Variable<double>(mirrorLon.value);
+    }
+    if (mirrorCorrected.present) {
+      map['mirror_corrected'] = Variable<bool>(mirrorCorrected.value);
+    }
     if (altitude.present) {
       map['altitude'] = Variable<int>(altitude.value);
     }
@@ -1621,6 +1775,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
           ..write('isIgnored: $isIgnored, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
+          ..write('mirrorLat: $mirrorLat, ')
+          ..write('mirrorLon: $mirrorLon, ')
+          ..write('mirrorCorrected: $mirrorCorrected, ')
           ..write('altitude: $altitude, ')
           ..write('batteryLevel: $batteryLevel, ')
           ..write('voltage: $voltage, ')
@@ -6131,6 +6288,9 @@ typedef $$NodesTableCreateCompanionBuilder =
       Value<bool> isIgnored,
       Value<double?> latitude,
       Value<double?> longitude,
+      Value<double?> mirrorLat,
+      Value<double?> mirrorLon,
+      Value<bool> mirrorCorrected,
       Value<int?> altitude,
       Value<int?> batteryLevel,
       Value<double?> voltage,
@@ -6164,6 +6324,9 @@ typedef $$NodesTableUpdateCompanionBuilder =
       Value<bool> isIgnored,
       Value<double?> latitude,
       Value<double?> longitude,
+      Value<double?> mirrorLat,
+      Value<double?> mirrorLon,
+      Value<bool> mirrorCorrected,
       Value<int?> altitude,
       Value<int?> batteryLevel,
       Value<double?> voltage,
@@ -6281,6 +6444,21 @@ class $$NodesTableFilterComposer extends Composer<_$AppDatabase, $NodesTable> {
 
   ColumnFilters<double> get longitude => $composableBuilder(
     column: $table.longitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get mirrorLat => $composableBuilder(
+    column: $table.mirrorLat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get mirrorLon => $composableBuilder(
+    column: $table.mirrorLon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get mirrorCorrected => $composableBuilder(
+    column: $table.mirrorCorrected,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6444,6 +6622,21 @@ class $$NodesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get mirrorLat => $composableBuilder(
+    column: $table.mirrorLat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get mirrorLon => $composableBuilder(
+    column: $table.mirrorLon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get mirrorCorrected => $composableBuilder(
+    column: $table.mirrorCorrected,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get altitude => $composableBuilder(
     column: $table.altitude,
     builder: (column) => ColumnOrderings(column),
@@ -6576,6 +6769,17 @@ class $$NodesTableAnnotationComposer
   GeneratedColumn<double> get longitude =>
       $composableBuilder(column: $table.longitude, builder: (column) => column);
 
+  GeneratedColumn<double> get mirrorLat =>
+      $composableBuilder(column: $table.mirrorLat, builder: (column) => column);
+
+  GeneratedColumn<double> get mirrorLon =>
+      $composableBuilder(column: $table.mirrorLon, builder: (column) => column);
+
+  GeneratedColumn<bool> get mirrorCorrected => $composableBuilder(
+    column: $table.mirrorCorrected,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get altitude =>
       $composableBuilder(column: $table.altitude, builder: (column) => column);
 
@@ -6663,6 +6867,9 @@ class $$NodesTableTableManager
                 Value<bool> isIgnored = const Value.absent(),
                 Value<double?> latitude = const Value.absent(),
                 Value<double?> longitude = const Value.absent(),
+                Value<double?> mirrorLat = const Value.absent(),
+                Value<double?> mirrorLon = const Value.absent(),
+                Value<bool> mirrorCorrected = const Value.absent(),
                 Value<int?> altitude = const Value.absent(),
                 Value<int?> batteryLevel = const Value.absent(),
                 Value<double?> voltage = const Value.absent(),
@@ -6694,6 +6901,9 @@ class $$NodesTableTableManager
                 isIgnored: isIgnored,
                 latitude: latitude,
                 longitude: longitude,
+                mirrorLat: mirrorLat,
+                mirrorLon: mirrorLon,
+                mirrorCorrected: mirrorCorrected,
                 altitude: altitude,
                 batteryLevel: batteryLevel,
                 voltage: voltage,
@@ -6727,6 +6937,9 @@ class $$NodesTableTableManager
                 Value<bool> isIgnored = const Value.absent(),
                 Value<double?> latitude = const Value.absent(),
                 Value<double?> longitude = const Value.absent(),
+                Value<double?> mirrorLat = const Value.absent(),
+                Value<double?> mirrorLon = const Value.absent(),
+                Value<bool> mirrorCorrected = const Value.absent(),
                 Value<int?> altitude = const Value.absent(),
                 Value<int?> batteryLevel = const Value.absent(),
                 Value<double?> voltage = const Value.absent(),
@@ -6758,6 +6971,9 @@ class $$NodesTableTableManager
                 isIgnored: isIgnored,
                 latitude: latitude,
                 longitude: longitude,
+                mirrorLat: mirrorLat,
+                mirrorLon: mirrorLon,
+                mirrorCorrected: mirrorCorrected,
                 altitude: altitude,
                 batteryLevel: batteryLevel,
                 voltage: voltage,

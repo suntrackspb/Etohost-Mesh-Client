@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
+import '../../data/node_position.dart';
 import '../../data/node_row_info.dart';
 import '../../ui/kit/kit.dart';
 import 'node_detail_page.dart';
@@ -203,7 +204,8 @@ class NodeTile extends ConsumerWidget {
           Icons.alt_route,
           node.hopsAway == 0 ? 'direct' : '${node.hopsAway}',
         ),
-      if (on(NodeRowField.position) && node.latitude != null)
+      if (on(NodeRowField.position) &&
+          nodePosition(node, correction: false) != null)
         Tooltip(
           message: 'Есть координаты',
           child: Icon(Icons.location_on, size: 14, color: muted),

@@ -14,6 +14,7 @@ import '../../app/toasts.dart';
 import '../../core/geo/geo.dart';
 import '../../data/hardware_catalog.dart';
 import '../../data/node_actions.dart';
+import '../../data/node_position.dart';
 import '../../data/node_details.dart';
 import '../../data/node_row_info.dart';
 import '../map/map_tiles.dart';
@@ -75,6 +76,10 @@ class NodeDetailPage extends ConsumerWidget {
             ref.watch(mirrorNodeDetailProvider(n.num));
           }
           final block = directBlock(n);
+          final pos = nodePosition(
+            n,
+            correction: ref.watch(positionCorrectionProvider).value ?? false,
+          );
           return ListView(
             padding: const EdgeInsets.all(Tokens.s16),
             children: [
@@ -98,7 +103,7 @@ class NodeDetailPage extends ConsumerWidget {
               _BoardCard(n.hwModel),
               _DetailsCard(n),
               TracerouteCard(n.num),
-              if (hasPosition(n)) _PositionCard(n, isMe ? null : own),
+              if (pos != null) _PositionCard(n, pos, isMe ? null : own),
               TelemetrySection(n),
               _NoteCard(n.num),
               if (!isMe) DeleteNodeButton(n),
@@ -217,23 +222,24 @@ class _DetailsCard extends StatelessWidget {
 
 /// Мини-карта, координаты, расстояние и азимут от своей ноды.
 class _PositionCard extends StatelessWidget {
-  const _PositionCard(this.n, this.own);
+  const _PositionCard(this.n, this.pos, this.own);
 
   final Node n;
+  final NodePosition pos;
 
   /// Своя нода — для расстояния; null — не считаем.
   final Node? own;
 
   @override
   Widget build(BuildContext context) {
-    final p = LatLng(n.latitude!, n.longitude!);
+    final p = LatLng(pos.lat, pos.lon);
     final coords =
-        '${n.latitude!.toStringAsFixed(5)}, ${n.longitude!.toStringAsFixed(5)}';
+        '${pos.lat.toStringAsFixed(5)}, ${pos.lon.toStringAsFixed(5)}';
     final o = own;
     final from = o != null && hasPosition(o)
         ? (lat: o.latitude!, lon: o.longitude!)
         : null;
-    final to = (lat: n.latitude!, lon: n.longitude!);
+    final to = (lat: pos.lat, lon: pos.lon);
     return SectionCard(
       title: 'Позиция',
       children: [
@@ -273,7 +279,11 @@ class _PositionCard extends StatelessWidget {
         ),
         MeshTile(
           title: coords,
-          subtitle: n.altitude != null ? 'высота ${n.altitude} м' : null,
+          subtitle: pos.corrected
+              ? 'скорректировано по соседям'
+              : !pos.mirror && n.altitude != null
+              ? 'высота ${n.altitude} м'
+              : null,
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

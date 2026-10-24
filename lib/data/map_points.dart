@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../core/proto/mesh.dart';
 import 'database.dart';
+import 'node_position.dart';
 
 /// Точка на карте — нода с координатами и признаки для отрисовки.
 class MapPoint {
@@ -15,6 +16,7 @@ class MapPoint {
     required this.isFavorite,
     required this.stale,
     required this.mirrorOnly,
+    this.corrected = false,
   });
 
   final int num;
@@ -30,26 +32,29 @@ class MapPoint {
   /// Давно не слышали — рисуем бледнее.
   final bool stale;
   final bool mirrorOnly;
+
+  /// Положение исправлено зеркалом по соседям — фиолетовая рамка.
+  final bool corrected;
 }
 
 /// Сколько времени нода считается «свежей» на карте.
 const mapStaleAfter = Duration(hours: 2);
 
-/// Координаты (0, 0) прошивка шлёт как «нет позиции» — их пропускаем.
-bool hasPosition(Node n) =>
-    n.latitude != null &&
-    n.longitude != null &&
-    !(n.latitude == 0 && n.longitude == 0);
-
-List<MapPoint> mapPoints(List<Node> nodes, {int? me, DateTime? now}) {
+List<MapPoint> mapPoints(
+  List<Node> nodes, {
+  int? me,
+  DateTime? now,
+  bool correction = false,
+}) {
   final t = now ?? DateTime.now();
   return [
     for (final n in nodes)
-      if (hasPosition(n))
+      if (nodePosition(n, correction: correction) case final p?)
         MapPoint(
           num: n.num,
-          lat: n.latitude!,
-          lon: n.longitude!,
+          lat: p.lat,
+          lon: p.lon,
+          corrected: p.corrected,
           label: n.shortName.isNotEmpty
               ? n.shortName
               : nodeIdString(n.num).substring(5),

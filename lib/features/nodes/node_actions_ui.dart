@@ -10,6 +10,7 @@ import '../../core/proto/mesh.dart';
 import '../../core/radio/send_queue.dart';
 import '../../data/database.dart';
 import '../../data/node_actions.dart';
+import '../../data/node_position.dart';
 import '../../ui/kit/kit.dart';
 
 /// Выполнить действие и сообщить итог; логика — в [NodeActions].
@@ -148,7 +149,7 @@ class NodeActionsCard extends ConsumerWidget {
                 : null,
           ),
         ]),
-        if (hasPosition(n))
+        if (nodePosition(n, correction: false) != null)
           MeshTile(
             leading: const Icon(Icons.map_outlined),
             title: 'Перейти к ноде',

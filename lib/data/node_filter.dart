@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../core/geo/geo.dart';
 import '../core/proto/mesh.dart';
 import 'database.dart';
+import 'node_position.dart';
 
 enum NodeSort { lastHeard, name, snr, hops }
 
@@ -184,10 +185,18 @@ class NodeFilter {
   /// Отфильтровать и отсортировать; [me] (своя нода) всегда первой.
   /// [area] — скрыть ноды дальше радиуса; ноды без координат остаются
   /// (на 2.8 позиция по умолчанию выключена).
-  List<Node> apply(List<Node> all, {int? me, DateTime? now, NodeArea? area}) {
+  List<Node> apply(
+    List<Node> all, {
+    int? me,
+    DateTime? now,
+    NodeArea? area,
+    bool correction = false,
+  }) {
     final t = now ?? DateTime.now();
     final out = all
-        .where((n) => n.num == me || (matches(n, t) && _inArea(n, area)))
+        .where(
+          (n) => n.num == me || (matches(n, t) && _inArea(n, area, correction)),
+        )
         .toList();
     int cmp(Node a, Node b) {
       if ((a.num == me) != (b.num == me)) return a.num == me ? -1 : 1;
@@ -203,12 +212,12 @@ class NodeFilter {
     return out..sort(cmp);
   }
 
-  static bool _inArea(Node n, NodeArea? a) =>
-      a == null ||
-      n.latitude == null ||
-      n.longitude == null ||
-      (n.latitude == 0 && n.longitude == 0) ||
-      distanceKm(a.center, (lat: n.latitude!, lon: n.longitude!)) <= a.km;
+  /// Без координат — не отсекаем (положение неизвестно).
+  static bool _inArea(Node n, NodeArea? a, bool correction) {
+    if (a == null) return true;
+    final p = nodePosition(n, correction: correction);
+    return p == null || distanceKm(a.center, (lat: p.lat, lon: p.lon)) <= a.km;
+  }
 
   static String _name(Node n) =>
       (n.longName.isEmpty ? nodeIdString(n.num) : n.longName).toLowerCase();

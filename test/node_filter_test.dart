@@ -29,6 +29,7 @@ Node n(
   publicKey: key ? Uint8List(32) : null,
   isUnmessagable: false,
   hasXeddsaSigned: signed,
+  mirrorCorrected: false,
   lastHeard: heard,
   snr: snr,
   hopsAway: hops,

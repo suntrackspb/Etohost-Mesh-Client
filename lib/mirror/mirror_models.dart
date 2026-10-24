@@ -97,6 +97,7 @@ class MirrorNode {
     this.hwModel,
     this.lastLat,
     this.lastLon,
+    this.positionCorrected = false,
     this.lastSeenAt,
     this.batteryLevel,
     this.lastSnr,
@@ -116,6 +117,7 @@ class MirrorNode {
       hwModel: _int(raw['hw_model']),
       lastLat: _double(raw['last_lat']),
       lastLon: _double(raw['last_lon']),
+      positionCorrected: raw['position_corrected'] == true,
       lastSeenAt: parseMirrorDate(raw['last_seen_at'] as String?),
       batteryLevel: _int(raw['battery_level']),
       lastSnr: _double(raw['last_snr']),
@@ -135,6 +137,9 @@ class MirrorNode {
   final int? hwModel;
   final double? lastLat;
   final double? lastLon;
+
+  /// Зеркало подменило координаты исправленными по соседям.
+  final bool positionCorrected;
   final DateTime? lastSeenAt;
   final int? batteryLevel;
   final double? lastSnr;

@@ -8,6 +8,7 @@ import '../../app/providers.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
 import '../../data/node_actions.dart';
+import '../../data/node_position.dart';
 import '../../data/traceroute_view.dart';
 import '../../ui/kit/kit.dart';
 import '../map/map_tiles.dart';
@@ -34,11 +35,13 @@ String _longName(Map<int, Node> nodes, int num) {
   return n.shortName.isNotEmpty ? n.shortName : nodeIdString(num);
 }
 
-/// Положение ноды на карте маршрута. Сейчас — только координаты ноды;
-/// сюда же добавится оценка положения с сервера зеркала (approx).
-RoutePoint? routePoint(Node? n) => n == null || !hasPosition(n)
-    ? null
-    : (lat: n.latitude!, lon: n.longitude!, approx: false);
+/// Положение ноды на карте маршрута по общему правилу ([nodePosition]);
+/// исправленное зеркалом — примерное (пунктир). Сюда же добавится оценка
+/// положения нод без координат.
+RoutePoint? routePoint(Node? n, {required bool correction}) {
+  final p = n == null ? null : nodePosition(n, correction: correction);
+  return p == null ? null : (lat: p.lat, lon: p.lon, approx: p.corrected);
+}
 
 /// Нужны ли часы: есть трассировка, ждущая ответа.
 bool _needsClock(Iterable<TracerouteResult> l, DateTime now) =>
@@ -148,12 +151,13 @@ class TraceroutePage extends ConsumerWidget {
     }
     final now = DateTime.now();
     final h = MediaQuery.sizeOf(context).height;
+    final c = ref.watch(positionCorrectionProvider).value ?? false;
     return Scaffold(
       appBar: AppBar(title: Text(_longName(nodes, r.target))),
       body: Column(
         children: [
           if (r.answered)
-            SizedBox(height: h * 0.42, child: _RouteMap(r, nodes)),
+            SizedBox(height: h * 0.42, child: _RouteMap(r, nodes, c)),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(Tokens.s16),
@@ -171,9 +175,9 @@ class TraceroutePage extends ConsumerWidget {
                     ),
                   ),
                 if (r.towards.isNotEmpty)
-                  _PathBlock('Маршрут', _towardsColor, r.towards, nodes),
+                  _PathBlock('Маршрут', _towardsColor, r.towards, nodes, c),
                 if (r.back.isNotEmpty)
-                  _PathBlock('Маршрут обратно', _backColor, r.back, nodes),
+                  _PathBlock('Маршрут обратно', _backColor, r.back, nodes, c),
               ],
             ),
           ),
@@ -186,12 +190,19 @@ class TraceroutePage extends ConsumerWidget {
 /// Путь списком: цепочка нод, у каждой — SNR приёма и пометка «нет
 /// координат».
 class _PathBlock extends StatelessWidget {
-  const _PathBlock(this.title, this.color, this.path, this.nodes);
+  const _PathBlock(
+    this.title,
+    this.color,
+    this.path,
+    this.nodes,
+    this.correction,
+  );
 
   final String title;
   final Color color;
   final List<Hop> path;
   final Map<int, Node> nodes;
+  final bool correction;
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +234,8 @@ class _PathBlock extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (routePoint(nodes[hop.num]) == null)
+                  if (routePoint(nodes[hop.num], correction: correction) ==
+                      null)
                     Padding(
                       padding: const EdgeInsets.only(right: Tokens.s8),
                       child: Icon(Icons.location_off, size: 14, color: muted),
@@ -245,14 +257,15 @@ class _PathBlock extends StatelessWidget {
 /// Карта маршрута: туда — зелёная линия, обратно — синяя; общие отрезки
 /// раздвинуты; через ноды без координат — пунктир с числом пропущенных.
 class _RouteMap extends StatelessWidget {
-  const _RouteMap(this.r, this.nodes);
+  const _RouteMap(this.r, this.nodes, this.correction);
 
   final TracerouteResult r;
   final Map<int, Node> nodes;
+  final bool correction;
 
   @override
   Widget build(BuildContext context) {
-    RoutePoint? pos(int num) => routePoint(nodes[num]);
+    RoutePoint? pos(int num) => routePoint(nodes[num], correction: correction);
     final towards = routeLegs(r.towards, pos);
     final back = routeLegs(r.back, pos);
     final pts = <int, RoutePoint>{
