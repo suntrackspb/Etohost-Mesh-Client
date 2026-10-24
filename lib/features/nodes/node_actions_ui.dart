@@ -252,7 +252,11 @@ class OwnNodeActionsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final canSend = ref.watch(canSendProvider);
     final a = ref.read(nodeActionsProvider);
-    final url = contactUrl(n, own: true);
+    final url = contactUrl(
+      n,
+      own: true,
+      radioUser: ref.read(radioProvider).ownUser,
+    );
     if (!canSend && url == null) return const SizedBox.shrink();
     return SectionCard(
       title: 'Действия',

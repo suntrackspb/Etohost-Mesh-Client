@@ -88,6 +88,7 @@ class PacketRouter {
             hwModel: user(u.hwModel.value),
             role: user(u.role.value),
             isUnmessagable: user(u.isUnmessagable),
+            macaddr: _mac(u),
             lastHeard: Value(n.lastHeard == 0 ? null : _time(n.lastHeard)),
             snr: Value(n.snr == 0 ? null : n.snr),
             hopsAway: Value(n.hasHopsAway() ? n.hopsAway : null),
@@ -129,6 +130,7 @@ class PacketRouter {
       hwModel: Value(u.hwModel.value),
       role: Value(u.role.value),
       isUnmessagable: Value(u.isUnmessagable),
+      macaddr: _mac(u),
       lastHeard: Value(_time(heard)),
       onRadio: const Value(true),
     );
@@ -473,6 +475,12 @@ class PacketRouter {
     if (lora == null) return 'LongFast';
     return modemPresetName(Config.fromBuffer(lora.data).lora);
   }
+
+  /// MAC из User; пустой или нулевой (так шлют некоторые клиенты) — не пишем.
+  static Value<Uint8List?> _mac(User u) =>
+      u.macaddr.isNotEmpty && u.macaddr.any((b) => b != 0)
+      ? Value(Uint8List.fromList(u.macaddr))
+      : const Value.absent();
 
   static int _rxTime(MeshPacket p) =>
       p.rxTime != 0 ? p.rxTime : DateTime.now().millisecondsSinceEpoch ~/ 1000;

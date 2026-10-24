@@ -147,6 +147,10 @@ class Nodes extends Table {
   IntColumn get role => integer().withDefault(const Constant(0))();
   BlobColumn get publicKey => blob().nullable()();
 
+  /// MAC из User (6 байт): нужен в своей NodeInfo и в ссылке-контакте,
+  /// как у официальных клиентов. Пустой из NodeInfo не затирает известный.
+  BlobColumn get macaddr => blob().nullable()();
+
   /// Пришёл другой ключ, чем записанный: храним его здесь, а [publicKey]
   /// не меняем (первый ключ побеждает, как `keyMatch` в iOS). Не null —
   /// предупреждение «Несоответствие открытого ключа»; снимается удалением ноды.
@@ -421,7 +425,7 @@ class AppDatabase extends _$AppDatabase {
   final AppDatabase? settings;
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -491,6 +495,7 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(nodes, c);
       }
     },
+    14: (m) => m.addColumn(nodes, nodes.macaddr),
   };
 
   /// Миграция целиком или никак: drift сам транзакцию не открывает, а

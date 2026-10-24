@@ -252,6 +252,7 @@ User ownUser(Node n) => User(
   role: Config_DeviceConfig_Role.valueOf(n.role),
   publicKey: n.publicKey,
   isUnmessagable: n.isUnmessagable,
+  macaddr: n.macaddr,
 );
 
 /// User для рассылки своей NodeInfo: за основу — присланный радио
@@ -344,11 +345,12 @@ class TracerouteResult {
 /// Ссылка-контакт для QR, как в официальных клиентах:
 /// `https://meshtastic.org/v/#` + SharedContact в base64url без «=».
 /// null — делиться нечем: без ключа или нода не принимает личные.
-String? contactUrl(Node n, {required bool own}) {
+/// Своя нода — с [radioUser] (MAC и прочее), как User в официальных.
+String? contactUrl(Node n, {required bool own, User? radioUser}) {
   if (directBlock(n) != null) return null;
   final c = SharedContact(
     nodeNum: n.num,
-    user: ownUser(n),
+    user: nodeInfoUser(n, radioUser),
     manuallyVerified: own,
   );
   final b64 = base64Url.encode(c.writeToBuffer()).replaceAll('=', '');

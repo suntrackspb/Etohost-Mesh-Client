@@ -84,6 +84,17 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     type: DriftSqlType.blob,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _macaddrMeta = const VerificationMeta(
+    'macaddr',
+  );
+  @override
+  late final GeneratedColumn<Uint8List> macaddr = GeneratedColumn<Uint8List>(
+    'macaddr',
+    aliasedName,
+    true,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _newPublicKeyMeta = const VerificationMeta(
     'newPublicKey',
   );
@@ -486,6 +497,7 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     hwModel,
     role,
     publicKey,
+    macaddr,
     newPublicKey,
     firstHeard,
     firmwareVersion,
@@ -572,6 +584,12 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
       context.handle(
         _publicKeyMeta,
         publicKey.isAcceptableOrUnknown(data['public_key']!, _publicKeyMeta),
+      );
+    }
+    if (data.containsKey('macaddr')) {
+      context.handle(
+        _macaddrMeta,
+        macaddr.isAcceptableOrUnknown(data['macaddr']!, _macaddrMeta),
       );
     }
     if (data.containsKey('new_public_key')) {
@@ -857,6 +875,10 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         DriftSqlType.blob,
         data['${effectivePrefix}public_key'],
       ),
+      macaddr: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}macaddr'],
+      ),
       newPublicKey: attachedDatabase.typeMapping.read(
         DriftSqlType.blob,
         data['${effectivePrefix}new_public_key'],
@@ -1007,6 +1029,10 @@ class Node extends DataClass implements Insertable<Node> {
   final int role;
   final Uint8List? publicKey;
 
+  /// MAC из User (6 байт): нужен в своей NodeInfo и в ссылке-контакте,
+  /// как у официальных клиентов. Пустой из NodeInfo не затирает известный.
+  final Uint8List? macaddr;
+
   /// Пришёл другой ключ, чем записанный: храним его здесь, а [publicKey]
   /// не меняем (первый ключ побеждает, как `keyMatch` в iOS). Не null —
   /// предупреждение «Несоответствие открытого ключа»; снимается удалением ноды.
@@ -1080,6 +1106,7 @@ class Node extends DataClass implements Insertable<Node> {
     required this.hwModel,
     required this.role,
     this.publicKey,
+    this.macaddr,
     this.newPublicKey,
     this.firstHeard,
     this.firmwareVersion,
@@ -1125,6 +1152,9 @@ class Node extends DataClass implements Insertable<Node> {
     map['role'] = Variable<int>(role);
     if (!nullToAbsent || publicKey != null) {
       map['public_key'] = Variable<Uint8List>(publicKey);
+    }
+    if (!nullToAbsent || macaddr != null) {
+      map['macaddr'] = Variable<Uint8List>(macaddr);
     }
     if (!nullToAbsent || newPublicKey != null) {
       map['new_public_key'] = Variable<Uint8List>(newPublicKey);
@@ -1223,6 +1253,9 @@ class Node extends DataClass implements Insertable<Node> {
       publicKey: publicKey == null && nullToAbsent
           ? const Value.absent()
           : Value(publicKey),
+      macaddr: macaddr == null && nullToAbsent
+          ? const Value.absent()
+          : Value(macaddr),
       newPublicKey: newPublicKey == null && nullToAbsent
           ? const Value.absent()
           : Value(newPublicKey),
@@ -1318,6 +1351,7 @@ class Node extends DataClass implements Insertable<Node> {
       hwModel: serializer.fromJson<int>(json['hwModel']),
       role: serializer.fromJson<int>(json['role']),
       publicKey: serializer.fromJson<Uint8List?>(json['publicKey']),
+      macaddr: serializer.fromJson<Uint8List?>(json['macaddr']),
       newPublicKey: serializer.fromJson<Uint8List?>(json['newPublicKey']),
       firstHeard: serializer.fromJson<DateTime?>(json['firstHeard']),
       firmwareVersion: serializer.fromJson<String?>(json['firmwareVersion']),
@@ -1368,6 +1402,7 @@ class Node extends DataClass implements Insertable<Node> {
       'hwModel': serializer.toJson<int>(hwModel),
       'role': serializer.toJson<int>(role),
       'publicKey': serializer.toJson<Uint8List?>(publicKey),
+      'macaddr': serializer.toJson<Uint8List?>(macaddr),
       'newPublicKey': serializer.toJson<Uint8List?>(newPublicKey),
       'firstHeard': serializer.toJson<DateTime?>(firstHeard),
       'firmwareVersion': serializer.toJson<String?>(firmwareVersion),
@@ -1412,6 +1447,7 @@ class Node extends DataClass implements Insertable<Node> {
     int? hwModel,
     int? role,
     Value<Uint8List?> publicKey = const Value.absent(),
+    Value<Uint8List?> macaddr = const Value.absent(),
     Value<Uint8List?> newPublicKey = const Value.absent(),
     Value<DateTime?> firstHeard = const Value.absent(),
     Value<String?> firmwareVersion = const Value.absent(),
@@ -1453,6 +1489,7 @@ class Node extends DataClass implements Insertable<Node> {
     hwModel: hwModel ?? this.hwModel,
     role: role ?? this.role,
     publicKey: publicKey.present ? publicKey.value : this.publicKey,
+    macaddr: macaddr.present ? macaddr.value : this.macaddr,
     newPublicKey: newPublicKey.present ? newPublicKey.value : this.newPublicKey,
     firstHeard: firstHeard.present ? firstHeard.value : this.firstHeard,
     firmwareVersion: firmwareVersion.present
@@ -1508,6 +1545,7 @@ class Node extends DataClass implements Insertable<Node> {
       hwModel: data.hwModel.present ? data.hwModel.value : this.hwModel,
       role: data.role.present ? data.role.value : this.role,
       publicKey: data.publicKey.present ? data.publicKey.value : this.publicKey,
+      macaddr: data.macaddr.present ? data.macaddr.value : this.macaddr,
       newPublicKey: data.newPublicKey.present
           ? data.newPublicKey.value
           : this.newPublicKey,
@@ -1590,6 +1628,7 @@ class Node extends DataClass implements Insertable<Node> {
           ..write('hwModel: $hwModel, ')
           ..write('role: $role, ')
           ..write('publicKey: $publicKey, ')
+          ..write('macaddr: $macaddr, ')
           ..write('newPublicKey: $newPublicKey, ')
           ..write('firstHeard: $firstHeard, ')
           ..write('firmwareVersion: $firmwareVersion, ')
@@ -1636,6 +1675,7 @@ class Node extends DataClass implements Insertable<Node> {
     hwModel,
     role,
     $driftBlobEquality.hash(publicKey),
+    $driftBlobEquality.hash(macaddr),
     $driftBlobEquality.hash(newPublicKey),
     firstHeard,
     firmwareVersion,
@@ -1681,6 +1721,7 @@ class Node extends DataClass implements Insertable<Node> {
           other.hwModel == this.hwModel &&
           other.role == this.role &&
           $driftBlobEquality.equals(other.publicKey, this.publicKey) &&
+          $driftBlobEquality.equals(other.macaddr, this.macaddr) &&
           $driftBlobEquality.equals(other.newPublicKey, this.newPublicKey) &&
           other.firstHeard == this.firstHeard &&
           other.firmwareVersion == this.firmwareVersion &&
@@ -1724,6 +1765,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
   final Value<int> hwModel;
   final Value<int> role;
   final Value<Uint8List?> publicKey;
+  final Value<Uint8List?> macaddr;
   final Value<Uint8List?> newPublicKey;
   final Value<DateTime?> firstHeard;
   final Value<String?> firmwareVersion;
@@ -1765,6 +1807,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.hwModel = const Value.absent(),
     this.role = const Value.absent(),
     this.publicKey = const Value.absent(),
+    this.macaddr = const Value.absent(),
     this.newPublicKey = const Value.absent(),
     this.firstHeard = const Value.absent(),
     this.firmwareVersion = const Value.absent(),
@@ -1807,6 +1850,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.hwModel = const Value.absent(),
     this.role = const Value.absent(),
     this.publicKey = const Value.absent(),
+    this.macaddr = const Value.absent(),
     this.newPublicKey = const Value.absent(),
     this.firstHeard = const Value.absent(),
     this.firmwareVersion = const Value.absent(),
@@ -1849,6 +1893,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Expression<int>? hwModel,
     Expression<int>? role,
     Expression<Uint8List>? publicKey,
+    Expression<Uint8List>? macaddr,
     Expression<Uint8List>? newPublicKey,
     Expression<DateTime>? firstHeard,
     Expression<String>? firmwareVersion,
@@ -1891,6 +1936,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
       if (hwModel != null) 'hw_model': hwModel,
       if (role != null) 'role': role,
       if (publicKey != null) 'public_key': publicKey,
+      if (macaddr != null) 'macaddr': macaddr,
       if (newPublicKey != null) 'new_public_key': newPublicKey,
       if (firstHeard != null) 'first_heard': firstHeard,
       if (firmwareVersion != null) 'firmware_version': firmwareVersion,
@@ -1935,6 +1981,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Value<int>? hwModel,
     Value<int>? role,
     Value<Uint8List?>? publicKey,
+    Value<Uint8List?>? macaddr,
     Value<Uint8List?>? newPublicKey,
     Value<DateTime?>? firstHeard,
     Value<String?>? firmwareVersion,
@@ -1977,6 +2024,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
       hwModel: hwModel ?? this.hwModel,
       role: role ?? this.role,
       publicKey: publicKey ?? this.publicKey,
+      macaddr: macaddr ?? this.macaddr,
       newPublicKey: newPublicKey ?? this.newPublicKey,
       firstHeard: firstHeard ?? this.firstHeard,
       firmwareVersion: firmwareVersion ?? this.firmwareVersion,
@@ -2036,6 +2084,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
     }
     if (publicKey.present) {
       map['public_key'] = Variable<Uint8List>(publicKey.value);
+    }
+    if (macaddr.present) {
+      map['macaddr'] = Variable<Uint8List>(macaddr.value);
     }
     if (newPublicKey.present) {
       map['new_public_key'] = Variable<Uint8List>(newPublicKey.value);
@@ -2149,6 +2200,7 @@ class NodesCompanion extends UpdateCompanion<Node> {
           ..write('hwModel: $hwModel, ')
           ..write('role: $role, ')
           ..write('publicKey: $publicKey, ')
+          ..write('macaddr: $macaddr, ')
           ..write('newPublicKey: $newPublicKey, ')
           ..write('firstHeard: $firstHeard, ')
           ..write('firmwareVersion: $firmwareVersion, ')
@@ -6669,6 +6721,7 @@ typedef $$NodesTableCreateCompanionBuilder =
       Value<int> hwModel,
       Value<int> role,
       Value<Uint8List?> publicKey,
+      Value<Uint8List?> macaddr,
       Value<Uint8List?> newPublicKey,
       Value<DateTime?> firstHeard,
       Value<String?> firmwareVersion,
@@ -6712,6 +6765,7 @@ typedef $$NodesTableUpdateCompanionBuilder =
       Value<int> hwModel,
       Value<int> role,
       Value<Uint8List?> publicKey,
+      Value<Uint8List?> macaddr,
       Value<Uint8List?> newPublicKey,
       Value<DateTime?> firstHeard,
       Value<String?> firmwareVersion,
@@ -6787,6 +6841,11 @@ class $$NodesTableFilterComposer extends Composer<_$AppDatabase, $NodesTable> {
 
   ColumnFilters<Uint8List> get publicKey => $composableBuilder(
     column: $table.publicKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<Uint8List> get macaddr => $composableBuilder(
+    column: $table.macaddr,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7000,6 +7059,11 @@ class $$NodesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<Uint8List> get macaddr => $composableBuilder(
+    column: $table.macaddr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<Uint8List> get newPublicKey => $composableBuilder(
     column: $table.newPublicKey,
     builder: (column) => ColumnOrderings(column),
@@ -7196,6 +7260,9 @@ class $$NodesTableAnnotationComposer
   GeneratedColumn<Uint8List> get publicKey =>
       $composableBuilder(column: $table.publicKey, builder: (column) => column);
 
+  GeneratedColumn<Uint8List> get macaddr =>
+      $composableBuilder(column: $table.macaddr, builder: (column) => column);
+
   GeneratedColumn<Uint8List> get newPublicKey => $composableBuilder(
     column: $table.newPublicKey,
     builder: (column) => column,
@@ -7367,6 +7434,7 @@ class $$NodesTableTableManager
                 Value<int> hwModel = const Value.absent(),
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> publicKey = const Value.absent(),
+                Value<Uint8List?> macaddr = const Value.absent(),
                 Value<Uint8List?> newPublicKey = const Value.absent(),
                 Value<DateTime?> firstHeard = const Value.absent(),
                 Value<String?> firmwareVersion = const Value.absent(),
@@ -7408,6 +7476,7 @@ class $$NodesTableTableManager
                 hwModel: hwModel,
                 role: role,
                 publicKey: publicKey,
+                macaddr: macaddr,
                 newPublicKey: newPublicKey,
                 firstHeard: firstHeard,
                 firmwareVersion: firmwareVersion,
@@ -7451,6 +7520,7 @@ class $$NodesTableTableManager
                 Value<int> hwModel = const Value.absent(),
                 Value<int> role = const Value.absent(),
                 Value<Uint8List?> publicKey = const Value.absent(),
+                Value<Uint8List?> macaddr = const Value.absent(),
                 Value<Uint8List?> newPublicKey = const Value.absent(),
                 Value<DateTime?> firstHeard = const Value.absent(),
                 Value<String?> firmwareVersion = const Value.absent(),
@@ -7492,6 +7562,7 @@ class $$NodesTableTableManager
                 hwModel: hwModel,
                 role: role,
                 publicKey: publicKey,
+                macaddr: macaddr,
                 newPublicKey: newPublicKey,
                 firstHeard: firstHeard,
                 firmwareVersion: firmwareVersion,
