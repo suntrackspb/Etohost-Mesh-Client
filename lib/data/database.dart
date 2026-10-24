@@ -82,6 +82,9 @@ abstract final class AppSettingKeys {
   static const mapCluster = 'map.cluster';
   static const mapCorrection = 'map.correction';
 
+  /// Зоны глушилок с зеркала (JSON [JammerZones]); обновляются при старте.
+  static const jammerZones = 'mirror.jammerZones';
+
   /// Недавние реакции: JSON-список эмодзи, последний — первым.
   static const recentReactions = 'chat.recentReactions';
 
@@ -180,6 +183,20 @@ class Nodes extends Table {
   RealColumn get mirrorLon => real().nullable()();
   BoolColumn get mirrorCorrected =>
       boolean().withDefault(const Constant(false))();
+
+  /// Время позиции зеркала ([mirrorLat]/[mirrorLon] без коррекции).
+  DateTimeColumn get mirrorPositionAt => dateTime().nullable()();
+
+  /// Последняя точка зеркала вне зон глушилок и её время.
+  RealColumn get mirrorGoodLat => real().nullable()();
+  RealColumn get mirrorGoodLon => real().nullable()();
+  DateTimeColumn get mirrorGoodAt => dateTime().nullable()();
+
+  /// Последняя точка из эфира вне зон глушилок и её время — замена, когда
+  /// [latitude]/[longitude] попали под спуфинг.
+  RealColumn get radioGoodLat => real().nullable()();
+  RealColumn get radioGoodLon => real().nullable()();
+  DateTimeColumn get radioGoodAt => dateTime().nullable()();
   IntColumn get altitude => integer().nullable()();
   IntColumn get batteryLevel => integer().nullable()();
   RealColumn get voltage => real().nullable()();
@@ -404,7 +421,7 @@ class AppDatabase extends _$AppDatabase {
   final AppDatabase? settings;
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -460,6 +477,19 @@ class AppDatabase extends _$AppDatabase {
         'UPDATE nodes SET mirror_lat = latitude, mirror_lon = longitude, '
         'latitude = NULL, longitude = NULL WHERE on_radio = 0',
       );
+    },
+    13: (m) async {
+      for (final c in [
+        nodes.mirrorPositionAt,
+        nodes.mirrorGoodLat,
+        nodes.mirrorGoodLon,
+        nodes.mirrorGoodAt,
+        nodes.radioGoodLat,
+        nodes.radioGoodLon,
+        nodes.radioGoodAt,
+      ]) {
+        await m.addColumn(nodes, c);
+      }
     },
   };
 

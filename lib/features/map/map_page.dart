@@ -384,15 +384,19 @@ class _NodeMarker extends StatelessWidget {
         ? scheme.tertiary
         : p.isFavorite
         ? _favoriteColor
+        : p.spoofed
+        ? _spoofedColor
         : p.corrected
         ? _correctedColor
         : scheme.surface;
-    final thick = highlight || p.isMe || p.isFavorite || p.corrected;
+    final thick =
+        highlight || p.isMe || p.isFavorite || p.corrected || p.spoofed;
     return Tooltip(
       message: [
         p.title,
         if (p.mirrorOnly) '(зеркало)',
         if (p.corrected) '· скорректировано',
+        if (p.spoofed) '· вероятно, подменённая точка',
       ].join(' '),
       child: GestureDetector(
         onTap: onTap,
@@ -505,6 +509,9 @@ const _favoriteColor = Colors.amber;
 /// Положение исправлено зеркалом по соседям — фиолетовая рамка, как на
 /// карте зеркала.
 const _correctedColor = Color(0xFF9C27B0);
+
+/// Точка в зоне глушилки и заменить нечем — оранжевая рамка.
+const _spoofedColor = Colors.deepOrange;
 
 /// «Слои»: подложка и группировка нод — то, что меняют редко.
 class _LayersMenu extends ConsumerWidget {

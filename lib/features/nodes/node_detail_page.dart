@@ -76,10 +76,7 @@ class NodeDetailPage extends ConsumerWidget {
             ref.watch(mirrorNodeDetailProvider(n.num));
           }
           final block = directBlock(n);
-          final pos = nodePosition(
-            n,
-            correction: ref.watch(positionCorrectionProvider).value ?? false,
-          );
+          final pos = nodePositionBy(n, ref.watch(positionRulesProvider));
           return ListView(
             padding: const EdgeInsets.all(Tokens.s16),
             children: [
@@ -279,11 +276,11 @@ class _PositionCard extends StatelessWidget {
         ),
         MeshTile(
           title: coords,
-          subtitle: pos.corrected
-              ? 'скорректировано по соседям'
-              : !pos.mirror && n.altitude != null
-              ? 'высота ${n.altitude} м'
-              : null,
+          subtitle:
+              positionNote(pos, lastHeardText) ??
+              (!pos.mirror && pos.at == null && n.altitude != null
+                  ? 'высота ${n.altitude} м'
+                  : null),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

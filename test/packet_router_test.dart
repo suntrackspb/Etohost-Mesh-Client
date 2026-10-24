@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:etohost_mesh/core/proto/mesh.dart';
 import 'package:etohost_mesh/data/database.dart';
+import 'package:etohost_mesh/data/jammer_zones.dart';
 import 'package:etohost_mesh/data/packet_router.dart';
 
 void main() {
@@ -107,6 +108,71 @@ void main() {
     final node = (await db.watchNodes().first).single;
     expect(node.latitude, closeTo(59.9, 1e-6));
     expect(await db.select(db.positions).get(), hasLength(1));
+  });
+
+  group('запасная точка на случай спуфинга', () {
+    setUp(
+      () => db.setSetting(
+        AppSettingKeys.jammerZones,
+        const JammerZones(
+          zones: [(latMin: 60, latMax: 60.2, lonMin: 31.2, lonMax: 31.5)],
+        ).encode(),
+      ),
+    );
+    Future<Node> send(int lat, int lon, {int time = 0}) async {
+      await router.handle(
+        pkt(
+          5,
+          PortNum.POSITION_APP,
+          Position(latitudeI: lat, longitudeI: lon, time: time).writeToBuffer(),
+        ),
+      );
+      return (await db.watchNodes().first).single;
+    }
+
+    test('точка вне зон запоминается, в зоне — нет', () async {
+      var n = await send(600047616, 302776320);
+      expect(n.radioGoodLat, closeTo(60.0047616, 1e-6));
+      final at = n.radioGoodAt;
+      n = await send(601096192, 313786368);
+      expect(n.latitude, closeTo(60.1096192, 1e-6)); // показываем как есть
+      expect(n.radioGoodLat, closeTo(60.0047616, 1e-6));
+      expect(n.radioGoodAt, at);
+    });
+
+    test('старая точка (NodeDB) не перетирает свежую', () async {
+      await send(600047616, 302776320);
+      await router.handle(
+        FromRadio(
+          nodeInfo: NodeInfo(
+            num: 5,
+            position: Position(
+              latitudeI: 599000000,
+              longitudeI: 303000000,
+              time: 1700000000,
+            ),
+          ),
+        ),
+      );
+      final n = (await db.watchNodes().first).single;
+      expect(n.radioGoodLat, closeTo(60.0047616, 1e-6));
+    });
+
+    test('время из будущего не блокирует обновления', () async {
+      final future = DateTime.now().add(const Duration(days: 30));
+      var n = await send(
+        599000000,
+        303000000,
+        time: future.millisecondsSinceEpoch ~/ 1000,
+      );
+      expect(n.radioGoodAt!.isAfter(DateTime.now()), isFalse);
+      n = await send(
+        600047616,
+        302776320,
+        time: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 1,
+      );
+      expect(n.radioGoodLat, closeTo(60.0047616, 1e-6));
+    });
   });
 
   test('телеметрия устройства обновляет батарею и пишется в журнал', () async {

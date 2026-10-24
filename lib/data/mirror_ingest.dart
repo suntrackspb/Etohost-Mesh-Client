@@ -109,6 +109,7 @@ class MirrorIngest {
       )..where((r) => r.num.equals(num))).getSingleOrNull();
       final hasPos = n.lastLat != null && n.lastLon != null;
       final seen = n.lastSeenAt;
+      final good = n.goodLat != null && n.goodLon != null && n.goodAt != null;
       // Данные радио приоритетнее: у ноды, услышанной через свою ноду, зеркало
       // только заполняет пустое. Ключ — только если своего нет, «последний раз» —
       // самый свежий из обоих источников.
@@ -132,6 +133,12 @@ class MirrorIngest {
               mirrorCorrected: hasPos
                   ? Value(n.positionCorrected)
                   : const Value.absent(),
+              mirrorPositionAt: hasPos
+                  ? Value(n.positionAt)
+                  : const Value.absent(),
+              mirrorGoodLat: Value(good ? n.goodLat : null),
+              mirrorGoodLon: Value(good ? n.goodLon : null),
+              mirrorGoodAt: Value(good ? n.goodAt : null),
               batteryLevel: fill(n.batteryLevel, old?.batteryLevel),
               snr: fill(n.lastSnr, old?.snr),
               modemPreset: fill(n.modemPreset, old?.modemPreset),

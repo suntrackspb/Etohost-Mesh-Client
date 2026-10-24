@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../core/proto/mesh.dart';
 import 'database.dart';
+import 'jammer_zones.dart';
 import 'node_position.dart';
 
 /// Точка на карте — нода с координатами и признаки для отрисовки.
@@ -17,6 +18,7 @@ class MapPoint {
     required this.stale,
     required this.mirrorOnly,
     this.corrected = false,
+    this.spoofed = false,
   });
 
   final int num;
@@ -35,6 +37,9 @@ class MapPoint {
 
   /// Положение исправлено зеркалом по соседям — фиолетовая рамка.
   final bool corrected;
+
+  /// Точка в зоне глушилки, заменить нечем — «вероятно, спуфинг».
+  final bool spoofed;
 }
 
 /// Сколько времени нода считается «свежей» на карте.
@@ -45,16 +50,18 @@ List<MapPoint> mapPoints(
   int? me,
   DateTime? now,
   bool correction = false,
+  JammerZones zones = JammerZones.none,
 }) {
   final t = now ?? DateTime.now();
   return [
     for (final n in nodes)
-      if (nodePosition(n, correction: correction) case final p?)
+      if (nodePosition(n, correction: correction, zones: zones) case final p?)
         MapPoint(
           num: n.num,
           lat: p.lat,
           lon: p.lon,
           corrected: p.corrected,
+          spoofed: p.spoofed,
           label: n.shortName.isNotEmpty
               ? n.shortName
               : nodeIdString(n.num).substring(5),

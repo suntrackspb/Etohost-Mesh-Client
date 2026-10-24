@@ -27,7 +27,9 @@ import '../data/database.dart';
 import '../data/node_row_info.dart';
 import '../data/map_style.dart';
 import '../data/message_sender.dart';
+import '../data/jammer_zones.dart';
 import '../data/map_points.dart';
+import '../data/node_position.dart';
 import '../data/node_actions.dart';
 import '../data/node_filter.dart';
 import '../data/node_layout.dart';
@@ -277,6 +279,19 @@ final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
   api.nodes().then(ingest.nodes).catchError((Object e) {
     log('Зеркало: ноды не загружены', e);
   });
+  // Зоны — при каждом запуске; не ответило — остаются сохранённые.
+  api
+      .jammerZones()
+      .then((z) async {
+        if (z != null) {
+          await ref
+              .read(databaseProvider)
+              .setSetting(AppSettingKeys.jammerZones, z.encode());
+        }
+      })
+      .catchError((Object e) {
+        log('Зеркало: зоны глушилок не загружены', e);
+      });
 
   final rt = MirrorRealtime(ws, (e) async {
     switch (e) {
@@ -333,6 +348,7 @@ final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {
   final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
   final area = ref.watch(nodeAreaProvider);
   final own = ref.watch(ownPresetProvider).value;
+  final rules = ref.watch(positionRulesProvider);
   return ref
       .watch(nodesProvider)
       .whenData(
@@ -343,7 +359,8 @@ final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {
           ],
           me: me,
           area: area,
-          correction: ref.watch(positionCorrectionProvider).value ?? false,
+          correction: rules.correction,
+          zones: rules.zones,
         ),
       );
 });
@@ -352,8 +369,13 @@ final filteredNodesProvider = Provider<AsyncValue<List<Node>>>((ref) {
 final mapPointsProvider = Provider<List<MapPoint>>((ref) {
   final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
   final nodes = ref.watch(filteredNodesProvider).value ?? const [];
-  final correction = ref.watch(positionCorrectionProvider).value ?? false;
-  return mapPoints(nodes, me: me, correction: correction);
+  final rules = ref.watch(positionRulesProvider);
+  return mapPoints(
+    nodes,
+    me: me,
+    correction: rules.correction,
+    zones: rules.zones,
+  );
 });
 
 final channelsProvider = StreamProvider<List<MeshChannel>>(
@@ -915,6 +937,19 @@ final mapRotateProvider = StreamProvider<bool>(
 /// остальных (по умолчанию выключена).
 final positionCorrectionProvider = StreamProvider<bool>(
   (ref) => _setting(ref, AppSettingKeys.mapCorrection).map((v) => v == 'true'),
+);
+
+/// Зоны глушилок, сохранённые с зеркала (обновляются при его запуске).
+final jammerZonesProvider = StreamProvider<JammerZones>(
+  (ref) => _setting(ref, AppSettingKeys.jammerZones).map(JammerZones.decode),
+);
+
+/// Всё, что нужно правилу выбора координат ([nodePosition]).
+final positionRulesProvider = Provider<PositionRules>(
+  (ref) => (
+    correction: ref.watch(positionCorrectionProvider).value ?? false,
+    zones: ref.watch(jammerZonesProvider).value ?? JammerZones.none,
+  ),
 );
 
 /// Группировка близких нод на карте (по умолчанию включена).

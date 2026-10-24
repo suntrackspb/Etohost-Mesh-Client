@@ -283,6 +283,84 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _mirrorPositionAtMeta = const VerificationMeta(
+    'mirrorPositionAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> mirrorPositionAt =
+      GeneratedColumn<DateTime>(
+        'mirror_position_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _mirrorGoodLatMeta = const VerificationMeta(
+    'mirrorGoodLat',
+  );
+  @override
+  late final GeneratedColumn<double> mirrorGoodLat = GeneratedColumn<double>(
+    'mirror_good_lat',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _mirrorGoodLonMeta = const VerificationMeta(
+    'mirrorGoodLon',
+  );
+  @override
+  late final GeneratedColumn<double> mirrorGoodLon = GeneratedColumn<double>(
+    'mirror_good_lon',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _mirrorGoodAtMeta = const VerificationMeta(
+    'mirrorGoodAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> mirrorGoodAt = GeneratedColumn<DateTime>(
+    'mirror_good_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _radioGoodLatMeta = const VerificationMeta(
+    'radioGoodLat',
+  );
+  @override
+  late final GeneratedColumn<double> radioGoodLat = GeneratedColumn<double>(
+    'radio_good_lat',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _radioGoodLonMeta = const VerificationMeta(
+    'radioGoodLon',
+  );
+  @override
+  late final GeneratedColumn<double> radioGoodLon = GeneratedColumn<double>(
+    'radio_good_lon',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _radioGoodAtMeta = const VerificationMeta(
+    'radioGoodAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> radioGoodAt = GeneratedColumn<DateTime>(
+    'radio_good_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _altitudeMeta = const VerificationMeta(
     'altitude',
   );
@@ -424,6 +502,13 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     mirrorLat,
     mirrorLon,
     mirrorCorrected,
+    mirrorPositionAt,
+    mirrorGoodLat,
+    mirrorGoodLon,
+    mirrorGoodAt,
+    radioGoodLat,
+    radioGoodLon,
+    radioGoodAt,
     altitude,
     batteryLevel,
     voltage,
@@ -600,6 +685,69 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         ),
       );
     }
+    if (data.containsKey('mirror_position_at')) {
+      context.handle(
+        _mirrorPositionAtMeta,
+        mirrorPositionAt.isAcceptableOrUnknown(
+          data['mirror_position_at']!,
+          _mirrorPositionAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mirror_good_lat')) {
+      context.handle(
+        _mirrorGoodLatMeta,
+        mirrorGoodLat.isAcceptableOrUnknown(
+          data['mirror_good_lat']!,
+          _mirrorGoodLatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mirror_good_lon')) {
+      context.handle(
+        _mirrorGoodLonMeta,
+        mirrorGoodLon.isAcceptableOrUnknown(
+          data['mirror_good_lon']!,
+          _mirrorGoodLonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mirror_good_at')) {
+      context.handle(
+        _mirrorGoodAtMeta,
+        mirrorGoodAt.isAcceptableOrUnknown(
+          data['mirror_good_at']!,
+          _mirrorGoodAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('radio_good_lat')) {
+      context.handle(
+        _radioGoodLatMeta,
+        radioGoodLat.isAcceptableOrUnknown(
+          data['radio_good_lat']!,
+          _radioGoodLatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('radio_good_lon')) {
+      context.handle(
+        _radioGoodLonMeta,
+        radioGoodLon.isAcceptableOrUnknown(
+          data['radio_good_lon']!,
+          _radioGoodLonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('radio_good_at')) {
+      context.handle(
+        _radioGoodAtMeta,
+        radioGoodAt.isAcceptableOrUnknown(
+          data['radio_good_at']!,
+          _radioGoodAtMeta,
+        ),
+      );
+    }
     if (data.containsKey('altitude')) {
       context.handle(
         _altitudeMeta,
@@ -773,6 +921,34 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         DriftSqlType.bool,
         data['${effectivePrefix}mirror_corrected'],
       )!,
+      mirrorPositionAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}mirror_position_at'],
+      ),
+      mirrorGoodLat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}mirror_good_lat'],
+      ),
+      mirrorGoodLon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}mirror_good_lon'],
+      ),
+      mirrorGoodAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}mirror_good_at'],
+      ),
+      radioGoodLat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}radio_good_lat'],
+      ),
+      radioGoodLon: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}radio_good_lon'],
+      ),
+      radioGoodAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}radio_good_at'],
+      ),
       altitude: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}altitude'],
@@ -864,6 +1040,20 @@ class Node extends DataClass implements Insertable<Node> {
   final double? mirrorLat;
   final double? mirrorLon;
   final bool mirrorCorrected;
+
+  /// Время позиции зеркала ([mirrorLat]/[mirrorLon] без коррекции).
+  final DateTime? mirrorPositionAt;
+
+  /// Последняя точка зеркала вне зон глушилок и её время.
+  final double? mirrorGoodLat;
+  final double? mirrorGoodLon;
+  final DateTime? mirrorGoodAt;
+
+  /// Последняя точка из эфира вне зон глушилок и её время — замена, когда
+  /// [latitude]/[longitude] попали под спуфинг.
+  final double? radioGoodLat;
+  final double? radioGoodLon;
+  final DateTime? radioGoodAt;
   final int? altitude;
   final int? batteryLevel;
   final double? voltage;
@@ -906,6 +1096,13 @@ class Node extends DataClass implements Insertable<Node> {
     this.mirrorLat,
     this.mirrorLon,
     required this.mirrorCorrected,
+    this.mirrorPositionAt,
+    this.mirrorGoodLat,
+    this.mirrorGoodLon,
+    this.mirrorGoodAt,
+    this.radioGoodLat,
+    this.radioGoodLon,
+    this.radioGoodAt,
     this.altitude,
     this.batteryLevel,
     this.voltage,
@@ -965,6 +1162,27 @@ class Node extends DataClass implements Insertable<Node> {
       map['mirror_lon'] = Variable<double>(mirrorLon);
     }
     map['mirror_corrected'] = Variable<bool>(mirrorCorrected);
+    if (!nullToAbsent || mirrorPositionAt != null) {
+      map['mirror_position_at'] = Variable<DateTime>(mirrorPositionAt);
+    }
+    if (!nullToAbsent || mirrorGoodLat != null) {
+      map['mirror_good_lat'] = Variable<double>(mirrorGoodLat);
+    }
+    if (!nullToAbsent || mirrorGoodLon != null) {
+      map['mirror_good_lon'] = Variable<double>(mirrorGoodLon);
+    }
+    if (!nullToAbsent || mirrorGoodAt != null) {
+      map['mirror_good_at'] = Variable<DateTime>(mirrorGoodAt);
+    }
+    if (!nullToAbsent || radioGoodLat != null) {
+      map['radio_good_lat'] = Variable<double>(radioGoodLat);
+    }
+    if (!nullToAbsent || radioGoodLon != null) {
+      map['radio_good_lon'] = Variable<double>(radioGoodLon);
+    }
+    if (!nullToAbsent || radioGoodAt != null) {
+      map['radio_good_at'] = Variable<DateTime>(radioGoodAt);
+    }
     if (!nullToAbsent || altitude != null) {
       map['altitude'] = Variable<int>(altitude);
     }
@@ -1039,6 +1257,27 @@ class Node extends DataClass implements Insertable<Node> {
           ? const Value.absent()
           : Value(mirrorLon),
       mirrorCorrected: Value(mirrorCorrected),
+      mirrorPositionAt: mirrorPositionAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mirrorPositionAt),
+      mirrorGoodLat: mirrorGoodLat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mirrorGoodLat),
+      mirrorGoodLon: mirrorGoodLon == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mirrorGoodLon),
+      mirrorGoodAt: mirrorGoodAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mirrorGoodAt),
+      radioGoodLat: radioGoodLat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(radioGoodLat),
+      radioGoodLon: radioGoodLon == null && nullToAbsent
+          ? const Value.absent()
+          : Value(radioGoodLon),
+      radioGoodAt: radioGoodAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(radioGoodAt),
       altitude: altitude == null && nullToAbsent
           ? const Value.absent()
           : Value(altitude),
@@ -1095,6 +1334,15 @@ class Node extends DataClass implements Insertable<Node> {
       mirrorLat: serializer.fromJson<double?>(json['mirrorLat']),
       mirrorLon: serializer.fromJson<double?>(json['mirrorLon']),
       mirrorCorrected: serializer.fromJson<bool>(json['mirrorCorrected']),
+      mirrorPositionAt: serializer.fromJson<DateTime?>(
+        json['mirrorPositionAt'],
+      ),
+      mirrorGoodLat: serializer.fromJson<double?>(json['mirrorGoodLat']),
+      mirrorGoodLon: serializer.fromJson<double?>(json['mirrorGoodLon']),
+      mirrorGoodAt: serializer.fromJson<DateTime?>(json['mirrorGoodAt']),
+      radioGoodLat: serializer.fromJson<double?>(json['radioGoodLat']),
+      radioGoodLon: serializer.fromJson<double?>(json['radioGoodLon']),
+      radioGoodAt: serializer.fromJson<DateTime?>(json['radioGoodAt']),
       altitude: serializer.fromJson<int?>(json['altitude']),
       batteryLevel: serializer.fromJson<int?>(json['batteryLevel']),
       voltage: serializer.fromJson<double?>(json['voltage']),
@@ -1136,6 +1384,13 @@ class Node extends DataClass implements Insertable<Node> {
       'mirrorLat': serializer.toJson<double?>(mirrorLat),
       'mirrorLon': serializer.toJson<double?>(mirrorLon),
       'mirrorCorrected': serializer.toJson<bool>(mirrorCorrected),
+      'mirrorPositionAt': serializer.toJson<DateTime?>(mirrorPositionAt),
+      'mirrorGoodLat': serializer.toJson<double?>(mirrorGoodLat),
+      'mirrorGoodLon': serializer.toJson<double?>(mirrorGoodLon),
+      'mirrorGoodAt': serializer.toJson<DateTime?>(mirrorGoodAt),
+      'radioGoodLat': serializer.toJson<double?>(radioGoodLat),
+      'radioGoodLon': serializer.toJson<double?>(radioGoodLon),
+      'radioGoodAt': serializer.toJson<DateTime?>(radioGoodAt),
       'altitude': serializer.toJson<int?>(altitude),
       'batteryLevel': serializer.toJson<int?>(batteryLevel),
       'voltage': serializer.toJson<double?>(voltage),
@@ -1173,6 +1428,13 @@ class Node extends DataClass implements Insertable<Node> {
     Value<double?> mirrorLat = const Value.absent(),
     Value<double?> mirrorLon = const Value.absent(),
     bool? mirrorCorrected,
+    Value<DateTime?> mirrorPositionAt = const Value.absent(),
+    Value<double?> mirrorGoodLat = const Value.absent(),
+    Value<double?> mirrorGoodLon = const Value.absent(),
+    Value<DateTime?> mirrorGoodAt = const Value.absent(),
+    Value<double?> radioGoodLat = const Value.absent(),
+    Value<double?> radioGoodLon = const Value.absent(),
+    Value<DateTime?> radioGoodAt = const Value.absent(),
     Value<int?> altitude = const Value.absent(),
     Value<int?> batteryLevel = const Value.absent(),
     Value<double?> voltage = const Value.absent(),
@@ -1209,6 +1471,19 @@ class Node extends DataClass implements Insertable<Node> {
     mirrorLat: mirrorLat.present ? mirrorLat.value : this.mirrorLat,
     mirrorLon: mirrorLon.present ? mirrorLon.value : this.mirrorLon,
     mirrorCorrected: mirrorCorrected ?? this.mirrorCorrected,
+    mirrorPositionAt: mirrorPositionAt.present
+        ? mirrorPositionAt.value
+        : this.mirrorPositionAt,
+    mirrorGoodLat: mirrorGoodLat.present
+        ? mirrorGoodLat.value
+        : this.mirrorGoodLat,
+    mirrorGoodLon: mirrorGoodLon.present
+        ? mirrorGoodLon.value
+        : this.mirrorGoodLon,
+    mirrorGoodAt: mirrorGoodAt.present ? mirrorGoodAt.value : this.mirrorGoodAt,
+    radioGoodLat: radioGoodLat.present ? radioGoodLat.value : this.radioGoodLat,
+    radioGoodLon: radioGoodLon.present ? radioGoodLon.value : this.radioGoodLon,
+    radioGoodAt: radioGoodAt.present ? radioGoodAt.value : this.radioGoodAt,
     altitude: altitude.present ? altitude.value : this.altitude,
     batteryLevel: batteryLevel.present ? batteryLevel.value : this.batteryLevel,
     voltage: voltage.present ? voltage.value : this.voltage,
@@ -1263,6 +1538,27 @@ class Node extends DataClass implements Insertable<Node> {
       mirrorCorrected: data.mirrorCorrected.present
           ? data.mirrorCorrected.value
           : this.mirrorCorrected,
+      mirrorPositionAt: data.mirrorPositionAt.present
+          ? data.mirrorPositionAt.value
+          : this.mirrorPositionAt,
+      mirrorGoodLat: data.mirrorGoodLat.present
+          ? data.mirrorGoodLat.value
+          : this.mirrorGoodLat,
+      mirrorGoodLon: data.mirrorGoodLon.present
+          ? data.mirrorGoodLon.value
+          : this.mirrorGoodLon,
+      mirrorGoodAt: data.mirrorGoodAt.present
+          ? data.mirrorGoodAt.value
+          : this.mirrorGoodAt,
+      radioGoodLat: data.radioGoodLat.present
+          ? data.radioGoodLat.value
+          : this.radioGoodLat,
+      radioGoodLon: data.radioGoodLon.present
+          ? data.radioGoodLon.value
+          : this.radioGoodLon,
+      radioGoodAt: data.radioGoodAt.present
+          ? data.radioGoodAt.value
+          : this.radioGoodAt,
       altitude: data.altitude.present ? data.altitude.value : this.altitude,
       batteryLevel: data.batteryLevel.present
           ? data.batteryLevel.value
@@ -1310,6 +1606,13 @@ class Node extends DataClass implements Insertable<Node> {
           ..write('mirrorLat: $mirrorLat, ')
           ..write('mirrorLon: $mirrorLon, ')
           ..write('mirrorCorrected: $mirrorCorrected, ')
+          ..write('mirrorPositionAt: $mirrorPositionAt, ')
+          ..write('mirrorGoodLat: $mirrorGoodLat, ')
+          ..write('mirrorGoodLon: $mirrorGoodLon, ')
+          ..write('mirrorGoodAt: $mirrorGoodAt, ')
+          ..write('radioGoodLat: $radioGoodLat, ')
+          ..write('radioGoodLon: $radioGoodLon, ')
+          ..write('radioGoodAt: $radioGoodAt, ')
           ..write('altitude: $altitude, ')
           ..write('batteryLevel: $batteryLevel, ')
           ..write('voltage: $voltage, ')
@@ -1349,6 +1652,13 @@ class Node extends DataClass implements Insertable<Node> {
     mirrorLat,
     mirrorLon,
     mirrorCorrected,
+    mirrorPositionAt,
+    mirrorGoodLat,
+    mirrorGoodLon,
+    mirrorGoodAt,
+    radioGoodLat,
+    radioGoodLon,
+    radioGoodAt,
     altitude,
     batteryLevel,
     voltage,
@@ -1387,6 +1697,13 @@ class Node extends DataClass implements Insertable<Node> {
           other.mirrorLat == this.mirrorLat &&
           other.mirrorLon == this.mirrorLon &&
           other.mirrorCorrected == this.mirrorCorrected &&
+          other.mirrorPositionAt == this.mirrorPositionAt &&
+          other.mirrorGoodLat == this.mirrorGoodLat &&
+          other.mirrorGoodLon == this.mirrorGoodLon &&
+          other.mirrorGoodAt == this.mirrorGoodAt &&
+          other.radioGoodLat == this.radioGoodLat &&
+          other.radioGoodLon == this.radioGoodLon &&
+          other.radioGoodAt == this.radioGoodAt &&
           other.altitude == this.altitude &&
           other.batteryLevel == this.batteryLevel &&
           other.voltage == this.voltage &&
@@ -1423,6 +1740,13 @@ class NodesCompanion extends UpdateCompanion<Node> {
   final Value<double?> mirrorLat;
   final Value<double?> mirrorLon;
   final Value<bool> mirrorCorrected;
+  final Value<DateTime?> mirrorPositionAt;
+  final Value<double?> mirrorGoodLat;
+  final Value<double?> mirrorGoodLon;
+  final Value<DateTime?> mirrorGoodAt;
+  final Value<double?> radioGoodLat;
+  final Value<double?> radioGoodLon;
+  final Value<DateTime?> radioGoodAt;
   final Value<int?> altitude;
   final Value<int?> batteryLevel;
   final Value<double?> voltage;
@@ -1457,6 +1781,13 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.mirrorLat = const Value.absent(),
     this.mirrorLon = const Value.absent(),
     this.mirrorCorrected = const Value.absent(),
+    this.mirrorPositionAt = const Value.absent(),
+    this.mirrorGoodLat = const Value.absent(),
+    this.mirrorGoodLon = const Value.absent(),
+    this.mirrorGoodAt = const Value.absent(),
+    this.radioGoodLat = const Value.absent(),
+    this.radioGoodLon = const Value.absent(),
+    this.radioGoodAt = const Value.absent(),
     this.altitude = const Value.absent(),
     this.batteryLevel = const Value.absent(),
     this.voltage = const Value.absent(),
@@ -1492,6 +1823,13 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.mirrorLat = const Value.absent(),
     this.mirrorLon = const Value.absent(),
     this.mirrorCorrected = const Value.absent(),
+    this.mirrorPositionAt = const Value.absent(),
+    this.mirrorGoodLat = const Value.absent(),
+    this.mirrorGoodLon = const Value.absent(),
+    this.mirrorGoodAt = const Value.absent(),
+    this.radioGoodLat = const Value.absent(),
+    this.radioGoodLon = const Value.absent(),
+    this.radioGoodAt = const Value.absent(),
     this.altitude = const Value.absent(),
     this.batteryLevel = const Value.absent(),
     this.voltage = const Value.absent(),
@@ -1527,6 +1865,13 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Expression<double>? mirrorLat,
     Expression<double>? mirrorLon,
     Expression<bool>? mirrorCorrected,
+    Expression<DateTime>? mirrorPositionAt,
+    Expression<double>? mirrorGoodLat,
+    Expression<double>? mirrorGoodLon,
+    Expression<DateTime>? mirrorGoodAt,
+    Expression<double>? radioGoodLat,
+    Expression<double>? radioGoodLon,
+    Expression<DateTime>? radioGoodAt,
     Expression<int>? altitude,
     Expression<int>? batteryLevel,
     Expression<double>? voltage,
@@ -1562,6 +1907,13 @@ class NodesCompanion extends UpdateCompanion<Node> {
       if (mirrorLat != null) 'mirror_lat': mirrorLat,
       if (mirrorLon != null) 'mirror_lon': mirrorLon,
       if (mirrorCorrected != null) 'mirror_corrected': mirrorCorrected,
+      if (mirrorPositionAt != null) 'mirror_position_at': mirrorPositionAt,
+      if (mirrorGoodLat != null) 'mirror_good_lat': mirrorGoodLat,
+      if (mirrorGoodLon != null) 'mirror_good_lon': mirrorGoodLon,
+      if (mirrorGoodAt != null) 'mirror_good_at': mirrorGoodAt,
+      if (radioGoodLat != null) 'radio_good_lat': radioGoodLat,
+      if (radioGoodLon != null) 'radio_good_lon': radioGoodLon,
+      if (radioGoodAt != null) 'radio_good_at': radioGoodAt,
       if (altitude != null) 'altitude': altitude,
       if (batteryLevel != null) 'battery_level': batteryLevel,
       if (voltage != null) 'voltage': voltage,
@@ -1599,6 +1951,13 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Value<double?>? mirrorLat,
     Value<double?>? mirrorLon,
     Value<bool>? mirrorCorrected,
+    Value<DateTime?>? mirrorPositionAt,
+    Value<double?>? mirrorGoodLat,
+    Value<double?>? mirrorGoodLon,
+    Value<DateTime?>? mirrorGoodAt,
+    Value<double?>? radioGoodLat,
+    Value<double?>? radioGoodLon,
+    Value<DateTime?>? radioGoodAt,
     Value<int?>? altitude,
     Value<int?>? batteryLevel,
     Value<double?>? voltage,
@@ -1634,6 +1993,13 @@ class NodesCompanion extends UpdateCompanion<Node> {
       mirrorLat: mirrorLat ?? this.mirrorLat,
       mirrorLon: mirrorLon ?? this.mirrorLon,
       mirrorCorrected: mirrorCorrected ?? this.mirrorCorrected,
+      mirrorPositionAt: mirrorPositionAt ?? this.mirrorPositionAt,
+      mirrorGoodLat: mirrorGoodLat ?? this.mirrorGoodLat,
+      mirrorGoodLon: mirrorGoodLon ?? this.mirrorGoodLon,
+      mirrorGoodAt: mirrorGoodAt ?? this.mirrorGoodAt,
+      radioGoodLat: radioGoodLat ?? this.radioGoodLat,
+      radioGoodLon: radioGoodLon ?? this.radioGoodLon,
+      radioGoodAt: radioGoodAt ?? this.radioGoodAt,
       altitude: altitude ?? this.altitude,
       batteryLevel: batteryLevel ?? this.batteryLevel,
       voltage: voltage ?? this.voltage,
@@ -1719,6 +2085,27 @@ class NodesCompanion extends UpdateCompanion<Node> {
     if (mirrorCorrected.present) {
       map['mirror_corrected'] = Variable<bool>(mirrorCorrected.value);
     }
+    if (mirrorPositionAt.present) {
+      map['mirror_position_at'] = Variable<DateTime>(mirrorPositionAt.value);
+    }
+    if (mirrorGoodLat.present) {
+      map['mirror_good_lat'] = Variable<double>(mirrorGoodLat.value);
+    }
+    if (mirrorGoodLon.present) {
+      map['mirror_good_lon'] = Variable<double>(mirrorGoodLon.value);
+    }
+    if (mirrorGoodAt.present) {
+      map['mirror_good_at'] = Variable<DateTime>(mirrorGoodAt.value);
+    }
+    if (radioGoodLat.present) {
+      map['radio_good_lat'] = Variable<double>(radioGoodLat.value);
+    }
+    if (radioGoodLon.present) {
+      map['radio_good_lon'] = Variable<double>(radioGoodLon.value);
+    }
+    if (radioGoodAt.present) {
+      map['radio_good_at'] = Variable<DateTime>(radioGoodAt.value);
+    }
     if (altitude.present) {
       map['altitude'] = Variable<int>(altitude.value);
     }
@@ -1778,6 +2165,13 @@ class NodesCompanion extends UpdateCompanion<Node> {
           ..write('mirrorLat: $mirrorLat, ')
           ..write('mirrorLon: $mirrorLon, ')
           ..write('mirrorCorrected: $mirrorCorrected, ')
+          ..write('mirrorPositionAt: $mirrorPositionAt, ')
+          ..write('mirrorGoodLat: $mirrorGoodLat, ')
+          ..write('mirrorGoodLon: $mirrorGoodLon, ')
+          ..write('mirrorGoodAt: $mirrorGoodAt, ')
+          ..write('radioGoodLat: $radioGoodLat, ')
+          ..write('radioGoodLon: $radioGoodLon, ')
+          ..write('radioGoodAt: $radioGoodAt, ')
           ..write('altitude: $altitude, ')
           ..write('batteryLevel: $batteryLevel, ')
           ..write('voltage: $voltage, ')
@@ -6291,6 +6685,13 @@ typedef $$NodesTableCreateCompanionBuilder =
       Value<double?> mirrorLat,
       Value<double?> mirrorLon,
       Value<bool> mirrorCorrected,
+      Value<DateTime?> mirrorPositionAt,
+      Value<double?> mirrorGoodLat,
+      Value<double?> mirrorGoodLon,
+      Value<DateTime?> mirrorGoodAt,
+      Value<double?> radioGoodLat,
+      Value<double?> radioGoodLon,
+      Value<DateTime?> radioGoodAt,
       Value<int?> altitude,
       Value<int?> batteryLevel,
       Value<double?> voltage,
@@ -6327,6 +6728,13 @@ typedef $$NodesTableUpdateCompanionBuilder =
       Value<double?> mirrorLat,
       Value<double?> mirrorLon,
       Value<bool> mirrorCorrected,
+      Value<DateTime?> mirrorPositionAt,
+      Value<double?> mirrorGoodLat,
+      Value<double?> mirrorGoodLon,
+      Value<DateTime?> mirrorGoodAt,
+      Value<double?> radioGoodLat,
+      Value<double?> radioGoodLon,
+      Value<DateTime?> radioGoodAt,
       Value<int?> altitude,
       Value<int?> batteryLevel,
       Value<double?> voltage,
@@ -6459,6 +6867,41 @@ class $$NodesTableFilterComposer extends Composer<_$AppDatabase, $NodesTable> {
 
   ColumnFilters<bool> get mirrorCorrected => $composableBuilder(
     column: $table.mirrorCorrected,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get mirrorPositionAt => $composableBuilder(
+    column: $table.mirrorPositionAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get mirrorGoodLat => $composableBuilder(
+    column: $table.mirrorGoodLat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get mirrorGoodLon => $composableBuilder(
+    column: $table.mirrorGoodLon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get mirrorGoodAt => $composableBuilder(
+    column: $table.mirrorGoodAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get radioGoodLat => $composableBuilder(
+    column: $table.radioGoodLat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get radioGoodLon => $composableBuilder(
+    column: $table.radioGoodLon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get radioGoodAt => $composableBuilder(
+    column: $table.radioGoodAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6637,6 +7080,41 @@ class $$NodesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get mirrorPositionAt => $composableBuilder(
+    column: $table.mirrorPositionAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get mirrorGoodLat => $composableBuilder(
+    column: $table.mirrorGoodLat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get mirrorGoodLon => $composableBuilder(
+    column: $table.mirrorGoodLon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get mirrorGoodAt => $composableBuilder(
+    column: $table.mirrorGoodAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get radioGoodLat => $composableBuilder(
+    column: $table.radioGoodLat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get radioGoodLon => $composableBuilder(
+    column: $table.radioGoodLon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get radioGoodAt => $composableBuilder(
+    column: $table.radioGoodAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get altitude => $composableBuilder(
     column: $table.altitude,
     builder: (column) => ColumnOrderings(column),
@@ -6780,6 +7258,41 @@ class $$NodesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<DateTime> get mirrorPositionAt => $composableBuilder(
+    column: $table.mirrorPositionAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get mirrorGoodLat => $composableBuilder(
+    column: $table.mirrorGoodLat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get mirrorGoodLon => $composableBuilder(
+    column: $table.mirrorGoodLon,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get mirrorGoodAt => $composableBuilder(
+    column: $table.mirrorGoodAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get radioGoodLat => $composableBuilder(
+    column: $table.radioGoodLat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get radioGoodLon => $composableBuilder(
+    column: $table.radioGoodLon,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get radioGoodAt => $composableBuilder(
+    column: $table.radioGoodAt,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get altitude =>
       $composableBuilder(column: $table.altitude, builder: (column) => column);
 
@@ -6870,6 +7383,13 @@ class $$NodesTableTableManager
                 Value<double?> mirrorLat = const Value.absent(),
                 Value<double?> mirrorLon = const Value.absent(),
                 Value<bool> mirrorCorrected = const Value.absent(),
+                Value<DateTime?> mirrorPositionAt = const Value.absent(),
+                Value<double?> mirrorGoodLat = const Value.absent(),
+                Value<double?> mirrorGoodLon = const Value.absent(),
+                Value<DateTime?> mirrorGoodAt = const Value.absent(),
+                Value<double?> radioGoodLat = const Value.absent(),
+                Value<double?> radioGoodLon = const Value.absent(),
+                Value<DateTime?> radioGoodAt = const Value.absent(),
                 Value<int?> altitude = const Value.absent(),
                 Value<int?> batteryLevel = const Value.absent(),
                 Value<double?> voltage = const Value.absent(),
@@ -6904,6 +7424,13 @@ class $$NodesTableTableManager
                 mirrorLat: mirrorLat,
                 mirrorLon: mirrorLon,
                 mirrorCorrected: mirrorCorrected,
+                mirrorPositionAt: mirrorPositionAt,
+                mirrorGoodLat: mirrorGoodLat,
+                mirrorGoodLon: mirrorGoodLon,
+                mirrorGoodAt: mirrorGoodAt,
+                radioGoodLat: radioGoodLat,
+                radioGoodLon: radioGoodLon,
+                radioGoodAt: radioGoodAt,
                 altitude: altitude,
                 batteryLevel: batteryLevel,
                 voltage: voltage,
@@ -6940,6 +7467,13 @@ class $$NodesTableTableManager
                 Value<double?> mirrorLat = const Value.absent(),
                 Value<double?> mirrorLon = const Value.absent(),
                 Value<bool> mirrorCorrected = const Value.absent(),
+                Value<DateTime?> mirrorPositionAt = const Value.absent(),
+                Value<double?> mirrorGoodLat = const Value.absent(),
+                Value<double?> mirrorGoodLon = const Value.absent(),
+                Value<DateTime?> mirrorGoodAt = const Value.absent(),
+                Value<double?> radioGoodLat = const Value.absent(),
+                Value<double?> radioGoodLon = const Value.absent(),
+                Value<DateTime?> radioGoodAt = const Value.absent(),
                 Value<int?> altitude = const Value.absent(),
                 Value<int?> batteryLevel = const Value.absent(),
                 Value<double?> voltage = const Value.absent(),
@@ -6974,6 +7508,13 @@ class $$NodesTableTableManager
                 mirrorLat: mirrorLat,
                 mirrorLon: mirrorLon,
                 mirrorCorrected: mirrorCorrected,
+                mirrorPositionAt: mirrorPositionAt,
+                mirrorGoodLat: mirrorGoodLat,
+                mirrorGoodLon: mirrorGoodLon,
+                mirrorGoodAt: mirrorGoodAt,
+                radioGoodLat: radioGoodLat,
+                radioGoodLon: radioGoodLon,
+                radioGoodAt: radioGoodAt,
                 altitude: altitude,
                 batteryLevel: batteryLevel,
                 voltage: voltage,

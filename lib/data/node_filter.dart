@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../core/geo/geo.dart';
 import '../core/proto/mesh.dart';
 import 'database.dart';
+import 'jammer_zones.dart';
 import 'node_position.dart';
 
 enum NodeSort { lastHeard, name, snr, hops }
@@ -191,11 +192,14 @@ class NodeFilter {
     DateTime? now,
     NodeArea? area,
     bool correction = false,
+    JammerZones zones = JammerZones.none,
   }) {
     final t = now ?? DateTime.now();
     final out = all
         .where(
-          (n) => n.num == me || (matches(n, t) && _inArea(n, area, correction)),
+          (n) =>
+              n.num == me ||
+              (matches(n, t) && _inArea(n, area, correction, zones)),
         )
         .toList();
     int cmp(Node a, Node b) {
@@ -213,9 +217,9 @@ class NodeFilter {
   }
 
   /// Без координат — не отсекаем (положение неизвестно).
-  static bool _inArea(Node n, NodeArea? a, bool correction) {
+  static bool _inArea(Node n, NodeArea? a, bool correction, JammerZones zones) {
     if (a == null) return true;
-    final p = nodePosition(n, correction: correction);
+    final p = nodePosition(n, correction: correction, zones: zones);
     return p == null || distanceKm(a.center, (lat: p.lat, lon: p.lon)) <= a.km;
   }
 

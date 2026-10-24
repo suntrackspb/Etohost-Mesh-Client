@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../data/jammer_zones.dart';
 import 'mirror_models.dart';
 
 class MirrorApiException implements Exception {
@@ -32,6 +33,10 @@ class MirrorApi {
       for (final n in (list is List ? list : const [])) ?MirrorNode.tryParse(n),
     ];
   }
+
+  /// Зоны глушилок; null — сервер их не отдаёт (старая версия).
+  Future<JammerZones?> jammerZones() async =>
+      JammerZones.fromJson(await _get('api/jammer-zones'));
 
   /// Полная карточка ноды (отсюда — публичный ключ, когда сервер начнёт его отдавать).
   Future<MirrorNode?> node(String id) async =>

@@ -270,9 +270,18 @@ void main() {
           lastLat: 59.9,
           lastLon: 30.3,
           positionCorrected: true,
+          positionAt: old,
+          goodLat: 59.8,
+          goodLon: 30.2,
+          goodAt: old,
         ),
       ]);
       final n = (await db.watchNodes().first).single;
+      expect(n.mirrorPositionAt, old);
+      expect(
+        (n.mirrorGoodLat, n.mirrorGoodLon, n.mirrorGoodAt),
+        (59.8, 30.2, old),
+      );
       expect(n.publicKey, mine);
       expect(n.lastHeard!.isAfter(old), isTrue);
       // Имя из эфира приоритетнее; координаты зеркала — в свои поля.

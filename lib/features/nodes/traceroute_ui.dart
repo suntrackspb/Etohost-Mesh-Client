@@ -38,8 +38,8 @@ String _longName(Map<int, Node> nodes, int num) {
 /// Положение ноды на карте маршрута по общему правилу ([nodePosition]);
 /// исправленное зеркалом — примерное (пунктир). Сюда же добавится оценка
 /// положения нод без координат.
-RoutePoint? routePoint(Node? n, {required bool correction}) {
-  final p = n == null ? null : nodePosition(n, correction: correction);
+RoutePoint? routePoint(Node? n, {required PositionRules rules}) {
+  final p = n == null ? null : nodePositionBy(n, rules);
   return p == null ? null : (lat: p.lat, lon: p.lon, approx: p.corrected);
 }
 
@@ -151,7 +151,7 @@ class TraceroutePage extends ConsumerWidget {
     }
     final now = DateTime.now();
     final h = MediaQuery.sizeOf(context).height;
-    final c = ref.watch(positionCorrectionProvider).value ?? false;
+    final c = ref.watch(positionRulesProvider);
     return Scaffold(
       appBar: AppBar(title: Text(_longName(nodes, r.target))),
       body: Column(
@@ -202,7 +202,7 @@ class _PathBlock extends StatelessWidget {
   final Color color;
   final List<Hop> path;
   final Map<int, Node> nodes;
-  final bool correction;
+  final PositionRules correction;
 
   @override
   Widget build(BuildContext context) {
@@ -234,8 +234,7 @@ class _PathBlock extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (routePoint(nodes[hop.num], correction: correction) ==
-                      null)
+                  if (routePoint(nodes[hop.num], rules: correction) == null)
                     Padding(
                       padding: const EdgeInsets.only(right: Tokens.s8),
                       child: Icon(Icons.location_off, size: 14, color: muted),
@@ -261,11 +260,11 @@ class _RouteMap extends StatelessWidget {
 
   final TracerouteResult r;
   final Map<int, Node> nodes;
-  final bool correction;
+  final PositionRules correction;
 
   @override
   Widget build(BuildContext context) {
-    RoutePoint? pos(int num) => routePoint(nodes[num], correction: correction);
+    RoutePoint? pos(int num) => routePoint(nodes[num], rules: correction);
     final towards = routeLegs(r.towards, pos);
     final back = routeLegs(r.back, pos);
     final pts = <int, RoutePoint>{

@@ -6,6 +6,7 @@ import 'package:drift/drift.dart';
 import '../core/proto/channel_names.dart';
 import '../core/proto/mesh.dart';
 import 'database.dart';
+import 'jammer_zones.dart';
 import 'node_key.dart';
 import 'settings/node_text.dart';
 
@@ -107,6 +108,15 @@ class PacketRouter {
           ),
         );
     await _applyKey(n.num, u.publicKey);
+    // Без времени позиции из NodeDB не понять, свежая ли она.
+    if (hasPos && pos.time != 0) {
+      await _rememberGood(
+        n.num,
+        pos.latitudeI / 1e7,
+        pos.longitudeI / 1e7,
+        _time(pos.time),
+      );
+    }
   }
 
   /// NodeInfo из эфира: обновляем только данные пользователя — позиция,
@@ -227,12 +237,13 @@ class PacketRouter {
     if (pos.latitudeI == 0 && pos.longitudeI == 0) return; // позиция скрыта
     final lat = pos.latitudeI / 1e7, lon = pos.longitudeI / 1e7;
     final alt = pos.hasAltitude() ? pos.altitude : null;
+    final time = _time(pos.time != 0 ? pos.time : rxTime);
     await db
         .into(db.positions)
         .insert(
           PositionsCompanion.insert(
             nodeNum: from,
-            time: _time(pos.time != 0 ? pos.time : rxTime),
+            time: time,
             latitude: lat,
             longitude: lon,
             altitude: Value(alt),
@@ -245,6 +256,36 @@ class PacketRouter {
         altitude: Value(alt),
       ),
     );
+    await _rememberGood(from, lat, lon, time);
+  }
+
+  /// Точка вне зон глушилок — запасная на случай спуфинга; старее
+  /// запомненной (NodeDB после живого пакета) не берём.
+  Future<void> _rememberGood(
+    int num,
+    double lat,
+    double lon,
+    DateTime t,
+  ) async {
+    // Часы ноды бывают впереди — время из будущего заблокировало бы обновления.
+    final now = DateTime.now();
+    if (t.isAfter(now)) t = now;
+    final zones = JammerZones.decode(
+      await db.getSetting(AppSettingKeys.jammerZones),
+    );
+    if (zones.isBad(lat, lon)) return;
+    await (db.update(db.nodes)..where(
+          (n) =>
+              n.num.equals(num) &
+              (n.radioGoodAt.isNull() | n.radioGoodAt.isSmallerThanValue(t)),
+        ))
+        .write(
+          NodesCompanion(
+            radioGoodLat: Value(lat),
+            radioGoodLon: Value(lon),
+            radioGoodAt: Value(t),
+          ),
+        );
   }
 
   Future<void> _onTelemetry(int from, Telemetry t, int rxTime) async {

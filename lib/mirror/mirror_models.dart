@@ -98,6 +98,10 @@ class MirrorNode {
     this.lastLat,
     this.lastLon,
     this.positionCorrected = false,
+    this.positionAt,
+    this.goodLat,
+    this.goodLon,
+    this.goodAt,
     this.lastSeenAt,
     this.batteryLevel,
     this.lastSnr,
@@ -118,6 +122,10 @@ class MirrorNode {
       lastLat: _double(raw['last_lat']),
       lastLon: _double(raw['last_lon']),
       positionCorrected: raw['position_corrected'] == true,
+      positionAt: parseMirrorDate(raw['position_at'] as String?),
+      goodLat: _double(raw['last_good_lat']),
+      goodLon: _double(raw['last_good_lon']),
+      goodAt: parseMirrorDate(raw['last_good_at'] as String?),
       lastSeenAt: parseMirrorDate(raw['last_seen_at'] as String?),
       batteryLevel: _int(raw['battery_level']),
       lastSnr: _double(raw['last_snr']),
@@ -140,6 +148,15 @@ class MirrorNode {
 
   /// Зеркало подменило координаты исправленными по соседям.
   final bool positionCorrected;
+
+  /// Время последней позиции из истории зеркала (не исправленной); null —
+  /// истории нет (координаты могут быть сколь угодно старыми).
+  final DateTime? positionAt;
+
+  /// Последняя точка истории вне зон глушилок и её время.
+  final double? goodLat;
+  final double? goodLon;
+  final DateTime? goodAt;
   final DateTime? lastSeenAt;
   final int? batteryLevel;
   final double? lastSnr;
