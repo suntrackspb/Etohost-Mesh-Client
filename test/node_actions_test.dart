@@ -119,6 +119,28 @@ void main() {
     expect(User.fromBuffer(p.decoded.payload).longName, 'n170');
   });
 
+  test('своя NodeInfo — MAC от радио, имя из БД', () async {
+    final a = NodeActions(
+      db,
+      (p) async {
+        sent.add(p);
+        return DeliveryResult(status);
+      },
+      () => 0xAA,
+      () => nextId++,
+      () => User(
+        longName: 'старое',
+        macaddr: [1, 2, 3, 4, 5, 6],
+        hwModel: HardwareModel.HELTEC_V4,
+      ),
+    );
+    await a.broadcastNodeInfo();
+    final u = User.fromBuffer(sent.single.decoded.payload);
+    expect(u.macaddr, [1, 2, 3, 4, 5, 6]);
+    expect(u.hwModel, HardwareModel.HELTEC_V4);
+    expect(u.longName, 'n170');
+  });
+
   test(
     'рассылка позиции — всем, без hop_limit; без координат — ошибка',
     () async {

@@ -11,12 +11,21 @@ import 'telemetry.dart';
 /// Действия с нодой из карточки — как в официальном iOS-клиенте.
 /// hop_limit не задаём никогда: решает прошивка (масштабирование хопов в 2.8).
 class NodeActions {
-  NodeActions(this.db, this._send, this._myNum, this._nextId);
+  NodeActions(
+    this.db,
+    this._send,
+    this._myNum,
+    this._nextId, [
+    this._radioUser,
+  ]);
 
   final AppDatabase db;
   final Future<DeliveryResult> Function(MeshPacket p) _send;
   final int? Function() _myNum;
   final int Function() _nextId;
+
+  /// User своей ноды, как его прислало радио (с MAC и прочими полями).
+  final User? Function()? _radioUser;
 
   int _me() {
     final me = _myNum();
@@ -121,7 +130,7 @@ class NodeActions {
       db.nodes,
     )..where((n) => n.num.equals(me))).getSingleOrNull();
     if (own == null) throw StateError('своя нода ещё не загружена');
-    return ownUser(own);
+    return nodeInfoUser(own, _radioUser?.call());
   }
 
   /// Разослать свою NodeInfo всем — чтобы новую ноду быстрее узнали сеть
@@ -244,6 +253,23 @@ User ownUser(Node n) => User(
   publicKey: n.publicKey,
   isUnmessagable: n.isUnmessagable,
 );
+
+/// User для рассылки своей NodeInfo: за основу — присланный радио
+/// (macaddr и поля, которых нет в БД; без MAC TMesh считает id чужим),
+/// имя, роль и ключ — из БД, они могли смениться после подключения.
+User nodeInfoUser(Node n, User? radio) {
+  final db = ownUser(n);
+  if (radio == null) return db;
+  return radio.deepCopy()
+    ..id = db.id
+    ..longName = db.longName
+    ..shortName = db.shortName
+    ..role = db.role
+    ..isUnmessagable = db.isUnmessagable
+    ..publicKey = (n.publicKey?.isNotEmpty ?? false)
+        ? db.publicKey
+        : radio.publicKey;
+}
 
 /// Один хоп трассировки; [snr] — null, если неизвестен.
 typedef Hop = ({int num, double? snr});

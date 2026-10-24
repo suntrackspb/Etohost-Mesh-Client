@@ -645,6 +645,7 @@ final nodeActionsProvider = Provider<NodeActions>((ref) {
     radio.sendPacket,
     () => radio.state == RadioState.ready ? radio.myNodeNum : null,
     radio.queue.nextId,
+    () => radio.ownUser,
   );
 });
 
