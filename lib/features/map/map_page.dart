@@ -141,6 +141,8 @@ class _MapPageState extends ConsumerState<MapPage> {
     if (focus != null && _ready) {
       final p = points.where((p) => p.num == focus).firstOrNull;
       if (p != null) {
+        // Иначе первый «показать все» ниже перебьёт приближение.
+        _fitted = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           ref.read(mapFocusProvider.notifier).state = null;
@@ -161,7 +163,7 @@ class _MapPageState extends ConsumerState<MapPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _map.rotate(0));
     }
     // Первое появление точек — показать все.
-    if (!_fitted && points.isNotEmpty && _ready) {
+    if (!_fitted && focus == null && points.isNotEmpty && _ready) {
       _fitted = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _fitAll(points));
     }
