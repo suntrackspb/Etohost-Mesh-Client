@@ -237,7 +237,7 @@ class PacketRouter {
     if (pos.latitudeI == 0 && pos.longitudeI == 0) return; // позиция скрыта
     final lat = pos.latitudeI / 1e7, lon = pos.longitudeI / 1e7;
     final alt = pos.hasAltitude() ? pos.altitude : null;
-    final time = _time(pos.time != 0 ? pos.time : rxTime);
+    final time = _time(senderTime(pos.time, rxTime));
     await db
         .into(db.positions)
         .insert(
@@ -296,7 +296,7 @@ class PacketRouter {
         .insert(
           TelemetryLogCompanion.insert(
             nodeNum: from,
-            time: _time(t.time != 0 ? t.time : rxTime),
+            time: _time(senderTime(t.time, rxTime)),
             kind: kind.name,
             data: t.writeToBuffer(),
           ),
@@ -480,3 +480,11 @@ class PacketRouter {
   static DateTime _time(int unixSeconds) =>
       DateTime.fromMillisecondsSinceEpoch(unixSeconds * 1000);
 }
+
+/// Время из пакета по часам отправителя, если им можно верить; иначе — время
+/// приёма. Нода без часов (без GPS и NTP) шлёт секунды с загрузки — это 1970
+/// год, и телеметрия показывалась «20750 д назад».
+int senderTime(int sent, int rxTime) => sent >= _clockSetAfter ? sent : rxTime;
+
+/// 2020-01-01: раньше этого часы отправителя точно не выставлены.
+const _clockSetAfter = 1577836800;
