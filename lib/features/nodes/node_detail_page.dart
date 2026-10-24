@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -12,6 +13,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../app/toasts.dart';
 import '../../core/geo/geo.dart';
+import '../../core/geo/maps_link.dart';
 import '../../data/hardware_catalog.dart';
 import '../../data/node_actions.dart';
 import '../../data/node_position.dart';
@@ -288,9 +290,7 @@ class _PositionCard extends StatelessWidget {
                 tooltip: 'Открыть в Картах',
                 icon: const Icon(Icons.map_outlined),
                 onPressed: () => launchUrl(
-                  Uri.parse(
-                    'https://maps.apple.com/?q=${p.latitude},${p.longitude}',
-                  ),
+                  mapsUri(p.latitude, p.longitude, defaultTargetPlatform),
                   mode: LaunchMode.externalApplication,
                 ),
               ),
