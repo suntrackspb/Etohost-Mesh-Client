@@ -61,3 +61,16 @@ extension EndpointKindLabel on EndpointKind {
   }
   return (s, defaultPort);
 }
+
+/// Состояние соединения для плашки [kind]/[address] в списке подключений:
+/// `null`, если сессия не про неё или отключена.
+RadioState? endpointLinkState(
+  Endpoint? current,
+  RadioState state,
+  EndpointKind kind,
+  String address,
+) {
+  if (current == null || state == RadioState.idle) return null;
+  if (current.kind != kind || current.address != address) return null;
+  return state;
+}

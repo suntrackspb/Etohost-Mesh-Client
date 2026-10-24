@@ -167,8 +167,14 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
                 for (final n in _netNodes)
                   MeshTile(
                     title: n.name,
-                    subtitle: n.address,
-                    leading: const Icon(Icons.wifi),
+                    subtitle: _withState(
+                      n.address,
+                      _linkOf(radio, EndpointKind.tcp, n.address),
+                    ),
+                    leading: _linkIcon(
+                      _linkOf(radio, EndpointKind.tcp, n.address),
+                      Icons.wifi,
+                    ),
                     onTap: () => _connect(
                       Endpoint(EndpointKind.tcp, n.address, n.name).toTarget(),
                     ),
@@ -226,8 +232,14 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
               for (final d in devices)
                 MeshTile(
                   title: d.name?.isNotEmpty == true ? d.name! : d.deviceId,
-                  subtitle: '${d.deviceId} · RSSI ${d.rssi ?? '?'}',
-                  leading: const Icon(Icons.bluetooth),
+                  subtitle: _withState(
+                    '${d.deviceId} · RSSI ${d.rssi ?? '?'}',
+                    _linkOf(radio, EndpointKind.ble, d.deviceId),
+                  ),
+                  leading: _linkIcon(
+                    _linkOf(radio, EndpointKind.ble, d.deviceId),
+                    Icons.bluetooth,
+                  ),
                   onTap: () {
                     final name = d.name?.isNotEmpty == true
                         ? d.name!
@@ -239,7 +251,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
                 ),
             ],
           ),
-          if (serialSupported) _SerialCard(onConnect: _connect),
+          if (serialSupported) _SerialCard(radio: radio, onConnect: _connect),
           SectionCard(
             children: [
               MeshTile(
@@ -301,15 +313,17 @@ class _StatusCard extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.titleMedium,
                         ),
-                        if (target != null)
-                          Text(
-                            [
-                              if (radio.myNodeNum != null)
-                                nodeIdString(radio.myNodeNum!),
-                              radioStateLabel(radio.state),
-                            ].join(' · '),
-                            style: muted,
-                          ),
+                        // Строка есть всегда — высота карточки не меняется.
+                        Text(
+                          target == null
+                              ? '—'
+                              : [
+                                  if (radio.myNodeNum != null)
+                                    nodeIdString(radio.myNodeNum!),
+                                  radioStateLabel(radio.state),
+                                ].join(' · '),
+                          style: muted,
+                        ),
                       ],
                     ),
                   ),
@@ -325,55 +339,50 @@ class _StatusCard extends ConsumerWidget {
                     ),
                 ],
               ),
-              if (target != null) ...[
-                const SizedBox(height: Tokens.s8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _Metric(
-                      Icons.timer_outlined,
-                      radio.connectedSince == null
-                          ? '—'
-                          : formatDuration(
-                              now.difference(radio.connectedSince!),
-                            ),
-                      'Соединение держится',
-                    ),
-                    _Metric(
-                      Icons.south_west,
-                      radio.lastRx == null
-                          ? '—'
-                          : formatDuration(now.difference(radio.lastRx!)),
-                      'Последний пакет от ноды — столько назад',
-                    ),
-                    _Metric(
-                      Icons.swap_vert,
-                      '${radio.packetCount}',
-                      'Пакетов получено',
-                    ),
-                    _Metric(
-                      Icons.link_off,
-                      '${radio.disconnects}',
-                      'Разрывов соединения',
-                    ),
-                  ],
-                ),
-              ],
-              if (stats != null) ...[
-                const SizedBox(height: Tokens.s8),
-                _StatsGrid(stats),
-              ],
+              // Счётчики и плитки не прячем: при переподключении без них
+              // список прыгал на их высоту. Нет данных — прочерки.
+              const SizedBox(height: Tokens.s8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _Metric(
+                    Icons.timer_outlined,
+                    radio.connectedSince == null
+                        ? '—'
+                        : formatDuration(now.difference(radio.connectedSince!)),
+                    'Соединение держится',
+                  ),
+                  _Metric(
+                    Icons.south_west,
+                    radio.lastRx == null
+                        ? '—'
+                        : formatDuration(now.difference(radio.lastRx!)),
+                    'Последний пакет от ноды — столько назад',
+                  ),
+                  _Metric(
+                    Icons.swap_vert,
+                    target == null ? '—' : '${radio.packetCount}',
+                    'Пакетов получено',
+                  ),
+                  _Metric(
+                    Icons.link_off,
+                    target == null ? '—' : '${radio.disconnects}',
+                    'Разрывов соединения',
+                  ),
+                ],
+              ),
+              const SizedBox(height: Tokens.s8),
+              _StatsGrid(stats),
             ],
           ),
         ),
-        if (target != null)
-          SwitchListTile.adaptive(
-            dense: true,
-            title: const Text('Переподключение'),
-            subtitle: const Text('при обрыве связи'),
-            value: radio.autoReconnect,
-            onChanged: (v) => setAutoReconnect(ref, v),
-          ),
+        SwitchListTile.adaptive(
+          dense: true,
+          title: const Text('Переподключение'),
+          subtitle: const Text('при обрыве связи'),
+          value: radio.autoReconnect,
+          onChanged: (v) => setAutoReconnect(ref, v),
+        ),
       ],
     );
   }
@@ -408,8 +417,9 @@ class _Metric extends StatelessWidget {
 
 /// USB Serial: список портов по кнопке (на десктопе порты не присылают событий).
 class _SerialCard extends StatefulWidget {
-  const _SerialCard({required this.onConnect});
+  const _SerialCard({required this.radio, required this.onConnect});
 
+  final RadioSession radio;
   final Future<void> Function(RadioTarget target) onConnect;
 
   @override
@@ -443,6 +453,7 @@ class _SerialCardState extends State<_SerialCard> {
   @override
   Widget build(BuildContext context) {
     final ports = _ports ?? const <SerialPortInfo>[];
+    final radio = widget.radio;
     return SectionCard(
       title: 'USB (Serial)',
       children: [
@@ -470,8 +481,14 @@ class _SerialCardState extends State<_SerialCard> {
         for (final p in ports)
           MeshTile(
             title: p.title,
-            subtitle: p.subtitle,
-            leading: const Icon(Icons.cable),
+            subtitle: _withState(
+              p.subtitle,
+              _linkOf(radio, EndpointKind.serial, p.id),
+            ),
+            leading: _linkIcon(
+              _linkOf(radio, EndpointKind.serial, p.id),
+              Icons.cable,
+            ),
             onTap: () => widget.onConnect(
               Endpoint(EndpointKind.serial, p.id, p.title).toTarget(),
             ),
@@ -492,6 +509,7 @@ class _RecentCard extends ConsumerWidget {
     final recent = ref.watch(recentConnectionsProvider).value ?? const [];
     final auto = ref.watch(autoConnectProvider).value ?? true;
     final db = ref.read(databaseProvider);
+    final radio = ref.watch(radioProvider);
     return SectionCard(
       title: 'Недавние',
       children: [
@@ -508,18 +526,24 @@ class _RecentCard extends ConsumerWidget {
         for (final r in recent)
           MeshTile(
             title: r.name.isEmpty ? r.address : r.name,
-            subtitle: [
+            subtitle: _withState(
               [
-                EndpointKind.values.byName(r.kind).label,
-                if (r.name.isNotEmpty) r.address,
-              ].join(' · '),
-              if (r.nodeNum != null) nodeIdString(r.nodeNum!),
-            ].join('\n'),
-            leading: Icon(switch (EndpointKind.values.byName(r.kind)) {
-              EndpointKind.ble => Icons.bluetooth,
-              EndpointKind.tcp => Icons.wifi,
-              EndpointKind.serial => Icons.usb,
-            }),
+                [
+                  EndpointKind.values.byName(r.kind).label,
+                  if (r.name.isNotEmpty) r.address,
+                ].join(' · '),
+                if (r.nodeNum != null) nodeIdString(r.nodeNum!),
+              ].join('\n'),
+              _linkOf(radio, EndpointKind.values.byName(r.kind), r.address),
+            ),
+            leading: _linkIcon(
+              _linkOf(radio, EndpointKind.values.byName(r.kind), r.address),
+              switch (EndpointKind.values.byName(r.kind)) {
+                EndpointKind.ble => Icons.bluetooth,
+                EndpointKind.tcp => Icons.wifi,
+                EndpointKind.serial => Icons.usb,
+              },
+            ),
             trailing: IconButton(
               tooltip: 'Забыть',
               icon: const Icon(Icons.close),
@@ -532,22 +556,42 @@ class _RecentCard extends ConsumerWidget {
   }
 }
 
+RadioState? _linkOf(RadioSession radio, EndpointKind kind, String address) =>
+    endpointLinkState(radio.target?.endpoint, radio.state, kind, address);
+
+/// Иконка плашки: крутилка, пока идёт подключение к ней, галочка — готово.
+Widget _linkIcon(RadioState? s, IconData icon) => switch (s) {
+  null => Icon(icon),
+  RadioState.ready => Icon(Icons.check_circle, color: radioStateColor(s)),
+  _ => const SizedBox(
+    width: 20,
+    height: 20,
+    child: CircularProgressIndicator(strokeWidth: 2),
+  ),
+};
+
+String _withState(String subtitle, RadioState? s) =>
+    s == null ? subtitle : '$subtitle\n${radioStateLabel(s)}';
+
 String _pct(double? v) => v == null ? '—' : '${v.toStringAsFixed(1)}%';
 
 /// Плитки сводки, как в iOS-клиенте Etohost.
 class _StatsGrid extends StatelessWidget {
   const _StatsGrid(this.s);
 
-  final RadioStats s;
+  /// null — нет подключения: плитки с прочерками.
+  final RadioStats? s;
 
   @override
   Widget build(BuildContext context) {
-    final b = s.battery;
+    final s = this.s;
+    final b = s?.battery;
+    String n(int? v) => v == null ? '—' : '$v';
     final tiles = [
-      (Icons.cell_tower, Colors.lightBlue, '${s.onRadio}', 'Нод в эфире'),
-      (Icons.circle, Colors.green, '${s.online}', 'Онлайн'),
-      (Icons.tag, Colors.blue, '${s.channels}', 'Каналов'),
-      s.onPower
+      (Icons.cell_tower, Colors.lightBlue, n(s?.onRadio), 'Нод в эфире'),
+      (Icons.circle, Colors.green, n(s?.online), 'Онлайн'),
+      (Icons.tag, Colors.blue, n(s?.channels), 'Каналов'),
+      s?.onPower ?? false
           ? (Icons.power, Colors.green, 'Сеть', 'Батарея')
           : (
               Icons.battery_std,
@@ -558,10 +602,10 @@ class _StatsGrid extends StatelessWidget {
       (
         Icons.monitor_heart_outlined,
         Colors.pink,
-        _pct(s.channelUtil),
+        _pct(s?.channelUtil),
         'ChUtil',
       ),
-      (Icons.upload_outlined, Colors.purple, _pct(s.airUtilTx), 'AirUtil'),
+      (Icons.upload_outlined, Colors.purple, _pct(s?.airUtilTx), 'AirUtil'),
     ];
     return LayoutBuilder(
       builder: (context, c) {
