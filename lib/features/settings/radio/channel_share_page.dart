@@ -1,21 +1,17 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../app/toasts.dart';
 import '../../../app/providers.dart';
 import '../../../app/settings_providers.dart';
 import '../../../data/database.dart';
+import '../../../data/node_actions.dart';
 import '../../../data/settings/channel_url.dart';
+import '../../nodes/contact_import_ui.dart';
 import '../../../ui/kit/kit.dart';
 import '../../../app/link_badge.dart';
-
-/// mobile_scanner есть только на Android, iOS и macOS.
-final _canScan = Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
 String _channelName(MeshChannel c, String preset) => c.name.isNotEmpty
     ? c.name
@@ -169,14 +165,27 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
       body: ListView(
         padding: pagePadding(context),
         children: [
-          if (_canScan) ...[
+          if (canScanQr) ...[
             OutlinedButton.icon(
               icon: const Icon(Icons.qr_code_scanner),
               label: const Text('Сканировать QR-код общих каналов'),
               onPressed: () async {
                 final text = await Navigator.of(context).push<String>(
-                  MaterialPageRoute(builder: (_) => const ChannelScanPage()),
+                  MaterialPageRoute(
+                    builder: (_) => QrScanPage(
+                      title: 'Сканировать QR-код общих каналов',
+                      accept: _isChannelOrContact,
+                    ),
+                  ),
                 );
+                // Попалась ссылка контакта — сразу импорт контакта.
+                final contact = text == null ? null : parseContactUrl(text);
+                if (contact != null) {
+                  if (context.mounted) {
+                    await showContactImport(context, ref, contact);
+                  }
+                  return;
+                }
                 if (text != null && mounted) {
                   setState(() {
                     _text.text = text;
@@ -311,55 +320,12 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
   }
 }
 
-/// «Сканировать QR-код общих каналов» (Android): возвращает текст кода.
-class ChannelScanPage extends StatefulWidget {
-  const ChannelScanPage({super.key});
-
-  @override
-  State<ChannelScanPage> createState() => _ChannelScanPageState();
-}
-
-class _ChannelScanPageState extends State<ChannelScanPage> {
-  final _controller = MobileScannerController(
-    formats: const [BarcodeFormat.qrCode],
-  );
-  bool _done = false;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+bool _isChannelOrContact(String text) {
+  if (parseContactUrl(text) != null) return true;
+  try {
+    ChannelLink.parse(text);
+    return true;
+  } on FormatException {
+    return false;
   }
-
-  void _onDetect(BarcodeCapture capture) {
-    if (_done) return;
-    for (final b in capture.barcodes) {
-      final text = b.rawValue;
-      if (text == null) continue;
-      try {
-        ChannelLink.parse(text);
-      } on FormatException {
-        continue;
-      }
-      _done = true;
-      Navigator.of(context).pop(text);
-      return;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Сканировать QR-код общих каналов'),
-      actions: const [LinkBadge()],
-    ),
-    body: MobileScanner(
-      controller: _controller,
-      onDetect: _onDetect,
-      errorBuilder: (context, error) => EmptyState(
-        icon: Icons.no_photography_outlined,
-        text: 'Камера недоступна: ${error.errorCode.name}',
-      ),
-    ),
-  );
 }

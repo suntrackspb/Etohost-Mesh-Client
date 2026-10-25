@@ -408,4 +408,46 @@ void main() {
     expect(r.myNodeNum, 0x1234);
     expect(r.firmwareVersion, '2.8.1');
   });
+
+  test(
+    'база нод с радио — правда о флагах; отсутствующие теряют избранное',
+    () async {
+      Future<void> put(
+        int num, {
+        bool fav = false,
+        bool ign = false,
+        bool radio = true,
+      }) => db
+          .into(db.nodes)
+          .insert(
+            NodesCompanion.insert(
+              num: Value(num),
+              isFavorite: Value(fav),
+              isIgnored: Value(ign),
+              onRadio: Value(radio),
+            ),
+          );
+      await put(1, fav: true, ign: true); // на радио флаги сняты
+      await put(2, fav: true, ign: true); // радио её забыло (сброс)
+      await put(3, ign: true, radio: false); // только из зеркала, наш игнор
+      await router.handle(FromRadio(nodeInfo: NodeInfo(num: 1)));
+      await router.handle(
+        FromRadio(nodeInfo: NodeInfo(num: 4, isFavorite: true)),
+      );
+      await router.handle(FromRadio(configCompleteId: 7));
+      Future<Node> n(int num) =>
+          (db.select(db.nodes)..where((r) => r.num.equals(num))).getSingle();
+      expect(((await n(1)).isFavorite, (await n(1)).isIgnored), (false, false));
+      expect(
+        ((await n(2)).isFavorite, (await n(2)).isIgnored, (await n(2)).onRadio),
+        (false, false, false),
+      );
+      expect((await n(3)).isIgnored, isTrue);
+      expect((await n(4)).isFavorite, isTrue);
+
+      // Загрузка без нод (только конфиг) ничего не снимает.
+      await router.handle(FromRadio(configCompleteId: 8));
+      expect((await n(4)).isFavorite, isTrue);
+    },
+  );
 }

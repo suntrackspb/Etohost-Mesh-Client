@@ -52,6 +52,35 @@ class NodeActions {
     return r.status == DeliveryStatus.acked;
   }
 
+  /// Импорт контакта (QR / ссылка): `add_contact` своей ноде и запись в БД,
+  /// как в официальных клиентах. Без ключа не импортируем: прошивка
+  /// записывает ключ безусловно, и пустой сотрёт уже известный.
+  /// true — нода подтвердила; в БД пишем в любом случае (как Android).
+  Future<bool> importContact(SharedContact c) async {
+    if (contactImportCheck(c, null).blocked) {
+      throw StateError('у контакта нет публичного ключа');
+    }
+    final ok = await _admin(AdminMessage(addContact: c));
+    final u = c.user;
+    final mac = hasMac(u) ? Value(Uint8List.fromList(u.macaddr)) : null;
+    await db
+        .into(db.nodes)
+        .insertOnConflictUpdate(
+          NodesCompanion(
+            num: Value(c.nodeNum),
+            userId: Value(nodeIdOf(c.nodeNum)),
+            longName: Value(u.longName),
+            shortName: Value(u.shortName),
+            hwModel: Value(u.hwModel.value),
+            role: Value(u.role.value),
+            isUnmessagable: Value(u.isUnmessagable),
+            publicKey: Value(Uint8List.fromList(u.publicKey)),
+            macaddr: mac ?? const Value.absent(),
+          ),
+        );
+    return ok;
+  }
+
   Future<void> _update(int num, NodesCompanion c) =>
       (db.update(db.nodes)..where((n) => n.num.equals(num))).write(c);
 
@@ -362,4 +391,43 @@ String? contactUrl(Node n, {required bool own, User? radioUser}) {
   );
   final b64 = base64Url.encode(c.writeToBuffer()).replaceAll('=', '');
   return 'https://meshtastic.org/v/#$b64';
+}
+
+/// `!1234abcd` по номеру ноды.
+String nodeIdOf(int num) => '!${num.toRadixString(16).padLeft(8, '0')}';
+
+/// Разобрать ссылку-контакт `https://meshtastic.org/v/#…` (с «=» и без,
+/// без схемы тоже). null — не ссылка контакта.
+SharedContact? parseContactUrl(String text) {
+  final m = RegExp(
+    r'^(?:https?://)?(?:www\.)?meshtastic\.org/v/#([A-Za-z0-9_\-+/=]+)$',
+  ).firstMatch(text.trim());
+  if (m == null) return null;
+  var b64 = m[1]!.replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
+  b64 += '=' * ((4 - b64.length % 4) % 4);
+  try {
+    final c = SharedContact.fromBuffer(base64Url.decode(b64));
+    return c.nodeNum == 0 || !c.hasUser() ? null : c;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Что показать в диалоге импорта. [blocked] — нет ключа, импорт нельзя;
+/// [known] — нода уже есть (перезапишется); [keyChanged] — ключ отличается
+/// от известного.
+typedef ContactImportCheck = ({bool blocked, bool known, bool keyChanged});
+
+ContactImportCheck contactImportCheck(SharedContact c, Node? existing) {
+  final key = c.user.publicKey;
+  final old = existing?.publicKey;
+  return (
+    blocked: key.isEmpty,
+    known: existing != null,
+    keyChanged:
+        old != null &&
+        old.isNotEmpty &&
+        key.isNotEmpty &&
+        base64.encode(old) != base64.encode(key),
+  );
 }

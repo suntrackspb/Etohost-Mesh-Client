@@ -17,9 +17,17 @@ class PacketRouter {
 
   final AppDatabase db;
 
+  /// Ноды текущей загрузки базы нод (want_config) — до config_complete_id.
+  final _seen = <int>{};
+
   Future<void> handle(FromRadio f) async {
     switch (f.whichPayloadVariant()) {
+      case FromRadio_PayloadVariant.configCompleteId:
+        // Загрузка только конфига нод не присылает — тогда ничего не меняем.
+        if (_seen.isNotEmpty) await db.syncRadioNodeList({..._seen});
+        _seen.clear();
       case FromRadio_PayloadVariant.nodeInfo:
+        _seen.add(f.nodeInfo.num);
         await _upsertNodeInfo(f.nodeInfo);
         await db.fillFirstHeard();
       case FromRadio_PayloadVariant.channel:
@@ -94,9 +102,8 @@ class PacketRouter {
             hopsAway: Value(n.hasHopsAway() ? n.hopsAway : null),
             viaMqtt: Value(n.viaMqtt),
             isFavorite: Value(n.isFavorite),
-            // Игнор бывает только нашим (нода из зеркала) — радио его
-            // не снимает, только ставит.
-            isIgnored: n.isIgnored ? const Value(true) : const Value.absent(),
+            // Флаги — как на своей ноде: правда о них — она.
+            isIgnored: Value(n.isIgnored),
             hasXeddsaSigned: Value(n.hasXeddsaSigned),
             latitude: Value(hasPos ? pos.latitudeI / 1e7 : null),
             longitude: Value(hasPos ? pos.longitudeI / 1e7 : null),

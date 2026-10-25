@@ -824,6 +824,19 @@ class AppDatabase extends _$AppDatabase {
         );
       });
 
+  /// Конец загрузки базы нод: ноды, которых радио не прислало ([seen]),
+  /// у радио нет — снимаем избранное и отметку радио, игнор — только у
+  /// бывших нод радио (игнор нод из зеркала хранится только у нас).
+  /// Правда о флагах — своя нода.
+  Future<void> syncRadioNodeList(Set<int> seen) => transaction(() async {
+    await (update(nodes)
+          ..where((n) => n.num.isNotIn(seen) & n.onRadio & n.isIgnored))
+        .write(const NodesCompanion(isIgnored: Value(false)));
+    await (update(nodes)..where((n) => n.num.isNotIn(seen))).write(
+      const NodesCompanion(onRadio: Value(false), isFavorite: Value(false)),
+    );
+  });
+
   /// После сброса к заводским: каналы и конфиги ноды больше не верны.
   Future<void> clearDeviceConfig() => transaction(() async {
     await delete(channels).go();

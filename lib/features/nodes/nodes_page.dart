@@ -8,6 +8,7 @@ import '../../data/database.dart';
 import '../../data/node_position.dart';
 import '../../data/node_row_info.dart';
 import '../../ui/kit/kit.dart';
+import 'contact_import_ui.dart';
 import 'node_detail_page.dart';
 import '../../data/hardware_catalog.dart';
 import '../../data/node_details.dart';
@@ -68,6 +69,11 @@ class _NodesPageState extends ConsumerState<NodesPage> {
               child: const Icon(Icons.filter_list),
             ),
             onPressed: () => NodeFilterSheet.show(context),
+          ),
+          IconButton(
+            tooltip: 'Добавить контакт',
+            icon: const Icon(Icons.person_add_alt),
+            onPressed: () => showAddContact(context, ref),
           ),
           IconButton(
             tooltip: 'Вид строки ноды',

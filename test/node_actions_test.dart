@@ -233,4 +233,63 @@ void main() {
     expect(c.user.longName, 'n66');
     expect(c.user.publicKey, hasLength(32));
   });
+
+  SharedContact contact({List<int>? key, int num = 0x77}) => SharedContact(
+    nodeNum: num,
+    user: User(
+      id: '!чужой',
+      longName: 'Гость',
+      shortName: 'GST',
+      publicKey: key ?? List.filled(32, 7),
+      macaddr: [1, 2, 3, 4, 5, 6],
+    ),
+  );
+
+  test('ссылка контакта: наша же ссылка разбирается обратно', () async {
+    await (db.update(db.nodes)..where((n) => n.num.equals(0x42))).write(
+      NodesCompanion(publicKey: Value(Uint8List(32))),
+    );
+    final url = contactUrl(await node(0x42), own: false)!;
+    expect(parseContactUrl(url)!.nodeNum, 0x42);
+    expect(parseContactUrl(' ${url.substring(8)} ')!.user.longName, 'n66');
+    expect(parseContactUrl('https://meshtastic.org/e/#abc'), isNull);
+    expect(parseContactUrl('https://meshtastic.org/v/#!!!'), isNull);
+    expect(parseContactUrl('https://meshtastic.org/v/#AAAA'), isNull);
+  });
+
+  test('проверка импорта: без ключа нельзя, смена ключа видна', () async {
+    expect(contactImportCheck(contact(key: []), null).blocked, isTrue);
+    expect(contactImportCheck(contact(), null), (
+      blocked: false,
+      known: false,
+      keyChanged: false,
+    ));
+    await (db.update(db.nodes)..where((n) => n.num.equals(0x42))).write(
+      NodesCompanion(publicKey: Value(Uint8List(32))),
+    );
+    final c = contactImportCheck(contact(num: 0x42), await node(0x42));
+    expect(c.known, isTrue);
+    expect(c.keyChanged, isTrue);
+  });
+
+  test('импорт: add_contact своей ноде без hop_limit, нода в БД', () async {
+    expect(await actions().importContact(contact()), isTrue);
+    final p = sent.single;
+    expect(p.to, 0xAA);
+    expect(p.hopLimit, 0);
+    expect(AdminMessage.fromBuffer(p.decoded.payload).addContact.nodeNum, 0x77);
+    final n = await node(0x77);
+    expect(n.longName, 'Гость');
+    expect(n.userId, '!00000077');
+    expect(n.publicKey, hasLength(32));
+    expect(n.macaddr, [1, 2, 3, 4, 5, 6]);
+  });
+
+  test('импорт без ключа — ошибка, ничего не отправлено', () async {
+    await expectLater(
+      actions().importContact(contact(key: [])),
+      throwsStateError,
+    );
+    expect(sent, isEmpty);
+  });
 }
