@@ -47,6 +47,7 @@ class UpdateBanner extends ConsumerWidget {
             Wrap(
               alignment: WrapAlignment.end,
               spacing: Tokens.s8,
+              runSpacing: Tokens.s8,
               children: [
                 if (!notes.isEmpty)
                   TextButton(
@@ -59,9 +60,13 @@ class UpdateBanner extends ConsumerWidget {
                       .setSetting(AppSettingKeys.updateDismissed, r.version),
                   child: const Text('Не напоминать'),
                 ),
-                FilledButton(
+                OutlinedButton(
                   onPressed: () => openRelease(r),
-                  child: const Text('Скачать'),
+                  child: const Text('Скачать с GitHub'),
+                ),
+                FilledButton(
+                  onPressed: openDownloads,
+                  child: const Text('Скачать с сайта'),
                 ),
               ],
             ),
@@ -120,12 +125,20 @@ Future<void> showReleaseNotes(
               ),
             },
           const SizedBox(height: Tokens.s16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton(
-              onPressed: () => openRelease(r),
-              child: const Text('Скачать'),
-            ),
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: Tokens.s8,
+            runSpacing: Tokens.s8,
+            children: [
+              OutlinedButton(
+                onPressed: () => openRelease(r),
+                child: const Text('Скачать с GitHub'),
+              ),
+              FilledButton(
+                onPressed: openDownloads,
+                child: const Text('Скачать с сайта'),
+              ),
+            ],
           ),
         ],
       ),
@@ -135,6 +148,10 @@ Future<void> showReleaseNotes(
 
 Future<void> openRelease(AppRelease r) =>
     launchUrl(r.url, mode: LaunchMode.externalApplication);
+
+/// Официальный сайт — без GitHub, который у части пользователей медленный.
+Future<void> openDownloads() =>
+    launchUrl(downloadsPage, mode: LaunchMode.externalApplication);
 
 /// «О приложении»: версия, ручная проверка, автопроверка.
 class AboutSection extends ConsumerStatefulWidget {
@@ -162,7 +179,7 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
         ref.invalidate(latestReleaseProvider);
         toasts.show(
           'Доступна версия ${r.version} — нажмите, чтобы скачать',
-          onTap: () => openRelease(r),
+          onTap: openDownloads,
         );
       }
     } catch (e) {

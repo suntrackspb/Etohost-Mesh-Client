@@ -1,0 +1,134 @@
+name: publish
+
+# Выкладка опубликованного релиза на https://etohost.ru/downloads.
+# Срабатывает, когда черновик релиза публикуют на GitHub, — сайт не обгоняет
+# страницу релиза. Вручную: Actions → publish → Run workflow, указать тег.
+#
+# Доступ: туннель WireGuard (секрет WG_CONFIG, пир GitHubReleases — роутер
+# пускает его только на SSH g4) и ключ DEPLOY_SSH_KEY пользователя releases,
+# которому через rrsync разрешена только папка /var/www/etohost.ru/etohostmesh.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Тег опубликованного релиза (v0.1.11)'
+        required: true
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+env:
+  HOST: 192.168.1.10
+  # Ключ сервера g4 (публичный) — без ssh-keyscan через туннель.
+  HOST_KEY: '192.168.1.10 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB8JscRbXbYlW7gVny1cwydVZDgCl9dzcHaElTir+ih/'
+  # Сколько последних версий держать в папках etohostmesh/<версия>/.
+  KEEP: 3
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          case "$TAG" in v[0-9]*) ;; *) echo "Не тег версии: $TAG"; exit 1 ;; esac
+          mkdir dist
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -D dist -p 'etohost-mesh-*'
+          ls -l dist
+          version=${TAG#v}
+          url=$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json url,isDraft,isPrerelease \
+            --jq 'if .isDraft or .isPrerelease then error("черновик или пре-релиз") else .url end')
+          # Ключ в release.json = data-os строки на странице загрузок.
+          python3 - "$version" "$url" <<'EOF'
+          import hashlib, json, os, sys, datetime
+          version, url = sys.argv[1:]
+          keys = {
+              'etohost-mesh-android.apk': 'android',
+              'etohost-mesh-android-universal.apk': 'android-universal',
+              'etohost-mesh-ios.ipa': 'ios',
+              'etohost-mesh-windows.zip': 'windows',
+              'etohost-mesh-macos.zip': 'macos',
+              'etohost-mesh-linux.tar.gz': 'linux',
+          }
+          files = {}
+          for name, key in keys.items():
+              path = os.path.join('dist', name)
+              if not os.path.exists(path):
+                  print('нет файла', name)
+                  continue
+              with open(path, 'rb') as f:
+                  sha = hashlib.sha256(f.read()).hexdigest()
+              files[key] = {'name': name, 'size': os.path.getsize(path), 'sha256': sha}
+          if 'android' not in files:
+              sys.exit('в релизе нет etohost-mesh-android.apk')
+          rel = {
+              'version': version,
+              'date': datetime.date.today().isoformat(),
+              'notes_url': url,
+              'files': files,
+          }
+          with open('release.json', 'w') as f:
+              json.dump(rel, f, ensure_ascii=False, indent=2)
+          EOF
+          cat release.json
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: WireGuard
+        env:
+          WG_CONFIG: ${{ secrets.WG_CONFIG }}
+        run: |
+          sudo apt-get install -y -qq wireguard-tools >/dev/null
+          printf '%s\n' "$WG_CONFIG" | sudo tee /etc/wireguard/wg0.conf >/dev/null
+          sudo chmod 600 /etc/wireguard/wg0.conf
+          sudo wg-quick up wg0
+
+      - name: SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "$HOST_KEY" > ~/.ssh/known_hosts
+          echo "RSYNC_RSH=ssh -i $HOME/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=20" >> "$GITHUB_ENV"
+
+      # Порядок: папка версии → постоянные имена (--delay-updates: файлы
+      # подменяются разом в конце) → release.json последним, чтобы страница
+      # не показала новую версию раньше файлов.
+      - name: Upload
+        run: |
+          set -euo pipefail
+          dest=releases@$HOST:
+          rsync -rt --chmod=D755,F644 dist/ "$dest$VERSION/"
+          rsync -rt --chmod=F644 --delay-updates dist/ "$dest"
+          rsync -t --chmod=F644 release.json "$dest"
+
+      # Старые папки версий: оставляем KEEP последних. Список — с сервера,
+      # удаление — rsync --delete от пустой папки с фильтром (шелла у
+      # пользователя releases нет).
+      - name: Prune old versions
+        run: |
+          set -euo pipefail
+          dest=releases@$HOST:
+          rsync --list-only "$dest" | awk '$1 ~ /^d/ && $NF ~ /^[0-9]+\.[0-9]+\.[0-9]+$/ {print $NF}' \
+            | sort -V > versions.txt
+          head -n -"$KEEP" versions.txt > old.txt || true
+          if [ -s old.txt ]; then
+            echo "Удаляю: $(tr '\n' ' ' < old.txt)"
+            mkdir empty
+            filters=()
+            while read -r v; do filters+=(--include="/$v/***"); done < old.txt
+            rsync -r --delete "${filters[@]}" --exclude='*' empty/ "$dest"
+          fi
+
+      - name: Down
+        if: always()
+        run: |
+          sudo wg-quick down wg0 || true
+          rm -f ~/.ssh/deploy_key

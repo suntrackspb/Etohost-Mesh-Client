@@ -1,0 +1,14 @@
+{
+  "exclude": [
+    "test/generated_migrations/",
+    "**/*.pbjson.dart",
+    "**/*.pbserver.dart"
+  ],
+  "deprioritize": [
+    "**/*.pb*.dart",
+    "**/*.g.dart",
+    "**/*.freezed.dart",
+    "test/",
+    "tool/"
+  ]
+}
