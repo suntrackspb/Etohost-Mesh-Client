@@ -103,6 +103,13 @@ class NodeDbActions {
     _ref.invalidate(nodeDbListProvider);
   }
 
+  Future<bool?> sameOwnKey(int from) async =>
+      (await _store).sameOwnKey(from, _active, _ref.read(databaseProvider));
+
+  /// Сообщения старой базы — в открытую; число перенесённых.
+  Future<int> transfer(int from) async =>
+      (await _store).transfer(from, _active, _ref.read(databaseProvider));
+
   Future<Uint8List> exportApp() async => (await _store).exportApp();
 
   /// Настройки применяются сразу; число загруженных настроек.

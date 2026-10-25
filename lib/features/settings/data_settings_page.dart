@@ -101,6 +101,14 @@ class DataSettingsPage extends ConsumerWidget {
               title: const Text('Экспорт в файл'),
               onTap: () => Navigator.pop(context, 'export'),
             ),
+            if (!db.active &&
+                db.num != noNodeDb &&
+                ref.read(activeNodeDbProvider) != noNodeDb)
+              ListTile(
+                leading: const Icon(Icons.move_down),
+                title: const Text('Перенести в открытую базу'),
+                onTap: () => Navigator.pop(context, 'transfer'),
+              ),
             if (!db.active)
               ListTile(
                 leading: const Icon(Icons.delete_outline),
@@ -115,8 +123,49 @@ class DataSettingsPage extends ConsumerWidget {
     switch (action) {
       case 'export':
         await _export(context, ref, db);
+      case 'transfer':
+        await _transfer(context, ref, db);
       case 'delete':
         await _delete(context, ref, db);
+    }
+  }
+
+  /// Нода сменила номер (ключ тот же): переписка старой базы — в текущую.
+  Future<void> _transfer(
+    BuildContext context,
+    WidgetRef ref,
+    NodeDbInfo db,
+  ) async {
+    final actions = ref.read(nodeDbActionsProvider);
+    final bool? same;
+    try {
+      same = await actions.sameOwnKey(db.num);
+    } catch (e) {
+      if (context.mounted) _snack(context, 'Не удалось прочитать: $e');
+      return;
+    }
+    if (!context.mounted) return;
+    final ok = await _confirm(
+      context,
+      'Перенести сообщения?',
+      'Сообщения из базы ${db.name} будут добавлены в открытую базу, '
+          'старый номер своей ноды заменится текущим. Старая база '
+          'останется — её можно удалить потом.'
+          '${switch (same) {
+            true => '',
+            false => '\n\nВнимание: ключ своей ноды в этих базах разный — '
+                'похоже, это другая нода.',
+            null => '\n\nКлюч своей ноды неизвестен — проверить, что это '
+                'та же нода, нельзя.',
+          }}',
+      'Перенести',
+    );
+    if (!ok || !context.mounted) return;
+    try {
+      final n = await actions.transfer(db.num);
+      if (context.mounted) _snack(context, 'Перенесено сообщений: $n');
+    } catch (e) {
+      if (context.mounted) _snack(context, 'Не удалось перенести: $e');
     }
   }
 

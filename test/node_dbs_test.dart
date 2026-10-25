@@ -142,6 +142,55 @@ void storeTests() {
       dir.deleteSync(recursive: true);
     });
 
+    test('перенос: свой номер меняется, без дублей', () async {
+      MessagesCompanion msg(int id, int from, int to) =>
+          MessagesCompanion.insert(
+            packetId: id,
+            fromNum: from,
+            toNum: to,
+            body: 'm$id',
+            rxTime: DateTime(2026),
+          );
+      final old = AppDatabase(NativeDatabase(File(store.path(2))), app);
+      await old.batch((b) {
+        b.insertAll(old.messages, [msg(10, 2, 7), msg(11, 7, 2)]);
+        b.insert(
+          old.nodes,
+          NodesCompanion.insert(
+            num: const Value(7),
+            longName: const Value('Ч'),
+          ),
+        );
+      });
+      await old.close();
+      await active.into(active.messages).insert(msg(10, 1, 7));
+      expect(await store.transfer(2, 1, active), 1);
+      final rows = await active.select(active.messages).get();
+      expect(rows.map((m) => (m.packetId, m.fromNum, m.toNum)).toSet(), {
+        (10, 1, 7),
+        (11, 7, 1),
+      });
+      final nodes = await active.select(active.nodes).get();
+      expect(nodes.map((n) => n.num).toSet(), {1, 7});
+      expect(await store.transfer(2, 1, active), 0);
+      expect(() => store.transfer(1, 1, active), throwsStateError);
+    });
+
+    test('ключ своей ноды: совпадает, разный, неизвестен', () async {
+      expect(await store.sameOwnKey(2, 1, active), isNull);
+      Future<void> key(AppDatabase db, int num, List<int> k) =>
+          (db.update(db.nodes)..where((n) => n.num.equals(num))).write(
+            NodesCompanion(publicKey: Value(Uint8List.fromList(k))),
+          );
+      final old = AppDatabase(NativeDatabase(File(store.path(2))), app);
+      await key(old, 2, [1, 2]);
+      await old.close();
+      await key(active, 1, [1, 2]);
+      expect(await store.sameOwnKey(2, 1, active), isTrue);
+      await key(active, 1, [3]);
+      expect(await store.sameOwnKey(2, 1, active), isFalse);
+    });
+
     test('список с именами и отметкой открытой', () async {
       final l = await store.list(1, active);
       expect(l.map((d) => (d.num, d.active)), [(1, true), (2, false)]);

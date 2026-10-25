@@ -2,10 +2,25 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 
 import '../core/proto/mesh.dart';
 import 'database.dart';
 import 'node_dbs.dart';
+
+/// Копирование сообщений из присоединённой базы `src`: параметры —
+/// старый и новый свой номер (для from_num, затем для to_num).
+String transferMessagesSql(List<String> cols) {
+  String col(String c) => c == 'from_num' || c == 'to_num'
+      ? 'CASE WHEN $c = ? THEN ? ELSE $c END'
+      : c;
+  final from = cols.indexOf('from_num'), to = cols.indexOf('to_num');
+  if (from < 0 || to < 0 || from > to) {
+    throw ArgumentError('from_num должен идти раньше to_num');
+  }
+  return 'INSERT OR IGNORE INTO messages (${cols.join(', ')}) '
+      'SELECT ${cols.map(col).join(', ')} FROM src.messages';
+}
 
 /// База ноды для экрана «Данные».
 typedef NodeDbInfo = ({int num, String name, int bytes, bool active});
@@ -109,6 +124,71 @@ class NodeDbStore {
     deleteDbFiles(path(num));
     await _save((await _order()).where((n) => n != num).toList());
   }
+
+  /// Ключ своей ноды в её базе (null — неизвестен).
+  static Future<List<int>?> _ownKey(AppDatabase db, int num) async {
+    final n = await (db.select(
+      db.nodes,
+    )..where((n) => n.num.equals(num))).getSingleOrNull();
+    final k = n?.publicKey;
+    return k == null || k.isEmpty ? null : k;
+  }
+
+  /// Та же нода под новым номером: ключи совпадают. null — ключа нет
+  /// в одной из баз, проверить нельзя.
+  Future<bool?> sameOwnKey(int from, int active, AppDatabase activeDb) async {
+    final a = await _ownKey(activeDb, active);
+    final b = await _with(from, (db) => _ownKey(db, from));
+    if (a == null || b == null) return null;
+    return listEquals(a, b);
+  }
+
+  /// Перенести сообщения базы [from] в открытую базу [active]: свой
+  /// старый номер в отправителе и получателе меняется на новый, уже
+  /// имеющиеся сообщения не дублируются. Ноды — только недостающие.
+  /// Старая база остаётся. Возвращает число перенесённых сообщений.
+  Future<int> transfer(int from, int active, AppDatabase activeDb) async {
+    if (from == active) throw StateError('Это открытая база');
+    if (from == noNodeDb || active == noNodeDb) {
+      throw StateError('Нужны базы двух нод');
+    }
+    if (!File(path(from)).existsSync()) throw StateError('Нет файла базы');
+    // Открыть и закрыть — миграции до схемы приложения.
+    await _with(from, (db) => db.select(db.myNode).get());
+    final msgCols = [
+      for (final c in activeDb.messages.$columns)
+        if (c.name != 'id') c.name,
+    ];
+    final nodeCols = [for (final c in activeDb.nodes.$columns) c.name];
+    final before = await _count(activeDb);
+    await activeDb.customStatement('ATTACH DATABASE ? AS src', [path(from)]);
+    try {
+      await activeDb.transaction(() async {
+        await activeDb.customStatement(transferMessagesSql(msgCols), [
+          from,
+          active,
+          from,
+          active,
+        ]);
+        await activeDb.customStatement(
+          'INSERT OR IGNORE INTO nodes (${nodeCols.join(', ')}) '
+          'SELECT ${nodeCols.join(', ')} FROM src.nodes WHERE num <> ?',
+          [from],
+        );
+      });
+    } finally {
+      await activeDb.customStatement('DETACH DATABASE src');
+    }
+    activeDb.notifyUpdates({
+      TableUpdate.onTable(activeDb.messages),
+      TableUpdate.onTable(activeDb.nodes),
+    });
+    return await _count(activeDb) - before;
+  }
+
+  static Future<int> _count(AppDatabase db) async =>
+      (await db.customSelect('SELECT COUNT(*) AS c FROM messages').getSingle())
+          .read<int>('c');
 
   /// Номер ноды в файле базы, если это наша база с данными ноды.
   Future<int> _numOf(String file) async {
