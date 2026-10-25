@@ -278,11 +278,13 @@ class _PositionCard extends StatelessWidget {
         ),
         MeshTile(
           title: coords,
-          subtitle:
-              positionNote(pos, lastHeardText) ??
-              (!pos.mirror && pos.at == null && n.altitude != null
-                  ? 'высота ${n.altitude} м'
-                  : null),
+          subtitle: [
+            positionNote(pos, lastHeardText) ??
+                (!pos.mirror && pos.at == null && n.altitude != null
+                    ? 'высота ${n.altitude} м'
+                    : null),
+            precisionText(pos.precisionBits),
+          ].nonNulls.join(' · ').ifEmptyNull,
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

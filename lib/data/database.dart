@@ -80,6 +80,7 @@ abstract final class AppSettingKeys {
 
   /// Группировать близкие ноды на карте: 'true'/'false', по умолчанию да.
   static const mapCluster = 'map.cluster';
+  static const mapPrecision = 'map.precision';
   static const mapCorrection = 'map.correction';
 
   /// Зоны глушилок с зеркала (JSON [JammerZones]); обновляются при старте.
@@ -187,6 +188,10 @@ class Nodes extends Table {
   RealColumn get mirrorLon => real().nullable()();
   BoolColumn get mirrorCorrected =>
       boolean().withDefault(const Constant(false))();
+
+  /// Точность позиции (precision_bits): из эфира и из зеркала.
+  IntColumn get precisionBits => integer().nullable()();
+  IntColumn get mirrorPrecisionBits => integer().nullable()();
 
   /// Время позиции зеркала ([mirrorLat]/[mirrorLon] без коррекции).
   DateTimeColumn get mirrorPositionAt => dateTime().nullable()();
@@ -425,7 +430,7 @@ class AppDatabase extends _$AppDatabase {
   final AppDatabase? settings;
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   // До первого релиза схема пересоздаётся целиком (данные — кэш с ноды).
   // После релиза — нормальные пошаговые миграции.
@@ -496,6 +501,10 @@ class AppDatabase extends _$AppDatabase {
       }
     },
     14: (m) => m.addColumn(nodes, nodes.macaddr),
+    15: (m) async {
+      await m.addColumn(nodes, nodes.precisionBits);
+      await m.addColumn(nodes, nodes.mirrorPrecisionBits);
+    },
   };
 
   /// Миграция целиком или никак: drift сам транзакцию не открывает, а

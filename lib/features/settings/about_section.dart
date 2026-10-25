@@ -44,10 +44,9 @@ class UpdateBanner extends ConsumerWidget {
               Text(notes.summary, maxLines: 4, overflow: TextOverflow.ellipsis),
             ],
             const SizedBox(height: Tokens.s8),
-            Wrap(
-              alignment: WrapAlignment.end,
-              spacing: Tokens.s8,
-              runSpacing: Tokens.s8,
+            _DownloadButtons(r),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (!notes.isEmpty)
                   TextButton(
@@ -59,14 +58,6 @@ class UpdateBanner extends ConsumerWidget {
                       .read(databaseProvider)
                       .setSetting(AppSettingKeys.updateDismissed, r.version),
                   child: const Text('Не напоминать'),
-                ),
-                OutlinedButton(
-                  onPressed: () => openRelease(r),
-                  child: const Text('Скачать с GitHub'),
-                ),
-                FilledButton(
-                  onPressed: openDownloads,
-                  child: const Text('Скачать с сайта'),
                 ),
               ],
             ),
@@ -125,21 +116,7 @@ Future<void> showReleaseNotes(
               ),
             },
           const SizedBox(height: Tokens.s16),
-          Wrap(
-            alignment: WrapAlignment.end,
-            spacing: Tokens.s8,
-            runSpacing: Tokens.s8,
-            children: [
-              OutlinedButton(
-                onPressed: () => openRelease(r),
-                child: const Text('Скачать с GitHub'),
-              ),
-              FilledButton(
-                onPressed: openDownloads,
-                child: const Text('Скачать с сайта'),
-              ),
-            ],
-          ),
+          _DownloadButtons(r),
         ],
       ),
     ),
@@ -224,4 +201,30 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
       ],
     );
   }
+}
+
+/// Две кнопки скачивания на всю ширину, поровну.
+class _DownloadButtons extends StatelessWidget {
+  const _DownloadButtons(this.r);
+
+  final AppRelease r;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: OutlinedButton(
+          onPressed: () => openRelease(r),
+          child: const Text('С GitHub'),
+        ),
+      ),
+      const SizedBox(width: Tokens.s8),
+      Expanded(
+        child: FilledButton(
+          onPressed: openDownloads,
+          child: const Text('С сайта'),
+        ),
+      ),
+    ],
+  );
 }

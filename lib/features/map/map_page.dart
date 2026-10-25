@@ -11,6 +11,7 @@ import '../../app/providers.dart';
 import '../../data/database.dart';
 import '../../data/map_points.dart';
 import '../../data/map_style.dart';
+import '../../data/node_position.dart';
 import '../../core/proto/mesh.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/open_node.dart';
@@ -72,6 +73,7 @@ class _MapPageState extends ConsumerState<MapPage> {
 
   /// Поворот карты, градусы (для кнопки «север сверху»).
   double _rotation = 0;
+  bool _circles = false;
 
   void _fitAll(List<MapPoint> points) {
     if (!_ready || points.isEmpty) return;
@@ -158,6 +160,7 @@ class _MapPageState extends ConsumerState<MapPage> {
     final rotate = ref.watch(mapRotateProvider).value ?? false;
     final area = ref.watch(nodeAreaProvider);
     final cluster = ref.watch(mapClusterProvider).value ?? true;
+    final precision = ref.watch(mapPrecisionProvider).value ?? false;
     // Вращение выключили — вернуть север наверх.
     if (!rotate && _rotation != 0 && _ready) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _map.rotate(0));
@@ -219,6 +222,10 @@ class _MapPageState extends ConsumerState<MapPage> {
               ),
               onMapReady: () => setState(() => _ready = true),
               onPositionChanged: (cam, _) {
+                final circles = showPrecisionCircles(cam.zoom);
+                if (circles != _circles) {
+                  setState(() => _circles = circles);
+                }
                 if ((cam.rotation - _rotation).abs() > 0.5 ||
                     (cam.rotation == 0) != (_rotation == 0)) {
                   setState(() => _rotation = cam.rotation);
@@ -247,6 +254,27 @@ class _MapPageState extends ConsumerState<MapPage> {
                       borderStrokeWidth: 1.5,
                       pattern: StrokePattern.dashed(segments: const [12, 8]),
                     ),
+                  ],
+                ),
+              if (precision && _circles)
+                PolygonLayer(
+                  polygons: [
+                    for (final p in points)
+                      if (p.precisionMeters case final m?)
+                        Polygon(
+                          points: [
+                            for (final c in circlePoints(
+                              p.lat,
+                              p.lon,
+                              m / 1000,
+                              segments: 48,
+                            ))
+                              LatLng(c.lat, c.lon),
+                          ],
+                          color: Colors.blue.withValues(alpha: 0.12),
+                          borderColor: Colors.blue.withValues(alpha: 0.6),
+                          borderStrokeWidth: 1.5,
+                        ),
                   ],
                 ),
               if (cluster)
@@ -524,6 +552,7 @@ class _LayersMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final style = ref.watch(mapStyleProvider).value ?? MapStyle.auto;
     final correction = ref.watch(positionCorrectionProvider).value ?? false;
+    final precision = ref.watch(mapPrecisionProvider).value ?? false;
     final db = ref.read(databaseProvider);
     return PopupMenuButton<Object>(
       tooltip: 'Слои',
@@ -533,6 +562,10 @@ class _LayersMenu extends ConsumerWidget {
         #correction => db.setSetting(
           AppSettingKeys.mapCorrection,
           '${!correction}',
+        ),
+        #precision => db.setSetting(
+          AppSettingKeys.mapPrecision,
+          '${!precision}',
         ),
         _ => db.setSetting(AppSettingKeys.mapCluster, '${!cluster}'),
       },
@@ -555,6 +588,11 @@ class _LayersMenu extends ConsumerWidget {
           value: #correction,
           checked: correction,
           child: const Text('Корректировка позиций'),
+        ),
+        CheckedPopupMenuItem<Object>(
+          value: #precision,
+          checked: precision,
+          child: const Text('Точность позиций'),
         ),
       ],
     );

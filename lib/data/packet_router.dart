@@ -101,6 +101,9 @@ class PacketRouter {
             latitude: Value(hasPos ? pos.latitudeI / 1e7 : null),
             longitude: Value(hasPos ? pos.longitudeI / 1e7 : null),
             altitude: Value(hasPos && pos.hasAltitude() ? pos.altitude : null),
+            precisionBits: Value(
+              hasPos && pos.precisionBits != 0 ? pos.precisionBits : null,
+            ),
             batteryLevel: Value(
               m != null && m.hasBatteryLevel() ? m.batteryLevel : null,
             ),
@@ -256,6 +259,7 @@ class PacketRouter {
         latitude: Value(lat),
         longitude: Value(lon),
         altitude: Value(alt),
+        precisionBits: Value(pos.precisionBits == 0 ? null : pos.precisionBits),
       ),
     );
     await _rememberGood(from, lat, lon, time);

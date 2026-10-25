@@ -130,6 +130,9 @@ class MirrorIngest {
               // Координаты зеркала — в свои поля; радио их не трогает.
               mirrorLat: hasPos ? Value(n.lastLat) : const Value.absent(),
               mirrorLon: hasPos ? Value(n.lastLon) : const Value.absent(),
+              mirrorPrecisionBits: hasPos
+                  ? Value(n.precisionBits)
+                  : const Value.absent(),
               mirrorCorrected: hasPos
                   ? Value(n.positionCorrected)
                   : const Value.absent(),

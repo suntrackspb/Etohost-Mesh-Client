@@ -954,6 +954,11 @@ final positionRulesProvider = Provider<PositionRules>(
 );
 
 /// Группировка близких нод на карте (по умолчанию включена).
+/// Круги точности позиций на карте — по умолчанию выключены.
+final mapPrecisionProvider = StreamProvider<bool>(
+  (ref) => _setting(ref, AppSettingKeys.mapPrecision).map((v) => v == 'true'),
+);
+
 final mapClusterProvider = StreamProvider<bool>(
   (ref) => _setting(ref, AppSettingKeys.mapCluster).map((v) => v != 'false'),
 );

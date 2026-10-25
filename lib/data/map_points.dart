@@ -19,6 +19,7 @@ class MapPoint {
     required this.mirrorOnly,
     this.corrected = false,
     this.spoofed = false,
+    this.precisionMeters,
   });
 
   final int num;
@@ -40,6 +41,9 @@ class MapPoint {
 
   /// Точка в зоне глушилки, заменить нечем — «вероятно, спуфинг».
   final bool spoofed;
+
+  /// Радиус круга точности позиции, м; null — точная или неизвестна.
+  final double? precisionMeters;
 }
 
 /// Сколько времени нода считается «свежей» на карте.
@@ -62,6 +66,7 @@ List<MapPoint> mapPoints(
           lon: p.lon,
           corrected: p.corrected,
           spoofed: p.spoofed,
+          precisionMeters: precisionRadiusMeters(p.precisionBits),
           label: n.shortName.isNotEmpty
               ? n.shortName
               : nodeIdString(n.num).substring(5),

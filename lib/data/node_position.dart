@@ -12,6 +12,7 @@ typedef NodePosition = ({
   bool mirror,
   bool spoofed,
   DateTime? at,
+  int? precisionBits,
 });
 
 /// Настройки правила: корректировка включена и зоны глушилок.
@@ -34,6 +35,7 @@ NodePosition _pos(
   bool mirror = false,
   bool spoofed = false,
   DateTime? at,
+  int? precisionBits,
 }) => (
   lat: lat,
   lon: lon,
@@ -41,6 +43,7 @@ NodePosition _pos(
   mirror: mirror,
   spoofed: spoofed,
   at: at,
+  precisionBits: precisionBits,
 );
 
 /// Какие координаты показывать — единое правило для всего приложения.
@@ -67,13 +70,14 @@ NodePosition? nodePosition(
           n.mirrorLon!,
           corrected: n.mirrorCorrected,
           mirror: true,
+          precisionBits: n.mirrorPrecisionBits,
         )
       : null;
   if (zones.isEmpty && correction && n.mirrorCorrected && mirrorPos != null) {
     return mirrorPos;
   }
   final main = _valid(n.latitude, n.longitude)
-      ? _pos(n.latitude!, n.longitude!)
+      ? _pos(n.latitude!, n.longitude!, precisionBits: n.precisionBits)
       : mirrorPos;
   if (main == null || main.corrected || !zones.isBad(main.lat, main.lon)) {
     return main;
@@ -98,7 +102,13 @@ NodePosition? nodePosition(
       );
     }
   }
-  return _pos(main.lat, main.lon, mirror: main.mirror, spoofed: true);
+  return _pos(
+    main.lat,
+    main.lon,
+    mirror: main.mirror,
+    spoofed: true,
+    precisionBits: main.precisionBits,
+  );
 }
 
 /// Подпись к координатам в карточке ноды; null — без подписи.
@@ -111,3 +121,37 @@ String? positionNote(NodePosition p, String Function(DateTime t) ago) =>
     : p.corrected
     ? 'скорректировано по соседям'
     : null;
+
+/// Радиус круга точности в метрах по precision_bits — таблица из
+/// Android-клиента (PositionPrecision.kt); вне 10..19 круга нет.
+double? precisionRadiusMeters(int? bits) => switch (bits) {
+  10 => 23345.484932,
+  11 => 11672.7369,
+  12 => 5836.36288,
+  13 => 2918.175876,
+  14 => 1459.0823719999053,
+  15 => 729.53562,
+  16 => 364.7622,
+  17 => 182.375556,
+  18 => 91.182212,
+  19 => 45.58554,
+  _ => null,
+};
+
+/// С какого масштаба карты рисуем круги точности.
+const precisionCirclesMinZoom = 12.0;
+
+bool showPrecisionCircles(double zoom) => zoom >= precisionCirclesMinZoom;
+
+/// «точность ~730 м» / «точность ~23 км»; null — круга точности нет.
+String? precisionText(int? bits) {
+  final m = precisionRadiusMeters(bits);
+  if (m == null) return null;
+  return m >= 1000
+      ? 'точность ~${(m / 1000).round()} км'
+      : 'точность ~${m.round()} м';
+}
+
+extension EmptyNull on String {
+  String? get ifEmptyNull => isEmpty ? null : this;
+}

@@ -294,6 +294,27 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _precisionBitsMeta = const VerificationMeta(
+    'precisionBits',
+  );
+  @override
+  late final GeneratedColumn<int> precisionBits = GeneratedColumn<int>(
+    'precision_bits',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _mirrorPrecisionBitsMeta =
+      const VerificationMeta('mirrorPrecisionBits');
+  @override
+  late final GeneratedColumn<int> mirrorPrecisionBits = GeneratedColumn<int>(
+    'mirror_precision_bits',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _mirrorPositionAtMeta = const VerificationMeta(
     'mirrorPositionAt',
   );
@@ -514,6 +535,8 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
     mirrorLat,
     mirrorLon,
     mirrorCorrected,
+    precisionBits,
+    mirrorPrecisionBits,
     mirrorPositionAt,
     mirrorGoodLat,
     mirrorGoodLon,
@@ -700,6 +723,24 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         mirrorCorrected.isAcceptableOrUnknown(
           data['mirror_corrected']!,
           _mirrorCorrectedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('precision_bits')) {
+      context.handle(
+        _precisionBitsMeta,
+        precisionBits.isAcceptableOrUnknown(
+          data['precision_bits']!,
+          _precisionBitsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mirror_precision_bits')) {
+      context.handle(
+        _mirrorPrecisionBitsMeta,
+        mirrorPrecisionBits.isAcceptableOrUnknown(
+          data['mirror_precision_bits']!,
+          _mirrorPrecisionBitsMeta,
         ),
       );
     }
@@ -943,6 +984,14 @@ class $NodesTable extends Nodes with TableInfo<$NodesTable, Node> {
         DriftSqlType.bool,
         data['${effectivePrefix}mirror_corrected'],
       )!,
+      precisionBits: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}precision_bits'],
+      ),
+      mirrorPrecisionBits: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}mirror_precision_bits'],
+      ),
       mirrorPositionAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}mirror_position_at'],
@@ -1067,6 +1116,10 @@ class Node extends DataClass implements Insertable<Node> {
   final double? mirrorLon;
   final bool mirrorCorrected;
 
+  /// Точность позиции (precision_bits): из эфира и из зеркала.
+  final int? precisionBits;
+  final int? mirrorPrecisionBits;
+
   /// Время позиции зеркала ([mirrorLat]/[mirrorLon] без коррекции).
   final DateTime? mirrorPositionAt;
 
@@ -1123,6 +1176,8 @@ class Node extends DataClass implements Insertable<Node> {
     this.mirrorLat,
     this.mirrorLon,
     required this.mirrorCorrected,
+    this.precisionBits,
+    this.mirrorPrecisionBits,
     this.mirrorPositionAt,
     this.mirrorGoodLat,
     this.mirrorGoodLon,
@@ -1192,6 +1247,12 @@ class Node extends DataClass implements Insertable<Node> {
       map['mirror_lon'] = Variable<double>(mirrorLon);
     }
     map['mirror_corrected'] = Variable<bool>(mirrorCorrected);
+    if (!nullToAbsent || precisionBits != null) {
+      map['precision_bits'] = Variable<int>(precisionBits);
+    }
+    if (!nullToAbsent || mirrorPrecisionBits != null) {
+      map['mirror_precision_bits'] = Variable<int>(mirrorPrecisionBits);
+    }
     if (!nullToAbsent || mirrorPositionAt != null) {
       map['mirror_position_at'] = Variable<DateTime>(mirrorPositionAt);
     }
@@ -1290,6 +1351,12 @@ class Node extends DataClass implements Insertable<Node> {
           ? const Value.absent()
           : Value(mirrorLon),
       mirrorCorrected: Value(mirrorCorrected),
+      precisionBits: precisionBits == null && nullToAbsent
+          ? const Value.absent()
+          : Value(precisionBits),
+      mirrorPrecisionBits: mirrorPrecisionBits == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mirrorPrecisionBits),
       mirrorPositionAt: mirrorPositionAt == null && nullToAbsent
           ? const Value.absent()
           : Value(mirrorPositionAt),
@@ -1368,6 +1435,10 @@ class Node extends DataClass implements Insertable<Node> {
       mirrorLat: serializer.fromJson<double?>(json['mirrorLat']),
       mirrorLon: serializer.fromJson<double?>(json['mirrorLon']),
       mirrorCorrected: serializer.fromJson<bool>(json['mirrorCorrected']),
+      precisionBits: serializer.fromJson<int?>(json['precisionBits']),
+      mirrorPrecisionBits: serializer.fromJson<int?>(
+        json['mirrorPrecisionBits'],
+      ),
       mirrorPositionAt: serializer.fromJson<DateTime?>(
         json['mirrorPositionAt'],
       ),
@@ -1419,6 +1490,8 @@ class Node extends DataClass implements Insertable<Node> {
       'mirrorLat': serializer.toJson<double?>(mirrorLat),
       'mirrorLon': serializer.toJson<double?>(mirrorLon),
       'mirrorCorrected': serializer.toJson<bool>(mirrorCorrected),
+      'precisionBits': serializer.toJson<int?>(precisionBits),
+      'mirrorPrecisionBits': serializer.toJson<int?>(mirrorPrecisionBits),
       'mirrorPositionAt': serializer.toJson<DateTime?>(mirrorPositionAt),
       'mirrorGoodLat': serializer.toJson<double?>(mirrorGoodLat),
       'mirrorGoodLon': serializer.toJson<double?>(mirrorGoodLon),
@@ -1464,6 +1537,8 @@ class Node extends DataClass implements Insertable<Node> {
     Value<double?> mirrorLat = const Value.absent(),
     Value<double?> mirrorLon = const Value.absent(),
     bool? mirrorCorrected,
+    Value<int?> precisionBits = const Value.absent(),
+    Value<int?> mirrorPrecisionBits = const Value.absent(),
     Value<DateTime?> mirrorPositionAt = const Value.absent(),
     Value<double?> mirrorGoodLat = const Value.absent(),
     Value<double?> mirrorGoodLon = const Value.absent(),
@@ -1508,6 +1583,12 @@ class Node extends DataClass implements Insertable<Node> {
     mirrorLat: mirrorLat.present ? mirrorLat.value : this.mirrorLat,
     mirrorLon: mirrorLon.present ? mirrorLon.value : this.mirrorLon,
     mirrorCorrected: mirrorCorrected ?? this.mirrorCorrected,
+    precisionBits: precisionBits.present
+        ? precisionBits.value
+        : this.precisionBits,
+    mirrorPrecisionBits: mirrorPrecisionBits.present
+        ? mirrorPrecisionBits.value
+        : this.mirrorPrecisionBits,
     mirrorPositionAt: mirrorPositionAt.present
         ? mirrorPositionAt.value
         : this.mirrorPositionAt,
@@ -1576,6 +1657,12 @@ class Node extends DataClass implements Insertable<Node> {
       mirrorCorrected: data.mirrorCorrected.present
           ? data.mirrorCorrected.value
           : this.mirrorCorrected,
+      precisionBits: data.precisionBits.present
+          ? data.precisionBits.value
+          : this.precisionBits,
+      mirrorPrecisionBits: data.mirrorPrecisionBits.present
+          ? data.mirrorPrecisionBits.value
+          : this.mirrorPrecisionBits,
       mirrorPositionAt: data.mirrorPositionAt.present
           ? data.mirrorPositionAt.value
           : this.mirrorPositionAt,
@@ -1645,6 +1732,8 @@ class Node extends DataClass implements Insertable<Node> {
           ..write('mirrorLat: $mirrorLat, ')
           ..write('mirrorLon: $mirrorLon, ')
           ..write('mirrorCorrected: $mirrorCorrected, ')
+          ..write('precisionBits: $precisionBits, ')
+          ..write('mirrorPrecisionBits: $mirrorPrecisionBits, ')
           ..write('mirrorPositionAt: $mirrorPositionAt, ')
           ..write('mirrorGoodLat: $mirrorGoodLat, ')
           ..write('mirrorGoodLon: $mirrorGoodLon, ')
@@ -1692,6 +1781,8 @@ class Node extends DataClass implements Insertable<Node> {
     mirrorLat,
     mirrorLon,
     mirrorCorrected,
+    precisionBits,
+    mirrorPrecisionBits,
     mirrorPositionAt,
     mirrorGoodLat,
     mirrorGoodLon,
@@ -1738,6 +1829,8 @@ class Node extends DataClass implements Insertable<Node> {
           other.mirrorLat == this.mirrorLat &&
           other.mirrorLon == this.mirrorLon &&
           other.mirrorCorrected == this.mirrorCorrected &&
+          other.precisionBits == this.precisionBits &&
+          other.mirrorPrecisionBits == this.mirrorPrecisionBits &&
           other.mirrorPositionAt == this.mirrorPositionAt &&
           other.mirrorGoodLat == this.mirrorGoodLat &&
           other.mirrorGoodLon == this.mirrorGoodLon &&
@@ -1782,6 +1875,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
   final Value<double?> mirrorLat;
   final Value<double?> mirrorLon;
   final Value<bool> mirrorCorrected;
+  final Value<int?> precisionBits;
+  final Value<int?> mirrorPrecisionBits;
   final Value<DateTime?> mirrorPositionAt;
   final Value<double?> mirrorGoodLat;
   final Value<double?> mirrorGoodLon;
@@ -1824,6 +1919,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.mirrorLat = const Value.absent(),
     this.mirrorLon = const Value.absent(),
     this.mirrorCorrected = const Value.absent(),
+    this.precisionBits = const Value.absent(),
+    this.mirrorPrecisionBits = const Value.absent(),
     this.mirrorPositionAt = const Value.absent(),
     this.mirrorGoodLat = const Value.absent(),
     this.mirrorGoodLon = const Value.absent(),
@@ -1867,6 +1964,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     this.mirrorLat = const Value.absent(),
     this.mirrorLon = const Value.absent(),
     this.mirrorCorrected = const Value.absent(),
+    this.precisionBits = const Value.absent(),
+    this.mirrorPrecisionBits = const Value.absent(),
     this.mirrorPositionAt = const Value.absent(),
     this.mirrorGoodLat = const Value.absent(),
     this.mirrorGoodLon = const Value.absent(),
@@ -1910,6 +2009,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Expression<double>? mirrorLat,
     Expression<double>? mirrorLon,
     Expression<bool>? mirrorCorrected,
+    Expression<int>? precisionBits,
+    Expression<int>? mirrorPrecisionBits,
     Expression<DateTime>? mirrorPositionAt,
     Expression<double>? mirrorGoodLat,
     Expression<double>? mirrorGoodLon,
@@ -1953,6 +2054,9 @@ class NodesCompanion extends UpdateCompanion<Node> {
       if (mirrorLat != null) 'mirror_lat': mirrorLat,
       if (mirrorLon != null) 'mirror_lon': mirrorLon,
       if (mirrorCorrected != null) 'mirror_corrected': mirrorCorrected,
+      if (precisionBits != null) 'precision_bits': precisionBits,
+      if (mirrorPrecisionBits != null)
+        'mirror_precision_bits': mirrorPrecisionBits,
       if (mirrorPositionAt != null) 'mirror_position_at': mirrorPositionAt,
       if (mirrorGoodLat != null) 'mirror_good_lat': mirrorGoodLat,
       if (mirrorGoodLon != null) 'mirror_good_lon': mirrorGoodLon,
@@ -1998,6 +2102,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
     Value<double?>? mirrorLat,
     Value<double?>? mirrorLon,
     Value<bool>? mirrorCorrected,
+    Value<int?>? precisionBits,
+    Value<int?>? mirrorPrecisionBits,
     Value<DateTime?>? mirrorPositionAt,
     Value<double?>? mirrorGoodLat,
     Value<double?>? mirrorGoodLon,
@@ -2041,6 +2147,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
       mirrorLat: mirrorLat ?? this.mirrorLat,
       mirrorLon: mirrorLon ?? this.mirrorLon,
       mirrorCorrected: mirrorCorrected ?? this.mirrorCorrected,
+      precisionBits: precisionBits ?? this.precisionBits,
+      mirrorPrecisionBits: mirrorPrecisionBits ?? this.mirrorPrecisionBits,
       mirrorPositionAt: mirrorPositionAt ?? this.mirrorPositionAt,
       mirrorGoodLat: mirrorGoodLat ?? this.mirrorGoodLat,
       mirrorGoodLon: mirrorGoodLon ?? this.mirrorGoodLon,
@@ -2136,6 +2244,12 @@ class NodesCompanion extends UpdateCompanion<Node> {
     if (mirrorCorrected.present) {
       map['mirror_corrected'] = Variable<bool>(mirrorCorrected.value);
     }
+    if (precisionBits.present) {
+      map['precision_bits'] = Variable<int>(precisionBits.value);
+    }
+    if (mirrorPrecisionBits.present) {
+      map['mirror_precision_bits'] = Variable<int>(mirrorPrecisionBits.value);
+    }
     if (mirrorPositionAt.present) {
       map['mirror_position_at'] = Variable<DateTime>(mirrorPositionAt.value);
     }
@@ -2217,6 +2331,8 @@ class NodesCompanion extends UpdateCompanion<Node> {
           ..write('mirrorLat: $mirrorLat, ')
           ..write('mirrorLon: $mirrorLon, ')
           ..write('mirrorCorrected: $mirrorCorrected, ')
+          ..write('precisionBits: $precisionBits, ')
+          ..write('mirrorPrecisionBits: $mirrorPrecisionBits, ')
           ..write('mirrorPositionAt: $mirrorPositionAt, ')
           ..write('mirrorGoodLat: $mirrorGoodLat, ')
           ..write('mirrorGoodLon: $mirrorGoodLon, ')
@@ -6738,6 +6854,8 @@ typedef $$NodesTableCreateCompanionBuilder =
       Value<double?> mirrorLat,
       Value<double?> mirrorLon,
       Value<bool> mirrorCorrected,
+      Value<int?> precisionBits,
+      Value<int?> mirrorPrecisionBits,
       Value<DateTime?> mirrorPositionAt,
       Value<double?> mirrorGoodLat,
       Value<double?> mirrorGoodLon,
@@ -6782,6 +6900,8 @@ typedef $$NodesTableUpdateCompanionBuilder =
       Value<double?> mirrorLat,
       Value<double?> mirrorLon,
       Value<bool> mirrorCorrected,
+      Value<int?> precisionBits,
+      Value<int?> mirrorPrecisionBits,
       Value<DateTime?> mirrorPositionAt,
       Value<double?> mirrorGoodLat,
       Value<double?> mirrorGoodLon,
@@ -6926,6 +7046,16 @@ class $$NodesTableFilterComposer extends Composer<_$AppDatabase, $NodesTable> {
 
   ColumnFilters<bool> get mirrorCorrected => $composableBuilder(
     column: $table.mirrorCorrected,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get precisionBits => $composableBuilder(
+    column: $table.precisionBits,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get mirrorPrecisionBits => $composableBuilder(
+    column: $table.mirrorPrecisionBits,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7144,6 +7274,16 @@ class $$NodesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get precisionBits => $composableBuilder(
+    column: $table.precisionBits,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get mirrorPrecisionBits => $composableBuilder(
+    column: $table.mirrorPrecisionBits,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get mirrorPositionAt => $composableBuilder(
     column: $table.mirrorPositionAt,
     builder: (column) => ColumnOrderings(column),
@@ -7325,6 +7465,16 @@ class $$NodesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get precisionBits => $composableBuilder(
+    column: $table.precisionBits,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get mirrorPrecisionBits => $composableBuilder(
+    column: $table.mirrorPrecisionBits,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get mirrorPositionAt => $composableBuilder(
     column: $table.mirrorPositionAt,
     builder: (column) => column,
@@ -7451,6 +7601,8 @@ class $$NodesTableTableManager
                 Value<double?> mirrorLat = const Value.absent(),
                 Value<double?> mirrorLon = const Value.absent(),
                 Value<bool> mirrorCorrected = const Value.absent(),
+                Value<int?> precisionBits = const Value.absent(),
+                Value<int?> mirrorPrecisionBits = const Value.absent(),
                 Value<DateTime?> mirrorPositionAt = const Value.absent(),
                 Value<double?> mirrorGoodLat = const Value.absent(),
                 Value<double?> mirrorGoodLon = const Value.absent(),
@@ -7493,6 +7645,8 @@ class $$NodesTableTableManager
                 mirrorLat: mirrorLat,
                 mirrorLon: mirrorLon,
                 mirrorCorrected: mirrorCorrected,
+                precisionBits: precisionBits,
+                mirrorPrecisionBits: mirrorPrecisionBits,
                 mirrorPositionAt: mirrorPositionAt,
                 mirrorGoodLat: mirrorGoodLat,
                 mirrorGoodLon: mirrorGoodLon,
@@ -7537,6 +7691,8 @@ class $$NodesTableTableManager
                 Value<double?> mirrorLat = const Value.absent(),
                 Value<double?> mirrorLon = const Value.absent(),
                 Value<bool> mirrorCorrected = const Value.absent(),
+                Value<int?> precisionBits = const Value.absent(),
+                Value<int?> mirrorPrecisionBits = const Value.absent(),
                 Value<DateTime?> mirrorPositionAt = const Value.absent(),
                 Value<double?> mirrorGoodLat = const Value.absent(),
                 Value<double?> mirrorGoodLon = const Value.absent(),
@@ -7579,6 +7735,8 @@ class $$NodesTableTableManager
                 mirrorLat: mirrorLat,
                 mirrorLon: mirrorLon,
                 mirrorCorrected: mirrorCorrected,
+                precisionBits: precisionBits,
+                mirrorPrecisionBits: mirrorPrecisionBits,
                 mirrorPositionAt: mirrorPositionAt,
                 mirrorGoodLat: mirrorGoodLat,
                 mirrorGoodLon: mirrorGoodLon,
