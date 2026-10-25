@@ -101,9 +101,17 @@ class MirrorIngest {
 
   Future<void> nodes(List<MirrorNode> batch) async {
     final myNum = (await db.select(db.myNode).getSingleOrNull())?.myNodeNum;
+    final forgotten = await db.forgottenNodes();
+    final heardAgain = <int>{};
     for (final n in batch) {
       final num = nodeNumFromId(n.nodeId);
       if (num == null) continue;
+      // Удалённая вручную — пропускаем, пока не услышат позже удаления.
+      if (forgotten[num] case final at?) {
+        final heard = n.lastSeenAt;
+        if (heard == null || !heard.isAfter(at)) continue;
+        heardAgain.add(num);
+      }
       final old = await (db.select(
         db.nodes,
       )..where((r) => r.num.equals(num))).getSingleOrNull();
@@ -163,6 +171,11 @@ class MirrorIngest {
           );
     }
     await db.fillFirstHeard();
+    if (heardAgain.isNotEmpty) {
+      await db.saveForgottenNodes(
+        Map.of(forgotten)..removeWhere((k, _) => heardAgain.contains(k)),
+      );
+    }
   }
 
   /// Имена отправителя из сообщения — чтобы в ленте не было голых !id.

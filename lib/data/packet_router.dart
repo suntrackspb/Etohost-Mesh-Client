@@ -24,7 +24,10 @@ class PacketRouter {
     switch (f.whichPayloadVariant()) {
       case FromRadio_PayloadVariant.configCompleteId:
         // Загрузка только конфига нод не присылает — тогда ничего не меняем.
-        if (_seen.isNotEmpty) await db.syncRadioNodeList({..._seen});
+        if (_seen.isNotEmpty) {
+          await db.syncRadioNodeList({..._seen});
+          await db.purgeStaleNodes();
+        }
         _seen.clear();
       case FromRadio_PayloadVariant.nodeInfo:
         _seen.add(f.nodeInfo.num);

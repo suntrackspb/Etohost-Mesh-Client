@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/toasts.dart';
 import '../../app/providers.dart';
 import '../../core/proto/mesh.dart';
+import '../../data/database.dart';
 import '../../data/node_db_store.dart';
 import '../../data/node_dbs.dart';
 import '../../ui/kit/kit.dart';
@@ -58,6 +59,7 @@ class DataSettingsPage extends ConsumerWidget {
               ),
             ],
           ),
+          const _PurgeStaleCard(),
           SectionCard(
             title: 'База приложения',
             footer:
@@ -336,5 +338,60 @@ class DataSettingsPage extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) _snack(context, 'Не удалось загрузить: $e');
     }
+  }
+}
+
+/// «Очистить устаревшие ноды» — как в iOS: переключатель и дни (1–180).
+class _PurgeStaleCard extends ConsumerStatefulWidget {
+  const _PurgeStaleCard();
+
+  @override
+  ConsumerState<_PurgeStaleCard> createState() => _PurgeStaleCardState();
+}
+
+class _PurgeStaleCardState extends ConsumerState<_PurgeStaleCard> {
+  /// Пока тянут ползунок — значение здесь, сохраняем по отпусканию.
+  double? _drag;
+
+  void _save(int days) => saveSetting(
+    ref,
+    AppSettingKeys.purgeStaleNodeDays,
+    '$days',
+  ).then((_) => ref.read(databaseProvider).purgeStaleNodes());
+
+  @override
+  Widget build(BuildContext context) {
+    final days = ref.watch(purgeStaleNodeDaysProvider).value ?? 0;
+    final shown = (_drag ?? days.toDouble()).clamp(1, 180).toDouble();
+    return SectionCard(
+      footer:
+          'Избранные и игнорируемые ноды всегда сохраняются. Другие ноды '
+          'удаляются из базы данных приложения через заданное число дней. '
+          '(Ноды с ключами PKC всегда сохраняются не менее 7 дней.) '
+          'Удаляются только ноды, которых нет в базе нод устройства; '
+          'своя нода и ноды с заметкой тоже сохраняются.',
+      children: [
+        SwitchListTile(
+          title: const Text('Очистить устаревшие ноды'),
+          value: days > 0,
+          onChanged: (on) => _save(on ? 7 : 0),
+        ),
+        if (days > 0) ...[
+          MeshTile(title: 'Через ${shown.round()} дн.'),
+          Slider(
+            value: shown,
+            min: 1,
+            max: 180,
+            divisions: 179,
+            label: '${shown.round()}',
+            onChanged: (v) => setState(() => _drag = v),
+            onChangeEnd: (v) {
+              setState(() => _drag = null);
+              _save(v.round());
+            },
+          ),
+        ],
+      ],
+    );
   }
 }

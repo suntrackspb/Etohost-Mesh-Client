@@ -287,9 +287,15 @@ final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
     fileText: e == null ? s : '$s (${e.runtimeType})',
   );
 
-  api.nodes().then(ingest.nodes).catchError((Object e) {
-    log('Зеркало: ноды не загружены', e);
-  });
+  api
+      .nodes()
+      .then((n) async {
+        await ingest.nodes(n);
+        await ingest.db.purgeStaleNodes();
+      })
+      .catchError((Object e) {
+        log('Зеркало: ноды не загружены', e);
+      });
   // Зоны — при каждом запуске; не ответило — остаются сохранённые.
   api
       .jammerZones()
@@ -910,6 +916,14 @@ final nodeNoteProvider = StreamProvider.family<String, int>(
 final nodeMutedProvider = StreamProvider.family<bool, int>(
   (ref, node) =>
       _setting(ref, AppSettingKeys.nodeMuted(node)).map((v) => v == 'true'),
+);
+
+/// Очистка старых нод: через сколько дней (0 — выключена).
+final purgeStaleNodeDaysProvider = StreamProvider<int>(
+  (ref) => _setting(
+    ref,
+    AppSettingKeys.purgeStaleNodeDays,
+  ).map((v) => int.tryParse(v ?? '') ?? 0),
 );
 
 /// Сообщения игнорируемых нод показывать свёрнутыми (по умолчанию — нет).

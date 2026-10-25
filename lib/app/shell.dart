@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/radio/radio_session.dart';
+import '../features/settings/radio/id_bug_page.dart';
 import '../ui/kit/kit.dart';
+import 'id_bug_providers.dart';
 import 'providers.dart';
 import 'router.dart';
 
@@ -34,7 +36,7 @@ class AdaptiveShell extends ConsumerWidget {
 
     if (!wide) {
       return Scaffold(
-        body: shell,
+        body: _withIdBug(shell),
         bottomNavigationBar: NavigationBar(
           selectedIndex: shell.currentIndex,
           onDestinationSelected: _go,
@@ -83,7 +85,7 @@ class AdaptiveShell extends ConsumerWidget {
             child: MediaQuery.removePadding(
               context: context,
               removeLeft: true,
-              child: shell,
+              child: _withIdBug(shell),
             ),
           ),
         ],
@@ -91,6 +93,29 @@ class AdaptiveShell extends ConsumerWidget {
     );
   }
 }
+
+/// Плашка об ошибке со сменой ID — над любым экраном; под ней экран
+/// без верхнего отступа, его уже взяла плашка.
+Widget _withIdBug(Widget child) => Consumer(
+  builder: (context, ref, _) {
+    ref.watch(ownerRestoreProvider);
+    final shown = ref.watch(idBugProvider).value != null;
+    return Column(
+      children: [
+        const IdBugBanner(),
+        Expanded(
+          child: shown
+              ? MediaQuery.removePadding(
+                  context: context,
+                  removeTop: true,
+                  child: child,
+                )
+              : child,
+        ),
+      ],
+    );
+  },
+);
 
 String radioStateLabel(RadioState s) => switch (s) {
   RadioState.ready => 'на связи',

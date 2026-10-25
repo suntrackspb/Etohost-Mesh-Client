@@ -215,7 +215,10 @@ class RadioSession extends ChangeNotifier {
     }
     if (f.hasMetadata()) metadata = f.metadata;
     if (f.hasNodeInfo() && f.nodeInfo.num == myNodeNum) {
+      final changed = ownUser != f.nodeInfo.user;
       ownUser = f.nodeInfo.user;
+      // После подключения — сообщить (проверка ID ноды, id_bug.dart).
+      if (changed && state == RadioState.ready && !_disposed) notifyListeners();
     }
     if (f.hasQueueStatus()) queue.onQueueStatus(f.queueStatus);
     if (f.hasPacket() && f.packet.hasDecoded()) {

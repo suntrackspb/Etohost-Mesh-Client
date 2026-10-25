@@ -295,7 +295,8 @@ class OwnNodeActionsCard extends ConsumerWidget {
   }
 }
 
-/// Удаление ноды из базы своей ноды — внизу карточки, с подтверждением.
+/// Удаление ноды — внизу карточки, с подтверждением: с радио — из базы
+/// своей ноды, только из зеркала — из приложения.
 class DeleteNodeButton extends ConsumerWidget {
   const DeleteNodeButton(this.n, {super.key});
 
@@ -303,7 +304,9 @@ class DeleteNodeButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!ref.watch(canSendProvider) || !n.onRadio) {
+    // С радио — админ-командой своей ноде; только из зеркала — локально.
+    final radio = n.onRadio;
+    if (radio ? !ref.watch(canSendProvider) : !n.onMirror) {
       return const SizedBox.shrink();
     }
     final error = Theme.of(context).colorScheme.error;
@@ -321,9 +324,12 @@ class DeleteNodeButton extends ConsumerWidget {
             context: context,
             builder: (c) => AlertDialog(
               title: const Text('Удалить ноду?'),
-              content: const Text(
-                'Нода будет удалена из базы своей ноды. '
-                'Она снова появится, когда её услышат.',
+              content: Text(
+                radio
+                    ? 'Нода будет удалена из базы своей ноды. '
+                          'Она снова появится, когда её услышат.'
+                    : 'Нода будет удалена из приложения. '
+                          'Она снова появится, когда её услышат.',
               ),
               actions: [
                 TextButton(
@@ -339,7 +345,16 @@ class DeleteNodeButton extends ConsumerWidget {
           );
           if (yes == true && context.mounted) {
             final a = ref.read(nodeActionsProvider);
-            await runNodeAction(context, () => a.remove(n.num), 'Нода удалена');
+            await runNodeAction(
+              context,
+              radio
+                  ? () => a.remove(n.num)
+                  : () async {
+                      await a.forget(n.num);
+                      return true;
+                    },
+              'Нода удалена',
+            );
           }
         },
       ),

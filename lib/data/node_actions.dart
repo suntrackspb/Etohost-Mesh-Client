@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import '../core/proto/mesh.dart';
 import '../core/radio/send_queue.dart';
 import 'database.dart';
+import 'id_bug.dart';
 import 'message_sender.dart' show directBlock;
 import 'telemetry.dart';
 
@@ -114,6 +115,10 @@ class NodeActions {
     return ok;
   }
 
+  /// Нода только из зеркала: удалить из локальной базы; зеркало вернёт её,
+  /// только когда её услышат позже удаления.
+  Future<void> forget(int num) => db.forgetNode(num);
+
   /// Трассировка: ответ придёт TRACEROUTE_APP с request_id = id запроса
   /// (PacketRouter заполнит запись). Запись в журнале создаётся сразу —
   /// без ответа она остаётся «нет ответа». Возвращает id запроса.
@@ -181,6 +186,83 @@ class NodeActions {
         ),
       ),
     );
+  }
+
+  /// Мягкая починка [IdBugPending]: своя NodeInfo с настоящим [mac] —
+  /// прошивка перезапишет им свою запись, перезагрузка не нужна.
+  Future<DeliveryResult> fixIdBugWithMac(List<int> mac) async {
+    final me = _me();
+    if (macNodeNum(mac) != me) throw StateError('MAC не от этой ноды');
+    final own = await (db.select(
+      db.nodes,
+    )..where((n) => n.num.equals(me))).getSingleOrNull();
+    if (own == null) throw StateError('своя нода ещё не загружена');
+    final user = nodeInfoUser(own, _radioUser?.call())
+      ..macaddr = Uint8List.fromList(mac);
+    return _send(
+      MeshPacket(
+        id: _nextId(),
+        to: 0xffffffff,
+        decoded: Data(
+          portnum: PortNum.NODEINFO_APP,
+          payload: user.writeToBuffer(),
+        ),
+      ),
+    );
+  }
+
+  /// Общая починка: стереть на ноде device.proto (номер, owner) и
+  /// nodes.proto (запись с нулевым MAC), перезагрузить — прошивка возьмёт
+  /// номер из MAC, ключ в config.proto останется. Имя запоминаем, чтобы
+  /// вернуть после переподключения. Сразу перезагрузка, не выключение:
+  /// выключение сохранило бы базу заново.
+  Future<bool> fixIdBugByReset() async {
+    final user = _radioUser?.call();
+    if (user != null && user.longName.isNotEmpty) {
+      final num = macNodeNum(user.macaddr) ?? _me();
+      await db.setSetting(
+        AppSettingKeys.pendingOwner,
+        encodePendingOwner((
+          num: num,
+          longName: user.longName,
+          shortName: user.shortName,
+          isUnmessagable: user.isUnmessagable,
+        )),
+      );
+    }
+    final dev = await _admin(
+      AdminMessage(deleteFileRequest: '/prefs/device.proto'),
+    );
+    final nodes = await _admin(
+      AdminMessage(deleteFileRequest: '/prefs/nodes.proto'),
+    );
+    if (!dev && !nodes) return false;
+    return _admin(AdminMessage(rebootSeconds: 2));
+  }
+
+  /// Вернуть имя после [fixIdBugByReset]; true — отправлено и подтверждено.
+  Future<bool> restorePendingOwner() async {
+    final p = parsePendingOwner(
+      await db.getSetting(AppSettingKeys.pendingOwner),
+    );
+    if (p == null) return false;
+    final me = _me();
+    if (p.num != me) return false;
+    if (!needsOwnerRestore(p, me, _radioUser?.call())) {
+      await db.setSetting(AppSettingKeys.pendingOwner, '');
+      return false;
+    }
+    final ok = await _admin(
+      AdminMessage(
+        setOwner: User(
+          longName: p.longName,
+          shortName: p.shortName,
+          isUnmessagable: p.isUnmessagable,
+        ),
+      ),
+    );
+    if (ok) await db.setSetting(AppSettingKeys.pendingOwner, '');
+    return ok;
   }
 
   /// Разослать свою позицию всем (координаты своей ноды из базы).

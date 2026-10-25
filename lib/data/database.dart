@@ -42,6 +42,17 @@ abstract final class AppSettingKeys {
   /// Личная заметка о ноде — в настройках, чтобы пережить удаление ноды.
   static String nodeNote(int num) => 'node.note.$num';
 
+  /// Удалять из приложения ноды, не слышные дольше N дней ('0'/нет — выкл.),
+  /// как «Clear Stale Nodes» в официальном iOS-клиенте.
+  static const purgeStaleNodeDays = 'nodes.purgeStaleDays';
+
+  /// Ноды, удалённые вручную: JSON {номер: мс удаления}. Из зеркала такая
+  /// нода не загружается, пока её не услышат позже удаления.
+  static const forgottenNodes = 'nodes.forgotten';
+
+  /// Имя своей ноды для возврата после починки ID (см. id_bug.dart).
+  static const pendingOwner = 'nodes.pendingOwner';
+
   /// Без уведомлений от ноды (как «Mute notifications» в iOS).
   static String nodeMuted(int num) => 'node.mute.$num';
 
@@ -837,6 +848,55 @@ class AppDatabase extends _$AppDatabase {
     );
   });
 
+  Future<Map<int, DateTime>> forgottenNodes() async =>
+      parseForgottenNodes(await getSetting(AppSettingKeys.forgottenNodes));
+
+  Future<void> saveForgottenNodes(Map<int, DateTime> m) => setSetting(
+    AppSettingKeys.forgottenNodes,
+    jsonEncode({
+      for (final e in m.entries) '${e.key}': e.value.millisecondsSinceEpoch,
+    }),
+  );
+
+  /// Удалить ноду из приложения и запомнить время, чтобы зеркало не вернуло.
+  Future<void> forgetNode(int num, {DateTime? now}) => transaction(() async {
+    await (delete(nodes)..where((n) => n.num.equals(num))).go();
+    await saveForgottenNodes({
+      ...await forgottenNodes(),
+      num: now ?? DateTime.now(),
+    });
+  });
+
+  /// Очистка старых нод по настройке [AppSettingKeys.purgeStaleNodeDays].
+  /// Возвращает число удалённых; с самой ноды ничего не удаляется.
+  Future<int> purgeStaleNodes({DateTime? now}) async {
+    final days =
+        int.tryParse(
+          await getSetting(AppSettingKeys.purgeStaleNodeDays) ?? '',
+        ) ??
+        0;
+    if (days <= 0) return 0;
+    final me = (await select(myNode).getSingleOrNull())?.myNodeNum;
+    final t = now ?? DateTime.now();
+    final stale = <int>[];
+    for (final n
+        in await (select(nodes)..where(
+              (n) => n.lastHeard.isSmallerThanValue(
+                t.subtract(Duration(days: days)),
+              ),
+            ))
+            .get()) {
+      if (!isStaleNode(n, days: days, now: t, me: me)) continue;
+      // Заметка переживает удаление, но ноду с заметкой не трогаем.
+      final note = await getSetting(AppSettingKeys.nodeNote(n.num));
+      if (note != null && note.isNotEmpty) continue;
+      stale.add(n.num);
+    }
+    if (stale.isEmpty) return 0;
+    await (delete(nodes)..where((n) => n.num.isIn(stale))).go();
+    return stale.length;
+  }
+
   /// После сброса к заводским: каналы и конфиги ноды больше не верны.
   Future<void> clearDeviceConfig() => transaction(() async {
     await delete(channels).go();
@@ -872,6 +932,37 @@ Set<String> parseHiddenChannels(String? raw) {
               if (k is String) k,
           }
         : {};
+  } on FormatException {
+    return {};
+  }
+}
+
+/// Нода «устарела» для очистки: не слышна дольше [days] дней. Как в iOS:
+/// избранные, игнорируемые и без «последний раз» не трогаем, ноды с ключом
+/// держим минимум 7 дней. Ещё не трогаем свою и те, что сейчас в базе радио.
+bool isStaleNode(
+  Node n, {
+  required int days,
+  required DateTime now,
+  required int? me,
+}) {
+  final heard = n.lastHeard;
+  if (days <= 0 || heard == null) return false;
+  if (n.num == me || n.onRadio || n.isFavorite || n.isIgnored) return false;
+  final hasKey = n.publicKey != null && n.publicKey!.isNotEmpty;
+  final keep = hasKey && days < 7 ? 7 : days;
+  return heard.isBefore(now.subtract(Duration(days: keep)));
+}
+
+Map<int, DateTime> parseForgottenNodes(String? raw) {
+  if (raw == null || raw.isEmpty) return {};
+  try {
+    return {
+      for (final e in (jsonDecode(raw) as Map<String, dynamic>).entries)
+        if (int.tryParse(e.key) case final k?)
+          if (e.value case final int ms)
+            k: DateTime.fromMillisecondsSinceEpoch(ms),
+    };
   } on FormatException {
     return {};
   }
