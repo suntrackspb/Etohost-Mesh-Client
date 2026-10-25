@@ -31,7 +31,13 @@ void main() {
     for (final n in [0xAA, 0x42]) {
       await db
           .into(db.nodes)
-          .insert(NodesCompanion.insert(num: Value(n), longName: Value('n$n')));
+          .insert(
+            NodesCompanion.insert(
+              num: Value(n),
+              longName: Value('n$n'),
+              macaddr: Value(Uint8List.fromList([1, 2, 3, 4, 5, n])),
+            ),
+          );
     }
   });
   tearDown(() => db.close());
@@ -202,6 +208,15 @@ void main() {
       expect(sent, isEmpty);
     },
   );
+
+  test('своя NodeInfo без MAC не уходит — нода сменит номер', () async {
+    await (db.update(db.nodes)..where((n) => n.num.equals(0xAA))).write(
+      const NodesCompanion(macaddr: Value(null)),
+    );
+    await expectLater(actions().broadcastNodeInfo(), throwsStateError);
+    await expectLater(actions().exchangeNodeInfo(0x42), throwsStateError);
+    expect(sent, isEmpty);
+  });
 
   test('QR контакта: ссылка официального формата, без ключа — нет', () async {
     expect(contactUrl(await node(0x42), own: false), isNull);

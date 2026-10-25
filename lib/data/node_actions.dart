@@ -130,7 +130,11 @@ class NodeActions {
       db.nodes,
     )..where((n) => n.num.equals(me))).getSingleOrNull();
     if (own == null) throw StateError('своя нода ещё не загружена');
-    return nodeInfoUser(own, _radioUser?.call());
+    final user = nodeInfoUser(own, _radioUser?.call());
+    // Своя NodeInfo без MAC попадает в NodeDB самой ноды; после перезагрузки
+    // прошивка считает свой номер занятым «чужим» MAC и берёт случайный.
+    if (!hasMac(user)) throw StateError('MAC своей ноды неизвестен');
+    return user;
   }
 
   /// Разослать свою NodeInfo всем — чтобы новую ноду быстрее узнали сеть
@@ -271,6 +275,9 @@ User nodeInfoUser(Node n, User? radio) {
         ? db.publicKey
         : radio.publicKey;
 }
+
+/// MAC задан и не нулевой.
+bool hasMac(User u) => u.macaddr.length == 6 && u.macaddr.any((b) => b != 0);
 
 /// Один хоп трассировки; [snr] — null, если неизвестен.
 typedef Hop = ({int num, double? snr});

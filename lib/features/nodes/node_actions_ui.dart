@@ -30,7 +30,7 @@ Future<void> runNodeAction(
     };
     text = success ? ok : 'Нода не подтвердила команду';
   } catch (e) {
-    text = '$e';
+    text = e is StateError ? e.message : '$e';
   }
   toasts.show(text);
 }
