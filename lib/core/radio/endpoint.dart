@@ -62,6 +62,10 @@ extension EndpointKindLabel on EndpointKind {
   return (s, defaultPort);
 }
 
+/// Обратное к [splitHostPort]: IPv6 — в скобках, `[v6]:port`.
+String joinHostPort(String host, int port) =>
+    host.contains(':') ? '[$host]:$port' : '$host:$port';
+
 /// Состояние соединения для плашки [kind]/[address] в списке подключений:
 /// `null`, если сессия не про неё или отключена.
 RadioState? endpointLinkState(

@@ -15,6 +15,13 @@ void main() {
     expect(splitHostPort('host:abc'), ('host', 4403));
   });
 
+  test('joinHostPort: IPv6 в скобках, туда и обратно', () {
+    expect(joinHostPort('192.168.1.5', 4403), '192.168.1.5:4403');
+    expect(joinHostPort('fe80::1', 4403), '[fe80::1]:4403');
+    final (h, p) = splitHostPort('2a02:6b8::1');
+    expect(splitHostPort(joinHostPort(h, p)), ('2a02:6b8::1', 4403));
+  });
+
   test('недавние: обновление по адресу, порядок, забыть', () async {
     final db = AppDatabase(NativeDatabase.memory());
     await db.touchRecent('tcp', '10.0.0.1:4403', '', null);

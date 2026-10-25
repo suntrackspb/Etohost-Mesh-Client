@@ -116,7 +116,9 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
     final h = _host.text.trim();
     if (h.isEmpty) return;
     final (host, port) = splitHostPort(h);
-    _connect(Endpoint(EndpointKind.tcp, '$host:$port', '').toTarget());
+    _connect(
+      Endpoint(EndpointKind.tcp, joinHostPort(host, port), '').toTarget(),
+    );
   }
 
   @override
