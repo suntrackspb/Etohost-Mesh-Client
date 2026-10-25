@@ -1,5 +1,6 @@
 import 'package:etohost_mesh/core/proto/mesh.dart';
 import 'package:etohost_mesh/data/id_bug.dart';
+import 'package:etohost_mesh/mirror/mirror_api.dart' show parseMac;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -68,5 +69,12 @@ void main() {
       isFalse,
     );
     expect(needsOwnerRestore(p, 1, User(longName: 'x')), isFalse);
+  });
+
+  test('MAC из зеркала', () {
+    expect(parseMac('9c:13:9e:ef:f1:20'), mac);
+    expect(parseMac('00:00:00:00:00:00'), isNull);
+    expect(parseMac('9c:13'), isNull);
+    expect(parseMac(null), isNull);
   });
 }

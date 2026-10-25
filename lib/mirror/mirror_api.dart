@@ -6,6 +6,16 @@ import 'package:http/http.dart' as http;
 import '../data/jammer_zones.dart';
 import 'mirror_models.dart';
 
+/// «9c:13:9e:ef:f1:20» → байты; нулевой и неверный — null.
+List<int>? parseMac(Object? v) {
+  if (v is! String) return null;
+  final p = v.split(RegExp('[:-]'));
+  if (p.length != 6) return null;
+  final b = [for (final x in p) int.tryParse(x, radix: 16) ?? -1];
+  if (b.any((x) => x < 0 || x > 255) || b.every((x) => x == 0)) return null;
+  return b;
+}
+
 class MirrorApiException implements Exception {
   MirrorApiException(this.message);
   final String message;
@@ -41,6 +51,13 @@ class MirrorApi {
   /// Полная карточка ноды (отсюда — публичный ключ, когда сервер начнёт его отдавать).
   Future<MirrorNode?> node(String id) async =>
       MirrorNode.tryParse(await _get('api/nodes/$id'));
+
+  /// MAC ноды из карточки зеркала (`mac_addr`, «9c:13:…»); null — не отдаёт.
+  /// В общий список не входит — только по одной ноде.
+  Future<List<int>?> nodeMac(String id) async {
+    final raw = await _get('api/nodes/$id');
+    return raw is Map<String, dynamic> ? parseMac(raw['mac_addr']) : null;
+  }
 
   Future<List<MirrorMessage>> chatHistory({
     required int beforeId,

@@ -211,15 +211,20 @@ class NodeActions {
     );
   }
 
-  /// Общая починка: стереть на ноде device.proto (номер, owner) и
-  /// nodes.proto (запись с нулевым MAC), перезагрузить — прошивка возьмёт
-  /// номер из MAC, ключ в config.proto останется. Имя запоминаем, чтобы
-  /// вернуть после переподключения. Сразу перезагрузка, не выключение:
-  /// выключение сохранило бы базу заново.
-  Future<bool> fixIdBugByReset() async {
+  /// Починка сбросом: стереть на ноде device.proto (номер, owner) и
+  /// перезагрузить — прошивка возьмёт номер из MAC, ключ в config.proto
+  /// останется. Мешающую запись с нулевым MAC убираем: для [IdBugChanged] —
+  /// запись со старым номером (список нод цел); для [IdBugPending] без MAC
+  /// это своя запись, её не удалить — стираем nodes.proto целиком.
+  /// Имя запоминаем, чтобы вернуть после переподключения. Сразу
+  /// перезагрузка, не выключение: выключение сохранило бы базу заново.
+  Future<bool> fixIdBugByReset(IdBug bug) async {
     final user = _radioUser?.call();
+    final num = switch (bug) {
+      IdBugChanged(:final original) => original,
+      IdBugPending(:final num) => num,
+    };
     if (user != null && user.longName.isNotEmpty) {
-      final num = macNodeNum(user.macaddr) ?? _me();
       await db.setSetting(
         AppSettingKeys.pendingOwner,
         encodePendingOwner((
@@ -230,13 +235,18 @@ class NodeActions {
         )),
       );
     }
+    final cleared = switch (bug) {
+      IdBugChanged(:final original) => await _admin(
+        AdminMessage(removeByNodenum: original),
+      ),
+      IdBugPending() => await _admin(
+        AdminMessage(deleteFileRequest: '/prefs/nodes.proto'),
+      ),
+    };
     final dev = await _admin(
       AdminMessage(deleteFileRequest: '/prefs/device.proto'),
     );
-    final nodes = await _admin(
-      AdminMessage(deleteFileRequest: '/prefs/nodes.proto'),
-    );
-    if (!dev && !nodes) return false;
+    if (!cleared && !dev) return false;
     return _admin(AdminMessage(rebootSeconds: 2));
   }
 
