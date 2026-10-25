@@ -42,12 +42,16 @@ jobs:
           gh release download "$TAG" -R "$GITHUB_REPOSITORY" -D dist -p 'etohost-mesh-*'
           ls -l dist
           version=${TAG#v}
-          url=$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json url,isDraft,isPrerelease \
-            --jq 'if .isDraft or .isPrerelease then error("черновик или пре-релиз") else .url end')
+          # Через переменную: ошибка gh (черновик) останавливает шаг по set -e.
+          info=$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" \
+            --json url,publishedAt,isDraft,isPrerelease \
+            --jq 'if .isDraft or .isPrerelease then error("черновик или пре-релиз") else "\(.url) \(.publishedAt[:10])" end')
+          read -r url published <<< "$info"
           # Ключ в release.json = data-os строки на странице загрузок.
-          python3 - "$version" "$url" <<'EOF'
-          import hashlib, json, os, sys, datetime
-          version, url = sys.argv[1:]
+          python3 - "$version" "$url" "$published" <<'EOF'
+          import hashlib, json, os, sys
+          # Дата — публикации релиза, не прогона (ручная перезаливка старого тега).
+          version, url, published = sys.argv[1:]
           keys = {
               'etohost-mesh-android.apk': 'android',
               'etohost-mesh-android-universal.apk': 'android-universal',
@@ -69,7 +73,7 @@ jobs:
               sys.exit('в релизе нет etohost-mesh-android.apk')
           rel = {
               'version': version,
-              'date': datetime.date.today().isoformat(),
+              'date': published,
               'notes_url': url,
               'files': files,
           }
