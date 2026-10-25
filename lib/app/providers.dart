@@ -202,9 +202,13 @@ final radioProvider = ChangeNotifierProvider<RadioSession>((ref) {
   });
   // myInfo приходит первым: сначала переключаемся на базу этой ноды, и
   // только потом пишем её пакеты (asyncMap обрабатывает строго по очереди).
+  // Один разборщик на базу: он помнит ноды текущей загрузки базы нод.
+  PacketRouter? router;
   Future<void> handle(FromRadio f) async {
     if (f.hasMyInfo()) await switchNodeDb(ref, f.myInfo.myNodeNum);
-    await PacketRouter(ref.read(databaseProvider)).handle(f);
+    final db = ref.read(databaseProvider);
+    if (router?.db != db) router = PacketRouter(db);
+    await router!.handle(f);
   }
 
   final sub = session.packets.asyncMap(handle).listen(null);
