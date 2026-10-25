@@ -823,96 +823,100 @@ class _MessageListState extends ConsumerState<_MessageList> {
       context: context,
       showDragHandle: true,
       useRootNavigator: true,
+      // На маленьких экранах (iPhone 7) пункты не помещаются — прокрутка.
+      isScrollControlled: true,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (canSend)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Tokens.s16),
-                // Два ряда по 6: 11 частых реакций и «+» — полный выбор.
-                child: Builder(
-                  builder: (_) {
-                    final emojis = quickReactions(
-                      ref.read(recentReactionsProvider).value ?? const [],
-                    );
-                    final buttons = <Widget>[
-                      for (final e in emojis)
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            onReact(m, e);
-                          },
-                          icon: Text(e, style: const TextStyle(fontSize: 24)),
-                        ),
-                      IconButton(
-                        tooltip: 'Другие эмодзи',
-                        onPressed: () async {
-                          Navigator.pop(ctx);
-                          final e = await pickEmoji(context);
-                          if (e != null) onReact(m, e);
-                        },
-                        icon: const Icon(Icons.add_reaction_outlined),
-                      ),
-                    ];
-                    return Column(
-                      children: [
-                        for (var r = 0; r < buttons.length; r += 6)
-                          Row(
-                            children: [
-                              for (final b in buttons.skip(r).take(6))
-                                Expanded(child: b),
-                            ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (canSend)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Tokens.s16),
+                  // Два ряда по 6: 11 частых реакций и «+» — полный выбор.
+                  child: Builder(
+                    builder: (_) {
+                      final emojis = quickReactions(
+                        ref.read(recentReactionsProvider).value ?? const [],
+                      );
+                      final buttons = <Widget>[
+                        for (final e in emojis)
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              onReact(m, e);
+                            },
+                            icon: Text(e, style: const TextStyle(fontSize: 24)),
                           ),
-                      ],
-                    );
+                        IconButton(
+                          tooltip: 'Другие эмодзи',
+                          onPressed: () async {
+                            Navigator.pop(ctx);
+                            final e = await pickEmoji(context);
+                            if (e != null) onReact(m, e);
+                          },
+                          icon: const Icon(Icons.add_reaction_outlined),
+                        ),
+                      ];
+                      return Column(
+                        children: [
+                          for (var r = 0; r < buttons.length; r += 6)
+                            Row(
+                              children: [
+                                for (final b in buttons.skip(r).take(6))
+                                  Expanded(child: b),
+                              ],
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              if (canWrite)
+                ListTile(
+                  leading: const Icon(Icons.reply),
+                  title: const Text('Ответить'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    onReply(m);
                   },
                 ),
-              ),
-            if (canWrite)
               ListTile(
-                leading: const Icon(Icons.reply),
-                title: const Text('Ответить'),
+                leading: const Icon(Icons.copy),
+                title: const Text('Копировать текст'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  onReply(m);
-                },
-              ),
-            ListTile(
-              leading: const Icon(Icons.copy),
-              title: const Text('Копировать текст'),
-              onTap: () {
-                Navigator.pop(ctx);
-                Clipboard.setData(ClipboardData(text: m.body));
-                toasts.success('Скопировано');
-              },
-            ),
-            const Divider(height: 1),
-            for (final (label, value) in messageIds(m))
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.tag),
-                title: Text(label),
-                subtitle: Text(
-                  value,
-                  style: const TextStyle(fontFamily: 'monospace'),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Clipboard.setData(ClipboardData(text: value));
+                  Clipboard.setData(ClipboardData(text: m.body));
                   toasts.success('Скопировано');
                 },
               ),
-            if (failed && canSend)
-              ListTile(
-                leading: const Icon(Icons.refresh),
-                title: const Text('Отправить ещё раз'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  ref.read(messageSenderProvider).retry(m);
-                },
-              ),
-          ],
+              const Divider(height: 1),
+              for (final (label, value) in messageIds(m))
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.tag),
+                  title: Text(label),
+                  subtitle: Text(
+                    value,
+                    style: const TextStyle(fontFamily: 'monospace'),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Clipboard.setData(ClipboardData(text: value));
+                    toasts.success('Скопировано');
+                  },
+                ),
+              if (failed && canSend)
+                ListTile(
+                  leading: const Icon(Icons.refresh),
+                  title: const Text('Отправить ещё раз'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ref.read(messageSenderProvider).retry(m);
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
