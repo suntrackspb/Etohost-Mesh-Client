@@ -21,6 +21,9 @@ abstract final class AppSettingKeys {
   /// Версия, про которую попросили больше не напоминать.
   static const updateDismissed = 'update.dismissed';
 
+  /// Закрытые объявления разработчика: JSON-список id.
+  static const noticesDismissed = 'notices.dismissed';
+
   /// Зеркало: 'true'/'false', по умолчанию выключено.
   static const mirrorEnabled = 'mirror.enabled';
 

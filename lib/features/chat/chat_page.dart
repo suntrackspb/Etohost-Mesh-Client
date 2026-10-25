@@ -7,6 +7,7 @@ import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
 import '../../data/message_sender.dart';
 import '../../ui/kit/kit.dart';
+import '../notices/notice_banner.dart';
 import 'chat_feed.dart';
 import '../../app/link_badge.dart';
 
@@ -40,46 +41,54 @@ class ChatPage extends ConsumerWidget {
         automaticallyImplyLeading: !wide,
         actions: const [LinkBadge()],
       ),
-      body: channels.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => EmptyState(icon: Icons.error_outline, text: '$e'),
-        data: (all) {
-          if (all.isEmpty && dms.isEmpty) {
-            return const EmptyState(
-              icon: Icons.forum_outlined,
-              text: 'Каналы появятся после подключения к ноде.',
-            );
-          }
-          return ListView(
-            children: [
-              if (all.isNotEmpty) const _Header('Каналы'),
-              for (final c in all)
-                MeshTile(
-                  title: c.title,
-                  subtitle: c.index == null
-                      ? 'только из зеркала'
-                      : c.primary
-                      ? 'основной'
-                      : 'канал ${c.index}',
-                  leading: CircleAvatar(
-                    child: c.index == null
-                        ? const Icon(Icons.cloud_outlined, size: 18)
-                        : Text('${c.index}'),
-                  ),
-                  trailing: _UnreadBadge(c.key),
-                  selected: wide && c.key == selected,
-                  onTap: () => context.go(ChatPage.location(c.key)),
-                  // Канал только из зеркала можно скрыть.
-                  onLongPress: c.index == null
-                      ? () => _hide(context, ref, c)
-                      : null,
-                ),
-              if (dms.isNotEmpty) const _Header('Личные'),
-              for (final d in dms)
-                _DirectTile(d, nodes[d.peer], wide, selected),
-            ],
-          );
-        },
+      body: Column(
+        children: [
+          const NoticeBanners(),
+          Expanded(
+            child: channels.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) =>
+                  EmptyState(icon: Icons.error_outline, text: '$e'),
+              data: (all) {
+                if (all.isEmpty && dms.isEmpty) {
+                  return const EmptyState(
+                    icon: Icons.forum_outlined,
+                    text: 'Каналы появятся после подключения к ноде.',
+                  );
+                }
+                return ListView(
+                  children: [
+                    if (all.isNotEmpty) const _Header('Каналы'),
+                    for (final c in all)
+                      MeshTile(
+                        title: c.title,
+                        subtitle: c.index == null
+                            ? 'только из зеркала'
+                            : c.primary
+                            ? 'основной'
+                            : 'канал ${c.index}',
+                        leading: CircleAvatar(
+                          child: c.index == null
+                              ? const Icon(Icons.cloud_outlined, size: 18)
+                              : Text('${c.index}'),
+                        ),
+                        trailing: _UnreadBadge(c.key),
+                        selected: wide && c.key == selected,
+                        onTap: () => context.go(ChatPage.location(c.key)),
+                        // Канал только из зеркала можно скрыть.
+                        onLongPress: c.index == null
+                            ? () => _hide(context, ref, c)
+                            : null,
+                      ),
+                    if (dms.isNotEmpty) const _Header('Личные'),
+                    for (final d in dms)
+                      _DirectTile(d, nodes[d.peer], wide, selected),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
 

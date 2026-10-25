@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'app/notice_providers.dart';
 import 'app/toasts.dart';
 import 'app/desktop_tray_provider.dart';
 import 'app/keep_alive_provider.dart';
@@ -76,12 +77,14 @@ class _MeshAppState extends ConsumerState<MeshApp> {
   void initState() {
     super.initState();
     ref.read(startupConnectProvider);
+    ref.read(noticesProvider.notifier).refresh();
     // После сна сокет часто «жив» только на бумаге — переподключаемся сразу.
     final journal = ref.read(journalProvider);
     _lifecycle = AppLifecycleListener(
       onResume: () {
         journal.add(JournalKind.app, 'Приложение на экране');
         ref.read(mirrorRealtimeProvider)?.reconnectNow();
+        ref.read(noticesProvider.notifier).refresh();
       },
       onPause: () {
         journal.add(JournalKind.app, 'Приложение свёрнуто');
@@ -104,6 +107,7 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     ref.listen(positionServiceProvider, (_, _) {});
     ref.listen(mqttProxyProvider, (_, _) {});
     ref.listen(keepAliveProvider, (_, _) {});
+    ref.listen(noticesOnConnectProvider, (_, _) {});
     ref.listen(messageAlertsProvider, (_, _) {});
     ref.listen(desktopTrayProvider, (_, _) {});
     ref.listen(orientationApplierProvider, (_, _) {});
