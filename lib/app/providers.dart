@@ -110,6 +110,13 @@ class NodeDbActions {
   Future<int> transfer(int from) async =>
       (await _store).transfer(from, _active, _ref.read(databaseProvider));
 
+  /// Сколько баз удалено под новый лимит.
+  Future<int> setLimit(int limit) async {
+    final n = await (await _store).setLimit(limit);
+    _ref.invalidate(nodeDbListProvider);
+    return n;
+  }
+
   Future<Uint8List> exportApp() async => (await _store).exportApp();
 
   /// Настройки применяются сразу; число загруженных настроек.
@@ -172,6 +179,7 @@ Future<void> switchNodeDb(Ref ref, int num) async {
   final r = useNodeDb(
     parseNodeDbs(await app.getSetting(AppSettingKeys.nodeDbs)),
     num,
+    limit: parseNodeDbLimit(await app.getSetting(AppSettingKeys.nodeDbLimit)),
   );
   await app.setSetting(AppSettingKeys.nodeDbs, encodeNodeDbs(r.list));
   if (ref.read(activeNodeDbProvider) != num) {
@@ -916,6 +924,11 @@ final nodeNoteProvider = StreamProvider.family<String, int>(
 final nodeMutedProvider = StreamProvider.family<bool, int>(
   (ref, node) =>
       _setting(ref, AppSettingKeys.nodeMuted(node)).map((v) => v == 'true'),
+);
+
+/// Сколько баз нод хранить (0 — без ограничения).
+final nodeDbLimitProvider = StreamProvider<int>(
+  (ref) => _setting(ref, AppSettingKeys.nodeDbLimit).map(parseNodeDbLimit),
 );
 
 /// Очистка старых нод: через сколько дней (0 — выключена).

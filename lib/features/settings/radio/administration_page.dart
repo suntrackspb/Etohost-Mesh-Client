@@ -61,6 +61,7 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
               tile('Сброс настроек', Icons.restore, _factory),
             ],
           ),
+          const SizedBox(height: Tokens.s16),
           SectionCard(
             children: [
               MeshTile(

@@ -123,6 +123,7 @@ abstract final class AppSettingKeys {
 
   /// Базы нод: JSON-список номеров, последняя использованная — первой.
   static const nodeDbs = 'db.nodes';
+  static const nodeDbLimit = 'db.limit';
 
   /// Скрытые каналы зеркала: JSON-список ключей.
   static const hiddenChannels = 'chat.hiddenChannels';

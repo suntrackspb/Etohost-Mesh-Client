@@ -33,9 +33,7 @@ typedef NodeDbInfo = ({int num, String name, int bytes, bool active});
   int limit = nodeDbLimit,
 }) {
   if (list.contains(num)) return (list: list, evicted: const []);
-  final next = [...list.take(1), num, ...list.skip(1)];
-  if (next.length <= limit) return (list: next, evicted: const []);
-  return (list: next.sublist(0, limit), evicted: next.sublist(limit));
+  return trimNodeDbs([...list.take(1), num, ...list.skip(1)], limit);
 }
 
 /// Файлы баз нод: список, экспорт, импорт, удаление. Активную базу
@@ -47,6 +45,21 @@ class NodeDbStore {
   final AppDatabase app;
 
   String path(int num) => '$dir/${AppDatabase.nodeDbName(num)}.sqlite';
+
+  Future<int> _limit() async =>
+      parseNodeDbLimit(await app.getSetting(AppSettingKeys.nodeDbLimit));
+
+  /// Новый лимит баз: сохранить и сразу удалить лишние, самые давние.
+  /// Сколько удалено.
+  Future<int> setLimit(int limit) async {
+    await app.setSetting(AppSettingKeys.nodeDbLimit, '$limit');
+    final r = trimNodeDbs(await _order(), limit);
+    for (final n in r.evicted) {
+      deleteDbFiles(path(n));
+    }
+    if (r.evicted.isNotEmpty) await _save(r.list);
+    return r.evicted.length;
+  }
 
   Future<List<int>> _order() async =>
       parseNodeDbs(await app.getSetting(AppSettingKeys.nodeDbs));
@@ -233,7 +246,7 @@ class NodeDbStore {
       }
       deleteDbFiles(path(num));
       await File(tmp).rename(path(num));
-      final r = insertImportedDb(order, num);
+      final r = insertImportedDb(order, num, limit: await _limit());
       await _save(r.list);
       for (final n in r.evicted) {
         deleteDbFiles(path(n));

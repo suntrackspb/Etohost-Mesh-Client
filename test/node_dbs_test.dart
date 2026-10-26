@@ -257,4 +257,18 @@ void storeTests() {
       );
     });
   });
+
+  test('лимит баз из настройки; 0 — без ограничения', () {
+    expect(parseNodeDbLimit(null), nodeDbLimit);
+    expect(parseNodeDbLimit('x'), nodeDbLimit);
+    expect(parseNodeDbLimit('-1'), nodeDbLimit);
+    expect(parseNodeDbLimit('0'), 0);
+    expect(parseNodeDbLimit('12'), 12);
+    final many = List.generate(30, (i) => i + 1);
+    expect(useNodeDb(many, 99, limit: 0).evicted, isEmpty);
+    expect(useNodeDb(many, 99, limit: 0).list.length, 31);
+    final r = useNodeDb(many, 99, limit: 3);
+    expect(r.list, [99, 1, 2]);
+    expect(r.evicted.length, 28);
+  });
 }

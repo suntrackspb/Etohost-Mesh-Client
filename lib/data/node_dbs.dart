@@ -3,8 +3,22 @@ import 'dart:io';
 
 import 'database.dart';
 
-/// Сколько баз нод держим (как Device DB cache limit у Meshtastic-Android).
+/// Сколько баз нод держим по умолчанию (как Device DB cache limit у
+/// Meshtastic-Android); пользователь меняет в «Данных», 0 — без ограничения.
 const nodeDbLimit = 5;
+
+/// Лимит баз из настройки: пусто или мусор — [nodeDbLimit], 0 — без
+/// ограничения.
+int parseNodeDbLimit(String? s) {
+  final n = int.tryParse(s ?? '');
+  return n == null || n < 0 ? nodeDbLimit : n;
+}
+
+/// Обрезать [next] до [limit] (0 — не обрезать).
+({List<int> list, List<int> evicted}) trimNodeDbs(List<int> next, int limit) =>
+    limit == 0 || next.length <= limit
+    ? (list: next, evicted: const [])
+    : (list: next.sublist(0, limit), evicted: next.sublist(limit));
 
 /// Номер «базы без ноды»: ещё ни к одной не подключались (только зеркало).
 const noNodeDb = 0;
@@ -27,15 +41,14 @@ List<int> parseNodeDbs(String? raw) {
 String encodeNodeDbs(List<int> list) => jsonEncode(list);
 
 /// Переход на базу [num]: она становится первой; всё сверх [limit] —
-/// в [evicted] (самые давно неиспользованные), их файлы удаляются.
+/// в [evicted] (самые давно неиспользованные), их файлы удаляются;
+/// [limit] 0 — без ограничения.
 ({List<int> list, List<int> evicted}) useNodeDb(
   List<int> list,
   int num, {
   int limit = nodeDbLimit,
 }) {
-  final next = [num, ...list.where((n) => n != num)];
-  if (next.length <= limit) return (list: next, evicted: const []);
-  return (list: next.sublist(0, limit), evicted: next.sublist(limit));
+  return trimNodeDbs([num, ...list.where((n) => n != num)], limit);
 }
 
 /// Таблицы ноды. В общей базе остаются только настройки и недавние.

@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/toasts.dart';
@@ -27,28 +28,32 @@ class DataSettingsPage extends ConsumerWidget {
             title: 'Базы нод',
             footer:
                 'У каждой ноды своя база: ноды, каналы, сообщения и копия '
-                'зеркала. Хранится до $nodeDbLimit баз, самая давно не '
-                'использованная удаляется. Открытую базу удалить нельзя.',
-            children: switch (dbs) {
-              AsyncData(:final value) => [
-                for (final db in value)
-                  MeshTile(
-                    title: db.name,
-                    subtitle: db.active
-                        ? 'Открыта · ${_size(db.bytes)}'
-                        : _size(db.bytes),
-                    leading: Icon(
-                      db.active ? Icons.storage : Icons.storage_outlined,
+                'зеркала. Сверх заданного числа самая давно не '
+                'использованная база удаляется вместе с перепиской; 0 — '
+                'хранить все. Открытую базу удалить нельзя.',
+            children: [
+              const _DbLimitTile(),
+              ...switch (dbs) {
+                AsyncData(:final value) => [
+                  for (final db in value)
+                    MeshTile(
+                      title: db.name,
+                      subtitle: db.active
+                          ? 'Открыта · ${_size(db.bytes)}'
+                          : _size(db.bytes),
+                      leading: Icon(
+                        db.active ? Icons.storage : Icons.storage_outlined,
+                      ),
+                      trailing: const Icon(Icons.more_vert),
+                      onTap: () => _menu(context, ref, db),
                     ),
-                    trailing: const Icon(Icons.more_vert),
-                    onTap: () => _menu(context, ref, db),
-                  ),
-              ],
-              AsyncError(:final error) => [
-                MeshTile(title: 'Не удалось прочитать: $error'),
-              ],
-              _ => [const LinearProgressIndicator()],
-            },
+                ],
+                AsyncError(:final error) => [
+                  MeshTile(title: 'Не удалось прочитать: $error'),
+                ],
+                _ => [const LinearProgressIndicator()],
+              },
+            ],
           ),
           SectionCard(
             children: [
@@ -393,5 +398,66 @@ class _PurgeStaleCardState extends ConsumerState<_PurgeStaleCard> {
         ],
       ],
     );
+  }
+}
+
+/// «Сколько баз хранить»: по умолчанию [nodeDbLimit], 0 — без ограничения.
+/// Если баз больше нового лимита — спросить и удалить лишние сразу.
+class _DbLimitTile extends ConsumerWidget {
+  const _DbLimitTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final limit = ref.watch(nodeDbLimitProvider).value ?? nodeDbLimit;
+    return MeshTile(
+      title: 'Сколько баз хранить',
+      trailing: SizedBox(
+        width: 80,
+        child: TextFormField(
+          key: ValueKey(limit),
+          initialValue: '$limit',
+          textAlign: TextAlign.end,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          onFieldSubmitted: (v) => _save(context, ref, int.tryParse(v)),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _save(BuildContext context, WidgetRef ref, int? n) async {
+    if (n == null) return;
+    final count = ref.read(nodeDbListProvider).value?.length ?? 0;
+    final extra = n == 0 ? 0 : count - n;
+    if (extra > 0) {
+      final yes = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: const Text('Удалить лишние базы?'),
+          content: Text(
+            'Сейчас баз: $count. Самые давно не использованные ($extra) '
+            'удалятся вместе с перепиской.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Отмена'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(c).colorScheme.error,
+              ),
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('Удалить'),
+            ),
+          ],
+        ),
+      );
+      if (yes != true) {
+        ref.invalidate(nodeDbLimitProvider);
+        return;
+      }
+    }
+    await ref.read(nodeDbActionsProvider).setLimit(n);
   }
 }
