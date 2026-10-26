@@ -22,3 +22,6 @@ dart_defines.json
 
 # Индекс CodeGraph (локальный)
 .codegraph/
+
+# Python
+__pycache__/

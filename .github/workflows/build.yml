@@ -65,6 +65,27 @@ jobs:
           channel: stable
           cache: true
 
+      # Подпись APK постоянным ключом: секреты ANDROID_KEYSTORE_BASE64 (jks в
+      # base64), ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS. Без ключа
+      # каждая сборка подписана своим отладочным и не ставится поверх
+      # прежней — поэтому релиз (тег) без ключа не собираем.
+      - name: Android signing key
+        if: matrix.platform == 'android'
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+              echo "::error::нет секрета ANDROID_KEYSTORE_BASE64 — релизный APK не подписать"
+              exit 1
+            fi
+            echo "::warning::нет ключа — APK с отладочной подписью"
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
       - name: Generate platform folder
         shell: bash
         run: |
@@ -94,6 +115,8 @@ jobs:
           IMAGES_URL: ${{ vars.IMAGES_URL }}
           IMAGES_KEY: ${{ vars.IMAGES_KEY }}
           CARTO_KEY: ${{ vars.CARTO_KEY }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           defines=(
             --dart-define=REPORT_URL="$REPORT_URL"

@@ -2,8 +2,10 @@
 """Прописывает имя приложения и разрешения Bluetooth/сети/USB/камеры/файлов в папки, созданные `flutter create`.
 Запускается в CI после `flutter create`; повторный запуск безопасен."""
 import json
+import os
 import pathlib
 import re
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APP_NAME = "Etohost Mesh"
@@ -249,6 +251,34 @@ def patch_notifications():
     print("notifications: ok")
 
 
+def patch_android_signing():
+    """Релизный APK — постоянным ключом из секретов CI. Без него Flutter
+    подписывает отладочным ключом, а тот на каждой машине CI свой: новая
+    версия не ставится поверх старой («конфликтует с другим пакетом»)."""
+    g = ROOT / "android/app/build.gradle.kts"
+    if not g.exists() or not os.environ.get("ANDROID_KEYSTORE_FILE"):
+        print("android signing: нет ключа — отладочная подпись")
+        return
+    s = g.read_text()
+    if 'create("release")' not in s:
+        s = re.sub(r"(\n    buildTypes\s*\{)", """
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("ANDROID_KEYSTORE_FILE"))
+            storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+        }
+    }
+\\1""", s, count=1)
+        s = s.replace('signingConfig = signingConfigs.getByName("debug")',
+                      'signingConfig = signingConfigs.getByName("release")')
+        if 'getByName("release")' not in s:
+            sys.exit("android signing: не нашёл signingConfig в build.gradle.kts")
+        g.write_text(s)
+    print("android signing: ok")
+
+
 COMPILE_SDK = 36
 
 
@@ -356,6 +386,7 @@ if __name__ == "__main__":
     patch_android()
     patch_apple()
     patch_notifications()
+    patch_android_signing()
     patch_linux_icon()
     patch_linux_warnings()
     patch_plugins()
