@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:cryptography/cryptography.dart';
 import 'package:http/http.dart' as http;
 
+import '../../core/client_version.dart';
+
 /// Загрузка картинки на сервис Etohost Mesh Images (i.jab.su).
 ///
 /// Запрос подписан ключом своей ноды: secret = X25519(ключ ноды, ключ
@@ -12,7 +14,7 @@ import 'package:http/http.dart' as http;
 /// зеркала — без ноды, известной зеркалу, загрузить нельзя.
 class ImageUploader {
   ImageUploader(this.baseUrl, this.servicePublicKey, {http.Client? client})
-    : _client = client ?? http.Client();
+    : _client = client ?? VersionedClient();
 
   /// Задаются при сборке: `--dart-define=IMAGES_URL=https://i.jab.su/
   /// --dart-define=IMAGES_KEY=…` (base64 публичного ключа сервиса).

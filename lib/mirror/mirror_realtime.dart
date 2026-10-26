@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+import '../core/client_version.dart';
 import 'mirror_models.dart';
 
 enum MirrorState { idle, connecting, connected, waiting }
@@ -62,6 +63,7 @@ class MirrorRealtime extends ChangeNotifier {
     try {
       final ws = await WebSocket.connect(
         url.toString(),
+        headers: clientHeaders(),
       ).timeout(const Duration(seconds: 15));
       if (!_running) {
         await ws.close();

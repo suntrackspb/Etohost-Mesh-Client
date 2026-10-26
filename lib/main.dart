@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app/notice_providers.dart';
@@ -14,6 +15,7 @@ import 'app/mqtt_providers.dart';
 import 'app/notify_providers.dart';
 import 'app/providers.dart';
 import 'app/router.dart';
+import 'core/client_version.dart';
 import 'core/desktop/desktop_tray.dart';
 import 'core/desktop/linux_desktop_entry.dart';
 import 'core/desktop/single_instance.dart';
@@ -23,6 +25,9 @@ import 'ui/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    clientVersion = (await PackageInfo.fromPlatform()).version;
+  } catch (_) {}
   // Общая база и база ноды — один класс AppDatabase на разных файлах;
   // предупреждение drift про «несколько экземпляров» здесь ложное.
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;

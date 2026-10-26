@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../core/client_version.dart';
+
 import '../data/jammer_zones.dart';
 import 'mirror_models.dart';
 
@@ -26,7 +28,7 @@ class MirrorApiException implements Exception {
 /// REST API зеркала. Перенос 1:1 из iOS (MirrorAPI.swift).
 class MirrorApi {
   MirrorApi(this.baseUrl, {http.Client? client})
-    : _client = client ?? http.Client();
+    : _client = client ?? VersionedClient();
 
   final Uri baseUrl;
   final http.Client _client;
