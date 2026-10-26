@@ -256,8 +256,10 @@ def patch_android_signing():
     подписывает отладочным ключом, а тот на каждой машине CI свой: новая
     версия не ставится поверх старой («конфликтует с другим пакетом»)."""
     g = ROOT / "android/app/build.gradle.kts"
-    if not g.exists() or not os.environ.get("ANDROID_KEYSTORE_FILE"):
-        print("android signing: нет ключа — отладочная подпись")
+    if not g.exists():
+        return
+    if not os.environ.get("ANDROID_KEYSTORE_FILE"):
+        print("android signing: no key, debug signature")
         return
     s = g.read_text()
     if 'create("release")' not in s:
@@ -381,6 +383,8 @@ def patch_icons_config():
 
 
 if __name__ == "__main__":
+    # Консоль Windows в CI — cp1252: кириллица в print роняет скрипт.
+    sys.stdout.reconfigure(encoding="utf-8")
     patch_name()
     patch_app_id()
     patch_android()

@@ -21,6 +21,7 @@ import 'core/desktop/linux_desktop_entry.dart';
 import 'core/desktop/single_instance.dart';
 import 'core/radio/journal.dart';
 import 'data/appearance.dart';
+import 'data/db_location.dart';
 import 'ui/theme.dart';
 
 Future<void> main() async {
@@ -55,6 +56,16 @@ Future<void> main() async {
       onActivate: () => container.read(desktopTrayProvider)?.bringToFront(),
     );
     if (instance == null) exit(0);
+  }
+
+  // До открытия баз: на десктопе они переезжают из «Документов».
+  try {
+    final moved = await moveDbsFromDocuments();
+    if (moved.isNotEmpty) {
+      journal.add(JournalKind.app, 'Базы перенесены: ${moved.join(', ')}');
+    }
+  } catch (e) {
+    journal.add(JournalKind.error, 'Перенос баз: $e');
   }
 
   await prepareNodeDb(container);

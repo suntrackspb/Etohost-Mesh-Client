@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import 'db_location.dart';
+
 import '../core/proto/mesh.dart';
 
 part 'database.g.dart';
@@ -432,14 +434,15 @@ class AppDatabase extends _$AppDatabase {
   /// [settings] — общая база приложения: настройки и недавние подключения
   /// берутся из неё. Без неё (общая база сама, тесты) — из этой же.
   AppDatabase([QueryExecutor? executor, this.settings])
-    : super(executor ?? driftDatabase(name: appDbName));
+    : super(executor ?? driftDatabase(name: appDbName, native: _native));
 
   /// База конкретной ноды (свои ноды, каналы, сообщения, копия зеркала).
   AppDatabase.forNode(int num, AppDatabase settings)
-    : this(driftDatabase(name: nodeDbName(num)), settings);
+    : this(driftDatabase(name: nodeDbName(num), native: _native), settings);
 
   /// Файл общей базы — старое имя: настройки при обновлении на месте.
   static const appDbName = 'meshtastic';
+  static const _native = DriftNativeOptions(databaseDirectory: dbDirectory);
   static String nodeDbName(int num) => 'node_$num';
 
   final AppDatabase? settings;

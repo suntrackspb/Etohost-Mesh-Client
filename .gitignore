@@ -12,8 +12,8 @@ macos/
 windows/
 linux/
 web/
-DOC/
-DATA/
+/doc/
+/data/
 PLAN.md
 
 # Генерирует tool/patch_platforms.py

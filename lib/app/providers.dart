@@ -24,6 +24,7 @@ import '../data/appearance.dart';
 import '../data/message_filter.dart';
 import '../data/screen_orientation.dart';
 import '../data/database.dart';
+import '../data/db_location.dart';
 import '../data/node_row_info.dart';
 import '../data/map_style.dart';
 import '../data/message_sender.dart';
@@ -72,10 +73,8 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 
 /// Файлы баз нод (экран «Данные»).
 final nodeDbStoreProvider = FutureProvider<NodeDbStore>(
-  (ref) async => NodeDbStore(
-    (await getApplicationDocumentsDirectory()).path,
-    ref.watch(appDatabaseProvider),
-  ),
+  (ref) async =>
+      NodeDbStore((await dbDirectory()).path, ref.watch(appDatabaseProvider)),
 );
 
 /// Список баз нод; после изменений — `ref.invalidate`.
@@ -153,12 +152,12 @@ String nodeDbExportName(int? num, DateTime now) {
 }
 
 Future<String> _nodeDbPath(int num) async =>
-    '${(await getApplicationDocumentsDirectory()).path}/'
+    '${(await dbDirectory()).path}/'
     '${AppDatabase.nodeDbName(num)}.sqlite';
 
 /// При старте, до UI: переезд со старой единой базы и выбор активной.
 Future<void> prepareNodeDb(ProviderContainer c) async {
-  final dir = (await getApplicationDocumentsDirectory()).path;
+  final dir = (await dbDirectory()).path;
   int num;
   try {
     num = await migrateToNodeDbs(
