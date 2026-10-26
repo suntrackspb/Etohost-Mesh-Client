@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../tokens.dart';
 
@@ -368,3 +369,94 @@ EdgeInsets pagePadding(BuildContext context) => EdgeInsets.fromLTRB(
   Tokens.s16,
   Tokens.s16 + MediaQuery.paddingOf(context).bottom,
 );
+
+/// Числовое поле настройки. У цифровой клавиатуры iOS нет «Готово», поэтому
+/// сохраняет: кнопка ✓ (видна, пока значение изменено), уход фокуса — тап
+/// мимо поля или закрытие экрана — и Enter на десктопе.
+class NumberField extends StatefulWidget {
+  const NumberField({
+    super.key,
+    required this.value,
+    required this.onSave,
+    this.suffix,
+    this.width = 80,
+  });
+
+  final int value;
+  final ValueChanged<int> onSave;
+  final String? suffix;
+  final double width;
+
+  @override
+  State<NumberField> createState() => _NumberFieldState();
+}
+
+class _NumberFieldState extends State<NumberField> {
+  late final _text = TextEditingController(text: '${widget.value}');
+  final _focus = FocusNode();
+
+  int? get _changed {
+    final n = int.tryParse(_text.text);
+    return n == null || n == widget.value ? null : n;
+  }
+
+  void _save() {
+    final n = _changed;
+    if (n != null) widget.onSave(n);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _text.addListener(() => setState(() {}));
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _save();
+    });
+  }
+
+  @override
+  void didUpdateWidget(NumberField old) {
+    super.didUpdateWidget(old);
+    if (old.value != widget.value && !_focus.hasFocus) {
+      _text.text = '${widget.value}';
+    }
+  }
+
+  @override
+  void dispose() {
+    // Обычно фокус уходит раньше, при закрытии экрана; это запасной путь —
+    // владелец мог уже освободиться.
+    try {
+      _save();
+    } catch (_) {}
+    _focus.dispose();
+    _text.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (_changed != null)
+        IconButton(
+          tooltip: 'Сохранить',
+          icon: const Icon(Icons.check),
+          onPressed: () => _focus.hasFocus ? _focus.unfocus() : _save(),
+        ),
+      SizedBox(
+        width: widget.width,
+        child: TextField(
+          controller: _text,
+          focusNode: _focus,
+          textAlign: TextAlign.end,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration: InputDecoration(suffixText: widget.suffix),
+          onTapOutside: (_) => _focus.unfocus(),
+          onSubmitted: (_) => _focus.unfocus(),
+        ),
+      ),
+    ],
+  );
+}

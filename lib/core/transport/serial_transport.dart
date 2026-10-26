@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:flutter_libserialport/flutter_libserialport.dart';
@@ -142,12 +143,25 @@ abstract class _SerialLink {
   Future<void> close();
 }
 
+/// Десктоп (libserialport). Чтение — в своём изоляте, а не в
+/// SerialPortReader: тот останавливает изолят `kill()` до следующего
+/// события, а изолят крутится в синхронном цикле и не останавливается —
+/// после `dispose()` он продолжал читать освобождённый sp_port, память
+/// портилась, и приложение падало (macOS — при «Отключиться», Windows —
+/// при отключении кабеля). Поэтому при закрытии: закрыть порт (чтение
+/// получит ошибку и выйдет), дождаться выхода изолята и только потом
+/// освободить sp_port.
 class _DesktopLink implements _SerialLink {
   SerialPort? _port;
-  SerialPortReader? _reader;
+  final _input = StreamController<Uint8List>();
+  ReceivePort? _data;
+  ReceivePort? _exit;
+  final _exited = Completer<void>();
+  Isolate? _isolate;
+  bool _closing = false;
 
   @override
-  Stream<Uint8List> get input => _reader!.stream;
+  Stream<Uint8List> get input => _input.stream;
 
   @override
   Future<void> open(String id, int baudRate) async {
@@ -170,10 +184,44 @@ class _DesktopLink implements _SerialLink {
       // (порт открыт, но конфиг не приходит).
       ..dtr = SerialPortDtr.on
       ..rts = SerialPortRts.on;
+    // Порт оставляет cfg себе и освобождает его в dispose(): свой
+    // cfg.dispose() здесь — двойное освобождение и порча кучи (краш позже,
+    // в случайном месте).
     p.config = cfg;
-    cfg.dispose();
     _port = p;
-    _reader = SerialPortReader(p);
+    final data = _data = ReceivePort();
+    final exit = _exit = ReceivePort();
+    exit.first.then((_) {
+      if (!_exited.isCompleted) _exited.complete();
+    });
+    data.listen((m) {
+      if (_closing || _input.isClosed) return;
+      if (m is Uint8List) {
+        _input.add(m);
+      } else {
+        _input.addError(StateError('$m'));
+      }
+    });
+    _isolate = await Isolate.spawn(
+      _readLoop,
+      (p.address, data.sendPort),
+      onExit: exit.sendPort,
+      debugName: 'serial $id',
+    );
+  }
+
+  /// Изолят чтения: до ошибки (порт закрыт или кабель вынут).
+  static void _readLoop((int, SendPort) a) {
+    final p = SerialPort.fromAddress(a.$1);
+    while (true) {
+      try {
+        final d = p.read(4096, timeout: 50);
+        if (d.isNotEmpty) a.$2.send(d);
+      } catch (e) {
+        a.$2.send('$e');
+        return;
+      }
+    }
   }
 
   @override
@@ -190,17 +238,26 @@ class _DesktopLink implements _SerialLink {
 
   @override
   Future<void> close() async {
-    _reader?.close();
-    _reader = null;
     final p = _port;
     _port = null;
-    if (p != null) {
-      // Изолят читателя может ещё до 500 мс ждать в нативном sp_wait:
-      // освободить порт под ним — краш (на Windows при отключении).
-      await Future<void>.delayed(const Duration(milliseconds: 700));
-      p.close();
-      p.dispose();
+    if (p == null) return;
+    _closing = true;
+    p.close();
+    var exited = await _exited.future
+        .timeout(const Duration(seconds: 2))
+        .then((_) => true, onError: (_) => false);
+    if (!exited) {
+      _isolate?.kill(priority: Isolate.immediate);
+      exited = await _exited.future
+          .timeout(const Duration(seconds: 1))
+          .then((_) => true, onError: (_) => false);
     }
+    // Изолят так и не вышел — лучше не освобождать sp_port (утечка),
+    // чем освободить его под ним (краш).
+    if (exited) p.dispose();
+    _data?.close();
+    _exit?.close();
+    if (!_input.isClosed) await _input.close();
   }
 }
 

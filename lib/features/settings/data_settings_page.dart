@@ -1,6 +1,5 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/toasts.dart';
@@ -64,6 +63,7 @@ class DataSettingsPage extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(height: Tokens.s16),
           const _PurgeStaleCard(),
           SectionCard(
             title: 'База приложения',
@@ -411,16 +411,9 @@ class _DbLimitTile extends ConsumerWidget {
     final limit = ref.watch(nodeDbLimitProvider).value ?? nodeDbLimit;
     return MeshTile(
       title: 'Сколько баз хранить',
-      trailing: SizedBox(
-        width: 80,
-        child: TextFormField(
-          key: ValueKey(limit),
-          initialValue: '$limit',
-          textAlign: TextAlign.end,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onFieldSubmitted: (v) => _save(context, ref, int.tryParse(v)),
-        ),
+      trailing: NumberField(
+        value: limit,
+        onSave: (n) => _save(context, ref, n),
       ),
     );
   }
@@ -430,6 +423,8 @@ class _DbLimitTile extends ConsumerWidget {
     final count = ref.read(nodeDbListProvider).value?.length ?? 0;
     final extra = n == 0 ? 0 : count - n;
     if (extra > 0) {
+      // Экран уже закрыт — без подтверждения базы не удаляем.
+      if (!context.mounted) return;
       final yes = await showDialog<bool>(
         context: context,
         builder: (c) => AlertDialog(

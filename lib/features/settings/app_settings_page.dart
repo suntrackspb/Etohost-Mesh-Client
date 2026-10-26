@@ -1,7 +1,6 @@
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -280,22 +279,13 @@ class AppSettingsPage extends ConsumerWidget {
               ),
               MeshTile(
                 title: 'Радиус',
-                trailing: SizedBox(
+                trailing: NumberField(
+                  value: km.round(),
+                  suffix: 'км',
                   width: 120,
-                  child: TextFormField(
-                    key: ValueKey(km),
-                    initialValue: km.round().toString(),
-                    textAlign: TextAlign.end,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(suffixText: 'км'),
-                    onFieldSubmitted: (v) {
-                      final n = int.tryParse(v);
-                      if (n != null && n > 0) {
-                        save(AppSettingKeys.areaRadiusKm, '$n');
-                      }
-                    },
-                  ),
+                  onSave: (n) {
+                    if (n > 0) save(AppSettingKeys.areaRadiusKm, '$n');
+                  },
                 ),
               ),
               MeshTile(
