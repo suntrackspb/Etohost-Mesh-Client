@@ -18,6 +18,14 @@ List<int>? parseMac(Object? v) {
   return b;
 }
 
+/// Публичный ключ из `/full`: 32 байта в hex («ab12…», 64 символа); иначе null.
+List<int>? parsePublicKey(Object? v) {
+  if (v is! String || !RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(v)) return null;
+  return [
+    for (var i = 0; i < 64; i += 2) int.parse(v.substring(i, i + 2), radix: 16),
+  ];
+}
+
 class MirrorApiException implements Exception {
   MirrorApiException(this.message);
   final String message;
@@ -54,12 +62,21 @@ class MirrorApi {
   Future<MirrorNode?> node(String id) async =>
       MirrorNode.tryParse(await _get('api/nodes/$id'));
 
-  /// MAC ноды из карточки зеркала (`mac_addr`, «9c:13:…»); null — не отдаёт.
-  /// В общий список не входит — только по одной ноде.
-  Future<List<int>?> nodeMac(String id) async {
-    final raw = await _get('api/nodes/$id');
-    return raw is Map<String, dynamic> ? parseMac(raw['mac_addr']) : null;
+  /// Ключ и MAC ноды — отдельная ручка `/full`, только по одной ноде
+  /// (из общей выдачи mac_addr уберут). Нет ноды — 404 (исключение).
+  Future<({List<int>? publicKey, List<int>? mac})> nodeIdentity(
+    String id,
+  ) async {
+    final raw = await _get('api/nodes/$id/full');
+    if (raw is! Map<String, dynamic>) return (publicKey: null, mac: null);
+    return (
+      publicKey: parsePublicKey(raw['public_key']),
+      mac: parseMac(raw['mac_addr']),
+    );
   }
+
+  /// MAC ноды («9c:13:…» в `mac_addr`); null — не отдаёт.
+  Future<List<int>?> nodeMac(String id) async => (await nodeIdentity(id)).mac;
 
   Future<List<MirrorMessage>> chatHistory({
     required int beforeId,

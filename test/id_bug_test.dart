@@ -1,6 +1,7 @@
 import 'package:etohost_mesh/core/proto/mesh.dart';
 import 'package:etohost_mesh/data/id_bug.dart';
-import 'package:etohost_mesh/mirror/mirror_api.dart' show parseMac;
+import 'package:etohost_mesh/mirror/mirror_api.dart'
+    show parseMac, parsePublicKey;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -88,6 +89,15 @@ void main() {
     expect(parseMac('00:00:00:00:00:00'), isNull);
     expect(parseMac('9c:13'), isNull);
     expect(parseMac(null), isNull);
+  });
+
+  test('ключ из зеркала', () {
+    final k = parsePublicKey('ab' * 32);
+    expect(k, hasLength(32));
+    expect(k!.first, 0xab);
+    expect(parsePublicKey('ab' * 31), isNull);
+    expect(parsePublicKey('zz' * 32), isNull);
+    expect(parsePublicKey(null), isNull);
   });
 
   test('idOkReason', () {
