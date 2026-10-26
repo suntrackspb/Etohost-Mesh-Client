@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/id_bug_providers.dart';
 import '../../../app/providers.dart';
@@ -11,13 +10,19 @@ import '../../../ui/kit/kit.dart';
 
 /// Описание проблемы для пользователя — по состоянию ноды.
 String idBugText(IdBug b) => switch (b) {
+  IdBugPending(idFromKey: true) =>
+    'Нода сохранила у себя нулевой MAC-адрес — из-за ошибки кнопки '
+        '«Отправить NodeInfo» в Etohost Mesh 0.1.7–0.1.10. ID на этой '
+        'прошивке считается из ключа и не сменится, но MAC стоит вернуть.\n\n'
+        'Исправление отправит ноде её настоящий MAC. Перезагрузка не нужна, '
+        'ничего не потеряется.',
   IdBugPending(:final num, :final mac) =>
     'Нода сохранила у себя нулевой MAC-адрес — из-за ошибки кнопки '
         '«Отправить NodeInfo» в Etohost Mesh 0.1.7–0.1.10. Пока нода не '
         'перезагружалась, её ID прежний (${nodeIdOf(num)}). При следующей '
         'перезагрузке ID сменится на случайный: другие увидят её как новую '
         'ноду, переписка и избранное у них разделятся.\n\n'
-        '${mac != null ? 'Исправление отправит ноде её настоящий MAC. Перезагрузка не нужна, ничего не потеряется.' : 'Настоящий MAC этой ноды неизвестен ни приложению, ни зеркалу, поэтому нода сбросит сохранённое состояние и перезагрузится. ID и ключ шифрования останутся, имя приложение вернёт само. Но список нод на ноде очистится и соберётся заново из эфира, а избранное и игнор сбросятся — и на ноде, и в приложении.'}',
+        '${mac != null ? 'Исправление отправит ноде её настоящий MAC. Перезагрузка не нужна, ничего не потеряется.' : 'Настоящий MAC этой ноды неизвестен ни приложению, ни зеркалу. Перезагрузите ноду: если ID сменится, вернитесь сюда — исправление вернёт прежний ID, ничего не потеряется.'}',
   IdBugChanged(:final original, :final current) =>
     'ID ноды сменился с ${nodeIdOf(original)} на ${nodeIdOf(current)} — '
         'из-за ошибки кнопки «Отправить NodeInfo» в Etohost Mesh '
@@ -31,50 +36,6 @@ String idBugText(IdBug b) => switch (b) {
 const _rebootNote =
     'Если после перезагрузки телефон не подключается к ноде, '
     'перезагрузите её ещё раз.';
-
-/// Красная плашка над всеми экранами, пока подключённую ноду задела ошибка.
-class IdBugBanner extends ConsumerWidget {
-  const IdBugBanner({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bug = ref.watch(idBugProvider).value;
-    if (bug == null) return const SizedBox.shrink();
-    final scheme = Theme.of(context).colorScheme;
-    final fg = scheme.onErrorContainer;
-    final text = switch (bug) {
-      IdBugPending() =>
-        'Нода сменит ID при перезагрузке. Нажмите, чтобы исправить.',
-      IdBugChanged(:final original) =>
-        'ID ноды сменился (было ${nodeIdOf(original)}). Нажмите, чтобы исправить.',
-    };
-    return Material(
-      color: scheme.errorContainer,
-      child: SafeArea(
-        bottom: false,
-        child: InkWell(
-          onTap: () => context.go('/settings/id-fix'),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Tokens.s16,
-              vertical: Tokens.s12,
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.error_outline, color: fg),
-                const SizedBox(width: Tokens.s12),
-                Expanded(
-                  child: Text(text, style: TextStyle(color: fg)),
-                ),
-                Icon(Icons.chevron_right, color: fg),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 /// Экран починки ID ноды.
 class IdBugPage extends ConsumerStatefulWidget {
@@ -91,23 +52,25 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
   Widget build(BuildContext context) {
     final bug = ref.watch(idBugProvider).value;
     final soft = bug is IdBugPending && bug.mac != null;
+    // Без MAC ноду до перезагрузки не чиним: сброс стёр бы список нод.
+    final canFix = bug is! IdBugPending || soft;
     return Scaffold(
       appBar: AppBar(title: const Text('Исправить ID ноды')),
       body: ListView(
         padding: pagePadding(context),
         children: [
           if (bug == null)
-            const SectionCard(
+            SectionCard(
               children: [
                 Padding(
-                  padding: EdgeInsets.all(Tokens.s16),
-                  child: Text('С ID подключённой ноды всё в порядке.'),
+                  padding: const EdgeInsets.all(Tokens.s16),
+                  child: Text(_okText()),
                 ),
               ],
             )
           else ...[
             SectionCard(
-              footer: soft ? null : _rebootNote,
+              footer: bug is IdBugChanged ? _rebootNote : null,
               children: [
                 Padding(
                   padding: const EdgeInsets.all(Tokens.s16),
@@ -115,17 +78,18 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
                 ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(Tokens.s16),
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
+            if (canFix)
+              Padding(
+                padding: const EdgeInsets.all(Tokens.s16),
+                child: FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  icon: const Icon(Icons.healing),
+                  label: Text(soft ? 'Исправить' : 'Исправить и перезагрузить'),
+                  onPressed: _busy ? null : () => _fix(bug),
                 ),
-                icon: const Icon(Icons.healing),
-                label: Text(soft ? 'Исправить' : 'Исправить и перезагрузить'),
-                onPressed: _busy ? null : () => _fix(bug),
               ),
-            ),
             if (_busy) const LinearProgressIndicator(),
           ],
         ],
@@ -133,12 +97,20 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
     );
   }
 
+  String _okText() {
+    final radio = ref.read(radioProvider);
+    final me = radio.myNodeNum;
+    if (me == null) return 'Подключитесь к своей ноде.';
+    return 'ID ноды: ${nodeIdOf(me)}.\n\n'
+        '${idOkReason(me: me, radio: radio.ownUser, firmware: radio.metadata?.firmwareVersion)}';
+  }
+
   Future<void> _fix(IdBug bug) async {
     final actions = ref.read(nodeActionsProvider);
-    if (bug case IdBugPending(:final mac?)) {
+    if (bug case IdBugPending(:final mac?, :final idFromKey)) {
       setState(() => _busy = true);
       try {
-        await actions.fixIdBugWithMac(mac);
+        await actions.fixIdBugWithMac(mac, idFromKey: idFromKey);
         // Нода пришлёт свою запись заново — проверка пересчитается.
         ref.read(radioProvider).refreshNodes();
         toasts.show(
@@ -174,7 +146,7 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
     if (yes != true) return;
     setState(() => _busy = true);
     try {
-      final ok = await actions.fixIdBugByReset(bug);
+      final ok = await actions.fixIdBugByReset(bug as IdBugChanged);
       toasts.show(
         ok
             ? 'Нода перезагружается. После подключения имя вернётся само.'

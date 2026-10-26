@@ -11,13 +11,21 @@ sealed class IdBug {
   const IdBug();
 }
 
-/// Нода ещё не перезагружалась: ID прежний, в её записи нулевой MAC.
-/// [mac] — настоящий MAC из нашей базы, если он известен (мягкая починка).
+/// В записи ноды нулевой MAC. На 2.7 нода ещё не перезагружалась — ID
+/// прежний, но сменится; при [idFromKey] (2.8) ID считается из ключа и не
+/// сменится, а MAC всё равно стоит вернуть. [mac] — настоящий MAC из нашей
+/// базы или зеркала, если он известен (мягкая починка).
 class IdBugPending extends IdBug {
-  const IdBugPending(this.num, this.mac);
+  const IdBugPending(this.num, this.mac, {this.idFromKey = false});
   final int num;
   final List<int>? mac;
+  final bool idFromKey;
 }
+
+/// MAC подходит ноде [me]: на 2.7 номер — его младшие 4 байта; при номере
+/// из ключа сверить нечем — годится любой ненулевой из записи этой ноды.
+bool macFitsNode(List<int> mac, int me, {required bool idFromKey}) =>
+    idFromKey ? macNodeNum(mac) != null : macNodeNum(mac) == me;
 
 /// ID уже сменился: [original] — номер из MAC, [current] — случайный.
 class IdBugChanged extends IdBug {
@@ -41,17 +49,33 @@ IdBug? detectIdBug({
   List<int>? savedMac,
 }) {
   if (radio == null || firmware == null || firmware.isEmpty) return null;
-  // 2.8 считает номер из ключа: смена ID там штатная, MAC не участвует.
-  if (firmwareAtLeast(firmware, 2, 8)) return null;
-  if (radio.publicKey.length == 32 && crc32(radio.publicKey) == me) {
-    return null;
-  }
+  // 2.8 считает номер из ключа: смена ID там штатная, MAC в номере не
+  // участвует — но нулевой MAC в записи всё равно исправляем.
+  final idFromKey =
+      firmwareAtLeast(firmware, 2, 8) ||
+      (radio.publicKey.length == 32 && crc32(radio.publicKey) == me);
   final fromMac = macNodeNum(radio.macaddr);
   if (fromMac == null) {
-    final ok = savedMac != null && macNodeNum(savedMac) == me;
-    return IdBugPending(me, ok ? savedMac : null);
+    final ok =
+        savedMac != null && macFitsNode(savedMac, me, idFromKey: idFromKey);
+    return IdBugPending(me, ok ? savedMac : null, idFromKey: idFromKey);
   }
+  if (idFromKey) return null;
   return fromMac == me ? null : IdBugChanged(fromMac, me);
+}
+
+/// Почему с ID всё в порядке — для экрана починки, когда [detectIdBug]
+/// ничего не нашёл.
+String idOkReason({required int me, User? radio, String? firmware}) {
+  if (radio == null || firmware == null || firmware.isEmpty) {
+    return 'Нода ещё не прислала свои данные — подождите окончания загрузки.';
+  }
+  if (firmwareAtLeast(firmware, 2, 8) ||
+      (radio.publicKey.length == 32 && crc32(radio.publicKey) == me)) {
+    return 'MAC-адрес в порядке. Прошивка $firmware считает ID из ключа '
+        'шифрования — исправлять нечего.';
+  }
+  return 'ID совпадает с MAC-адресом ноды — исправлять нечего.';
 }
 
 /// CRC-32 (IEEE, как crc32Buffer в прошивке и zlib).

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/radio/radio_session.dart';
-import '../features/settings/radio/id_bug_page.dart';
 import '../ui/kit/kit.dart';
 import 'id_bug_providers.dart';
 import 'providers.dart';
@@ -94,26 +93,13 @@ class AdaptiveShell extends ConsumerWidget {
   }
 }
 
-/// Плашка об ошибке со сменой ID — над любым экраном; под ней экран
-/// без верхнего отступа, его уже взяла плашка.
+/// Держит живыми починку ID (id_bug.dart): мягкую — сама, и возврат имени
+/// после починки сбросом.
 Widget _withIdBug(Widget child) => Consumer(
   builder: (context, ref, _) {
+    ref.watch(autoIdFixProvider);
     ref.watch(ownerRestoreProvider);
-    final shown = ref.watch(idBugProvider).value != null;
-    return Column(
-      children: [
-        const IdBugBanner(),
-        Expanded(
-          child: shown
-              ? MediaQuery.removePadding(
-                  context: context,
-                  removeTop: true,
-                  child: child,
-                )
-              : child,
-        ),
-      ],
-    );
+    return child;
   },
 );
 

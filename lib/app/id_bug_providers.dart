@@ -32,8 +32,12 @@ final idBugProvider = FutureProvider<IdBug?>((ref) async {
   if (bug is IdBugPending && bug.mac == null) {
     try {
       final mac = await ref.read(mirrorApiProvider)?.nodeMac(nodeIdOf(me));
-      if (mac != null && macNodeNum(mac) == me) return IdBugPending(me, mac);
+      if (mac != null && macFitsNode(mac, me, idFromKey: bug.idFromKey)) {
+        return IdBugPending(me, mac, idFromKey: bug.idFromKey);
+      }
     } catch (_) {}
+    // На 2.8 без MAC ничего не сломается — не пугаем.
+    if (bug.idFromKey) return null;
   }
   return bug;
 });
@@ -50,4 +54,25 @@ final ownerRestoreProvider = FutureProvider<void>((ref) async {
   } catch (_) {
     // Не вышло — попробуем при следующем подключении.
   }
+});
+
+/// Ноды, которым мягкая починка уже отправлена в этом запуске.
+final _autoFixed = <int>{};
+
+/// Мягкая починка сама: нода ещё не перезагружалась, а настоящий MAC
+/// известен (из базы или зеркала). Безвредна и при ложной тревоге — MAC
+/// проверен на совпадение с номером. Один раз за запуск на ноду; не
+/// помогло — останется экран «Исправить ID ноды». Держится из оболочки.
+final autoIdFixProvider = FutureProvider<void>((ref) async {
+  final bug = await ref.watch(idBugProvider.future);
+  if (bug is! IdBugPending) return;
+  final mac = bug.mac;
+  if (mac == null || !_autoFixed.add(bug.num)) return;
+  try {
+    await ref
+        .read(nodeActionsProvider)
+        .fixIdBugWithMac(mac, idFromKey: bug.idFromKey);
+    // Нода пришлёт свою запись заново — проверка пересчитается.
+    ref.read(radioProvider).refreshNodes();
+  } catch (_) {}
 });

@@ -41,6 +41,18 @@ void main() {
     expect((r! as IdBugChanged).original, num);
   });
 
+  test('2.8 с нулевым MAC — вернуть MAC, ID не трогать', () {
+    final r = detectIdBug(
+      me: 0x7161108e,
+      radio: user(List.filled(6, 0)),
+      firmware: '2.8.1',
+      savedMac: mac,
+    );
+    expect(r, isA<IdBugPending>());
+    expect((r! as IdBugPending).idFromKey, isTrue);
+    expect((r as IdBugPending).mac, mac);
+  });
+
   test('2.8 и номер из ключа — не баг', () {
     expect(
       detectIdBug(me: 0x7161108e, radio: user(mac), firmware: '2.8.0'),
@@ -76,5 +88,17 @@ void main() {
     expect(parseMac('00:00:00:00:00:00'), isNull);
     expect(parseMac('9c:13'), isNull);
     expect(parseMac(null), isNull);
+  });
+
+  test('idOkReason', () {
+    expect(idOkReason(me: 1), contains('не прислала'));
+    expect(
+      idOkReason(me: 1, radio: User(), firmware: '2.8.1.abc'),
+      contains('из ключа'),
+    );
+    expect(
+      idOkReason(me: 1, radio: User(), firmware: '2.7.15.abc'),
+      contains('совпадает'),
+    );
   });
 }

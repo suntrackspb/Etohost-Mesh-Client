@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:swipeable_page_route/swipeable_page_route.dart';
 
 import '../../app/toasts.dart';
 import '../../app/providers.dart';
@@ -12,6 +13,7 @@ import '../../data/database.dart';
 import '../../data/node_actions.dart';
 import '../../data/node_position.dart';
 import '../../ui/kit/kit.dart';
+import '../settings/radio/administration_page.dart';
 
 /// Выполнить действие и сообщить итог; логика — в [NodeActions].
 Future<void> runNodeAction(
@@ -242,7 +244,7 @@ Future<void> showContactQr(BuildContext context, Node n, String url) =>
     );
 
 /// Действия своей ноды: разослать NodeInfo и позицию (если есть координаты),
-/// показать свой QR контакта.
+/// показать свой QR контакта, открыть «Администрирование».
 class OwnNodeActionsCard extends ConsumerWidget {
   const OwnNodeActionsCard(this.n, {super.key});
 
@@ -257,7 +259,6 @@ class OwnNodeActionsCard extends ConsumerWidget {
       own: true,
       radioUser: ref.read(radioProvider).ownUser,
     );
-    if (!canSend && url == null) return const SizedBox.shrink();
     return SectionCard(
       title: 'Действия',
       children: [
@@ -290,6 +291,16 @@ class OwnNodeActionsCard extends ConsumerWidget {
             title: 'Поделиться QR контакта',
             onTap: () => showContactQr(context, n, url),
           ),
+        // Как в официальных клиентах — из карточки ноды; в настройках тоже.
+        MeshTile(
+          leading: const Icon(Icons.admin_panel_settings_outlined),
+          title: 'Администрирование',
+          onTap: () => Navigator.of(context).push(
+            SwipeablePageRoute<void>(
+              builder: (_) => const AdministrationPage(),
+            ),
+          ),
+        ),
       ],
     );
   }

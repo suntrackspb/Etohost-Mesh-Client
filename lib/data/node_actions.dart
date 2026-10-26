@@ -190,16 +190,25 @@ class NodeActions {
 
   /// Мягкая починка [IdBugPending]: своя NodeInfo с настоящим [mac] —
   /// прошивка перезапишет им свою запись, перезагрузка не нужна.
-  Future<DeliveryResult> fixIdBugWithMac(List<int> mac) async {
+  /// Прошивка пишет базу нод во флеш не чаще раза в минуту (NodeDB::
+  /// updateUser, «Defer NodeDB saveToDisk») — отложенное теряется при
+  /// перезагрузке. Поэтому следом remove_ignored_node для себя: своя нода
+  /// в игноре не бывает, ничего не меняется, а база сохраняется сразу.
+  Future<DeliveryResult> fixIdBugWithMac(
+    List<int> mac, {
+    bool idFromKey = false,
+  }) async {
     final me = _me();
-    if (macNodeNum(mac) != me) throw StateError('MAC не от этой ноды');
+    if (!macFitsNode(mac, me, idFromKey: idFromKey)) {
+      throw StateError('MAC не от этой ноды');
+    }
     final own = await (db.select(
       db.nodes,
     )..where((n) => n.num.equals(me))).getSingleOrNull();
     if (own == null) throw StateError('своя нода ещё не загружена');
     final user = nodeInfoUser(own, _radioUser?.call())
       ..macaddr = Uint8List.fromList(mac);
-    return _send(
+    final sent = await _send(
       MeshPacket(
         id: _nextId(),
         to: 0xffffffff,
@@ -209,40 +218,30 @@ class NodeActions {
         ),
       ),
     );
+    await _admin(AdminMessage(removeIgnoredNode: me));
+    return sent;
   }
 
   /// Починка сбросом: стереть на ноде device.proto (номер, owner) и
   /// перезагрузить — прошивка возьмёт номер из MAC, ключ в config.proto
-  /// останется. Мешающую запись с нулевым MAC убираем: для [IdBugChanged] —
-  /// запись со старым номером (список нод цел); для [IdBugPending] без MAC
-  /// это своя запись, её не удалить — стираем nodes.proto целиком.
+  /// останется. Мешающую запись с нулевым MAC (старый номер) убираем —
+  /// список нод цел.
   /// Имя запоминаем, чтобы вернуть после переподключения. Сразу
   /// перезагрузка, не выключение: выключение сохранило бы базу заново.
-  Future<bool> fixIdBugByReset(IdBug bug) async {
+  Future<bool> fixIdBugByReset(IdBugChanged bug) async {
     final user = _radioUser?.call();
-    final num = switch (bug) {
-      IdBugChanged(:final original) => original,
-      IdBugPending(:final num) => num,
-    };
     if (user != null && user.longName.isNotEmpty) {
       await db.setSetting(
         AppSettingKeys.pendingOwner,
         encodePendingOwner((
-          num: num,
+          num: bug.original,
           longName: user.longName,
           shortName: user.shortName,
           isUnmessagable: user.isUnmessagable,
         )),
       );
     }
-    final cleared = switch (bug) {
-      IdBugChanged(:final original) => await _admin(
-        AdminMessage(removeByNodenum: original),
-      ),
-      IdBugPending() => await _admin(
-        AdminMessage(deleteFileRequest: '/prefs/nodes.proto'),
-      ),
-    };
+    final cleared = await _admin(AdminMessage(removeByNodenum: bug.original));
     final dev = await _admin(
       AdminMessage(deleteFileRequest: '/prefs/device.proto'),
     );

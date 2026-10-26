@@ -7,7 +7,6 @@ import '../../../app/settings_providers.dart';
 import '../../../data/settings/device_actions.dart';
 import '../../../ui/kit/kit.dart';
 import '../../../app/link_badge.dart';
-import '../../../app/id_bug_providers.dart';
 import 'package:go_router/go_router.dart';
 
 /// «Администрирование» (AdministrationScreen, Android): перезагрузка,
@@ -62,17 +61,15 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
               tile('Сброс настроек', Icons.restore, _factory),
             ],
           ),
-          // Видно, только если подключённую ноду задела ошибка со сменой ID.
-          if (ref.watch(idBugProvider).value != null)
-            SectionCard(
-              children: [
-                MeshTile(
-                  title: 'Исправить ID ноды',
-                  leading: Icon(Icons.healing, color: danger),
-                  onTap: () => context.go('/settings/id-fix'),
-                ),
-              ],
-            ),
+          SectionCard(
+            children: [
+              MeshTile(
+                title: 'Исправить ID ноды',
+                leading: Icon(Icons.healing, color: danger),
+                onTap: me == null ? null : () => context.go('/settings/id-fix'),
+              ),
+            ],
+          ),
           if (_busy) const LinearProgressIndicator(),
         ],
       ),
