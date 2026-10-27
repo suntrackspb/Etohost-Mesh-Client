@@ -15,6 +15,9 @@ class MeshBle {
   static const logRadio = '5a3d6e49-06e6-4423-9944-e9de8cdf9547';
 }
 
+/// Занят ли BlueZ прошлой операцией (`org.bluez.Error.InProgress`).
+bool isBleBusy(Object e) => e.toString().contains('InProgress');
+
 /// BLE до ноды: запись в toRadio, чтение fromRadio по уведомлению fromNum,
 /// лог ноды — уведомления logRadio (LogRecord).
 class BleTransport implements Transport {
@@ -172,10 +175,9 @@ class BleTransport implements Transport {
       do {
         _drainAgain = false;
         while (!_closed.isCompleted) {
-          final v = await UniversalBle.read(
-            deviceId,
-            MeshBle.service,
-            MeshBle.fromRadio,
+          final v = await _whenFree(
+            () =>
+                UniversalBle.read(deviceId, MeshBle.service, MeshBle.fromRadio),
           );
           if (v.isEmpty) break;
           _from.add(v);
@@ -188,13 +190,28 @@ class BleTransport implements Transport {
     }
   }
 
+  /// BlueZ отвечает InProgress, пока не закончена прошлая GATT-операция
+  /// (подписка, чтение) — повторяем, а не падаем.
+  Future<T> _whenFree<T>(Future<T> Function() op) async {
+    for (var i = 1; ; i++) {
+      try {
+        return await op();
+      } catch (e) {
+        if (!isBleBusy(e) || i >= 20 || _closed.isCompleted) rethrow;
+        await Future.delayed(const Duration(milliseconds: 150));
+      }
+    }
+  }
+
   @override
   Future<void> send(Uint8List toRadio) async {
-    await UniversalBle.write(
-      deviceId,
-      MeshBle.service,
-      MeshBle.toRadio,
-      toRadio,
+    await _whenFree(
+      () => UniversalBle.write(
+        deviceId,
+        MeshBle.service,
+        MeshBle.toRadio,
+        toRadio,
+      ),
     );
     // После want_config нода не всегда шлёт fromNum — читаем сами.
     unawaited(_drain());

@@ -479,25 +479,25 @@ class AppDatabase extends _$AppDatabase {
   @visibleForTesting
   Map<int, Future<void> Function(Migrator m)> get upgradeSteps => {
     6: (m) async {
-      await m.addColumn(nodes, nodes.hasXeddsaSigned);
-      await m.addColumn(messages, messages.xeddsaSigned);
-      await m.addColumn(messages, messages.ackProof);
+      await _addColumn(m, nodes, nodes.hasXeddsaSigned);
+      await _addColumn(m, messages, messages.xeddsaSigned);
+      await _addColumn(m, messages, messages.ackProof);
     },
-    7: (m) => m.addColumn(channels, channels.settings),
+    7: (m) => _addColumn(m, channels, channels.settings),
     8: (m) async {
-      await m.addColumn(nodes, nodes.rssi);
-      await m.addColumn(nodes, nodes.modemPreset);
+      await _addColumn(m, nodes, nodes.rssi);
+      await _addColumn(m, nodes, nodes.modemPreset);
     },
-    9: (m) => m.addColumn(nodes, nodes.newPublicKey),
+    9: (m) => _addColumn(m, nodes, nodes.newPublicKey),
     10: (m) async {
-      await m.addColumn(nodes, nodes.firstHeard);
-      await m.addColumn(nodes, nodes.firmwareVersion);
+      await _addColumn(m, nodes, nodes.firstHeard);
+      await _addColumn(m, nodes, nodes.firmwareVersion);
     },
-    11: (m) => m.addColumn(traceroutes, traceroutes.answered),
+    11: (m) => _addColumn(m, traceroutes, traceroutes.answered),
     12: (m) async {
-      await m.addColumn(nodes, nodes.mirrorLat);
-      await m.addColumn(nodes, nodes.mirrorLon);
-      await m.addColumn(nodes, nodes.mirrorCorrected);
+      await _addColumn(m, nodes, nodes.mirrorLat);
+      await _addColumn(m, nodes, nodes.mirrorLon);
+      await _addColumn(m, nodes, nodes.mirrorCorrected);
       // Раньше координаты зеркала писались в общие поля: у нод не из эфира
       // переносим их в поля зеркала. Признак коррекции придёт с синхронизацией.
       await customStatement(
@@ -515,15 +515,30 @@ class AppDatabase extends _$AppDatabase {
         nodes.radioGoodLon,
         nodes.radioGoodAt,
       ]) {
-        await m.addColumn(nodes, c);
+        await _addColumn(m, nodes, c);
       }
     },
-    14: (m) => m.addColumn(nodes, nodes.macaddr),
+    14: (m) => _addColumn(m, nodes, nodes.macaddr),
     15: (m) async {
-      await m.addColumn(nodes, nodes.precisionBits);
-      await m.addColumn(nodes, nodes.mirrorPrecisionBits);
+      await _addColumn(m, nodes, nodes.precisionBits);
+      await _addColumn(m, nodes, nodes.mirrorPrecisionBits);
     },
   };
+
+  /// Колонка уже есть (миграцию когда-то прервали после ALTER, а версия
+  /// осталась старой) — пропускаем: иначе «duplicate column» и база не
+  /// открывается вовсе (iPhone 7, 0.1.12: macaddr при версии 13).
+  Future<void> _addColumn(
+    Migrator m,
+    TableInfo table,
+    GeneratedColumn column,
+  ) async {
+    final cols = await customSelect(
+      'PRAGMA table_info("${table.actualTableName}")',
+    ).get();
+    if (cols.any((r) => r.read<String>('name') == column.name)) return;
+    await m.addColumn(table, column);
+  }
 
   /// Миграция целиком или никак: drift сам транзакцию не открывает, а
   /// user_version пишет уже после — прерванный шаг повторился бы

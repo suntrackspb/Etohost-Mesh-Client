@@ -59,6 +59,17 @@ void main() {
     },
   );
 
+  test('колонка уже есть при старой версии — миграция проходит', () async {
+    // iPhone 7, 0.1.12: macaddr есть, а user_version = 13.
+    final schema = await verifier.schemaAt(13);
+    schema.rawDatabase.execute(
+      'ALTER TABLE nodes ADD COLUMN "macaddr" BLOB NULL',
+    );
+    final db = AppDatabase(schema.newConnection());
+    await verifier.migrateAndValidate(db, 15);
+    await db.close();
+  });
+
   test('база новее сборки — не стирается', () async {
     final schema = await verifier.schemaAt(8);
     schema.rawDatabase.execute(

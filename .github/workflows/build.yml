@@ -23,8 +23,10 @@ jobs:
             os: ubuntu-latest
             cmd: flutter build apk --release
             out: build/app/outputs/flutter-apk/app-release.apk
+          # Старый glibc: собранное на ubuntu-latest (glibc 2.42) не
+          # грузится на Ubuntu 24.04 (2.39) — libserialport.so не открывается.
           - platform: linux
-            os: ubuntu-latest
+            os: ubuntu-22.04
             cmd: flutter build linux --release
             out: build/linux/x64/release/bundle
           - platform: windows

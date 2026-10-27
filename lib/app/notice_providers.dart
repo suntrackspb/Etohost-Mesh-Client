@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../core/client_version.dart';
 import '../core/diagnostics/report_uploader.dart';
@@ -16,9 +17,6 @@ import 'providers.dart';
 class NoticesController extends Notifier<List<Notice>> {
   DateTime? _last;
 
-  /// Закрытые critical — только до перезапуска.
-  final _session = <String>{};
-
   @override
   List<Notice> build() => const [];
 
@@ -32,12 +30,12 @@ class NoticesController extends Notifier<List<Notice>> {
     } catch (_) {}
   }
 
+  /// Скрываем сразу (critical — только до перезапуска), остальные ещё и
+  /// запоминаем в базе.
   Future<void> dismiss(Notice n) async {
-    if (n.level == NoticeLevel.critical) {
-      _session.add(n.id);
-      state = [...state];
-      return;
-    }
+    final hidden = ref.read(_sessionDismissedProvider.notifier);
+    hidden.state = {...hidden.state, n.id};
+    if (n.level == NoticeLevel.critical) return;
     final db = ref.read(databaseProvider);
     final ids = {
       ..._decode(await db.getSetting(AppSettingKeys.noticesDismissed)),
@@ -45,9 +43,10 @@ class NoticesController extends Notifier<List<Notice>> {
     };
     await db.setSetting(AppSettingKeys.noticesDismissed, jsonEncode([...ids]));
   }
-
-  Set<String> get sessionDismissed => _session;
 }
+
+/// Закрытые в этом запуске.
+final _sessionDismissedProvider = StateProvider<Set<String>>((ref) => {});
 
 Set<String> _decode(String? v) {
   try {
@@ -89,7 +88,7 @@ final outdatedNoticeProvider = Provider<Notice?>((ref) {
 final visibleNoticesProvider = Provider<List<Notice>>((ref) {
   final outdated = ref.watch(outdatedNoticeProvider);
   final shown = ref.watch(_visibleServerNoticesProvider);
-  final hidden = ref.read(noticesProvider.notifier).sessionDismissed;
+  final hidden = ref.watch(_sessionDismissedProvider);
   return [
     if (outdated != null && !hidden.contains(outdated.id)) outdated,
     ...shown,
@@ -107,7 +106,7 @@ final _visibleServerNoticesProvider = Provider<List<Notice>>((ref) {
     now: DateTime.now(),
     dismissed: {
       ...?ref.watch(_noticesDismissedProvider).value,
-      ...ref.read(noticesProvider.notifier).sessionDismissed,
+      ...ref.watch(_sessionDismissedProvider),
     },
   );
 });
