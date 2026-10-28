@@ -615,8 +615,7 @@ class AppDatabase extends _$AppDatabase {
       (select(messages)
             ..where(
               (m) =>
-                  m.toNum.equals(0xffffffff).not() &
-                  (m.fromNum.equals(peer) | m.toNum.equals(peer)),
+                  _direct(m) & (m.fromNum.equals(peer) | m.toNum.equals(peer)),
             )
             ..orderBy([(m) => OrderingTerm.desc(m.rxTime)])
             ..limit(limit))
@@ -625,9 +624,7 @@ class AppDatabase extends _$AppDatabase {
   /// Удалить всю личную переписку с [peer] (только у себя).
   Future<int> deleteDirectChat(int peer) =>
       (delete(messages)..where(
-            (m) =>
-                m.toNum.equals(0xffffffff).not() &
-                (m.fromNum.equals(peer) | m.toNum.equals(peer)),
+            (m) => _direct(m) & (m.fromNum.equals(peer) | m.toNum.equals(peer)),
           ))
           .go();
 
@@ -637,7 +634,7 @@ class AppDatabase extends _$AppDatabase {
     final q = selectOnly(messages)
       ..addColumns([count])
       ..where(
-        messages.toNum.equals(0xffffffff).not() &
+        _direct(messages) &
             messages.fromNum.equals(peer) &
             messages.isOutgoing.not() &
             (since == null
@@ -650,7 +647,7 @@ class AppDatabase extends _$AppDatabase {
   /// Все личные сообщения, свежие первыми (для списка диалогов).
   Stream<List<Message>> watchAllDirect() =>
       (select(messages)
-            ..where((m) => m.toNum.equals(0xffffffff).not())
+            ..where((m) => _direct(m))
             ..orderBy([(m) => OrderingTerm.desc(m.rxTime)]))
           .watch();
 
@@ -662,8 +659,7 @@ class AppDatabase extends _$AppDatabase {
     int? peer,
     bool includeMirror = false,
   }) => peer != null
-      ? m.toNum.equals(0xffffffff).not() &
-            (m.fromNum.equals(peer) | m.toNum.equals(peer))
+      ? _direct(m) & (m.fromNum.equals(peer) | m.toNum.equals(peer))
       : m.channelKey.equals(channelKey!) &
             m.toNum.equals(0xffffffff) &
             _visible(m, includeMirror);
@@ -712,6 +708,17 @@ class AppDatabase extends _$AppDatabase {
             messages.rxTime.isBiggerOrEqualValue(since),
       );
     return (await q.getSingle()).read(count) ?? 0;
+  }
+
+  /// Личное — не широковещательное и своё: от своей ноды или ей. Зеркало
+  /// отдаёт и чужие личные (to — другая нода), в «Личные» им нельзя. Своя
+  /// нода ещё неизвестна — не отсекаем.
+  Expression<bool> _direct($MessagesTable m) {
+    final me = subqueryExpression<int>(
+      selectOnly(myNode)..addColumns([myNode.myNodeNum]),
+    );
+    return m.toNum.equals(0xffffffff).not() &
+        (me.isNull() | m.fromNum.equalsExp(me) | m.toNum.equalsExp(me));
   }
 
   static Expression<bool> _visible($MessagesTable m, bool includeMirror) =>
