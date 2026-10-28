@@ -39,6 +39,7 @@ import '../data/mirror_ingest.dart';
 import '../data/node_db_store.dart';
 import '../data/node_dbs.dart';
 import '../data/packet_router.dart';
+import '../mirror/avatar_frames.dart';
 import '../mirror/mirror_api.dart';
 import '../mirror/mirror_config.dart';
 import '../mirror/mirror_models.dart';
@@ -278,6 +279,13 @@ final mirrorApiProvider = Provider<MirrorApi?>((ref) {
   return api;
 });
 
+/// Рамки аватаров из зеркала (топ болтливых, рамки из админки). Живут
+/// только пока зеркало включено; приходят заново при каждом подключении.
+final avatarFramesProvider = StateProvider<AvatarFrames>((ref) {
+  ref.watch(mirrorActiveProvider);
+  return AvatarFrames.empty;
+});
+
 /// WS-подписка на зеркало; null, пока зеркало не включено.
 final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
   final cfg = ref.watch(mirrorConfigProvider).value ?? MirrorConfig.off;
@@ -319,8 +327,16 @@ final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
 
   final rt = MirrorRealtime(ws, (e) async {
     switch (e) {
-      case MirrorInit(:final messages):
+      case MirrorInit(:final messages, :final ranks, :final frames):
+        final f = ref.read(avatarFramesProvider.notifier);
+        f.state = f.state.copyWith(ranks: ranks, custom: frames);
         await ingest.messages(messages);
+      case MirrorChattyRanks(:final ranks):
+        final f = ref.read(avatarFramesProvider.notifier);
+        f.state = f.state.copyWith(ranks: ranks);
+      case MirrorAvatarFrames(:final frames):
+        final f = ref.read(avatarFramesProvider.notifier);
+        f.state = f.state.copyWith(custom: frames);
       case MirrorNewMessage(:final message):
         await ingest.messages([message], live: true);
       case MirrorRelayUpdate(:final messageId, :final relay):

@@ -1,4 +1,5 @@
 import 'package:etohost_mesh/core/glyph_zip.dart';
+import 'package:etohost_mesh/data/message_split.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -12,5 +13,20 @@ void main() {
     expect(GlyphZip.apply('тише', 2), 'muшe');
     expect(GlyphZip.apply('тише', 3), 'muwe');
     expect(GlyphZip.apply('ёж — Ok', 1), 'eж - Ok');
+  });
+
+  test('самый слабый уровень, которым влезает в одно', () {
+    expect(zipLevelToSend('привет', 3), 1);
+    expect(zipLevelToSend('привет', 2), 1);
+    expect(zipLevelToSend('привет', 1), 1);
+    expect(zipLevelToSend('привет', 0), 0);
+    final long = 'ш' * 150; // 300 байт на любом уровне до 3
+    expect(zipLevelToSend(long, 2), 2);
+    expect(zipLevelToSend(long, 3), 3);
+    expect(zipLevelToSend('ттт', 3, max: 2), 3);
+    expect(zipLevelToSend('ттт', 3, max: 6), 1);
+    // 'тт' — 4 байта уровнем 1, 2 байта уровнем 2 ('mm').
+    expect(zipLevelToSend('тт', 3, max: 3), 2);
+    expect(zipLevelToSend('тт', 2, max: 3), 2);
   });
 }

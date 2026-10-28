@@ -10,6 +10,7 @@ import '../../ui/theme.dart';
 import '../../app/toasts.dart';
 import '../../app/images_providers.dart';
 import '../../app/notify_providers.dart';
+import '../../app/framed_node_avatar.dart';
 import '../../app/providers.dart';
 import '../../core/glyph_zip.dart';
 import '../../core/proto/mesh.dart';
@@ -22,6 +23,7 @@ import '../../data/message_meta.dart';
 import '../../data/notify/message_alerts.dart';
 import '../../data/message_sender.dart';
 import '../../data/message_split.dart';
+import '../../data/text_clean.dart';
 import '../../data/ping_guard.dart';
 import '../../data/mirror_ingest.dart';
 import '../../data/reaction_groups.dart';
@@ -44,10 +46,9 @@ import '../../app/link_badge.dart';
 
 /// Быстрые реакции (как в официальных клиентах — эмодзи-ответ на сообщение).
 
-/// Сообщение-реакция: эмодзи-ответ на другое сообщение. Из зеркала флаг
-/// `emoji` не приходит — тогда реакция это ответ из одних эмодзи.
-bool isReaction(Message m) =>
-    m.replyId != null && (m.emoji != 0 || isEmojiOnly(m.body));
+/// Сообщение-реакция: ответ с флагом `emoji`. Ответ из одних эмодзи без
+/// флага — обычное сообщение.
+bool isReaction(Message m) => m.replyId != null && m.emoji != 0;
 
 /// Лента переписки (канал или личный диалог) с полем ввода.
 class ChatFeed extends ConsumerStatefulWidget {
@@ -1114,7 +1115,7 @@ class _Bubble extends StatelessWidget {
             else
               GestureDetector(
                 onTap: onOpenNode,
-                child: NodeAvatar(
+                child: FramedNodeAvatar(
                   nodeNum: message.fromNum,
                   shortName: shortName,
                   size: _avatarSize,
@@ -1523,8 +1524,11 @@ class _ComposerState extends ConsumerState<_Composer> {
 
   int get _zip => ref.read(glyphZipLevelProvider).value ?? 0;
 
+  /// Текст из поля без невидимых символов — его считаем и отправляем.
+  String get _clean => stripInvisible(_text.text).trim();
+
   /// Что реально уйдёт в эфир.
-  String _outgoing(int zip) => GlyphZip.apply(_text.text.trim(), zip);
+  String _outgoing(int zip) => GlyphZip.apply(_clean, zip);
 
   /// Части для отправки: длинный текст — несколькими сообщениями.
   List<String> _parts(int zip) => MessageSplit.split(_outgoing(zip));
@@ -1542,7 +1546,10 @@ class _ComposerState extends ConsumerState<_Composer> {
     if (_progress != null || !_valid(zip) || !ref.read(canSendProvider)) {
       return;
     }
-    final parts = _parts(zip);
+    final text = _clean;
+    final parts = MessageSplit.split(
+      GlyphZip.apply(text, zipLevelToSend(text, zip)),
+    );
     var sent = 0;
     setState(() => _progress = (0, parts.length));
     for (final part in parts) {

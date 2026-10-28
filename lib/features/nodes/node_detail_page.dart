@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/framed_node_avatar.dart';
 import '../../app/providers.dart';
 import '../../app/toasts.dart';
 import '../../core/geo/geo.dart';
@@ -130,7 +131,7 @@ class _Header extends StatelessWidget {
     ].join(' · ');
     return Row(
       children: [
-        NodeAvatar(nodeNum: n.num, shortName: n.shortName, size: 64),
+        FramedNodeAvatar(nodeNum: n.num, shortName: n.shortName, size: 64),
         const SizedBox(width: Tokens.s16),
         Expanded(
           child: Column(

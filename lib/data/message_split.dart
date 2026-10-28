@@ -1,3 +1,4 @@
+import '../core/glyph_zip.dart';
 import 'message_sender.dart';
 
 /// Длинный текст — несколькими сообщениями с префиксом `[i/N] `.
@@ -70,4 +71,17 @@ abstract final class MessageSplit {
     flush();
     return out;
   }
+}
+
+/// Каким уровнем GlyphZip отправлять при выбранном [selected]. Уровни 2–3
+/// искажают буквы, поэтому берём самый слабый уровень от 1 до выбранного,
+/// которым текст влезает в одно сообщение. Не влезает ни одним — ровно
+/// выбранным: сколько частей отправить, человек решает сам, переключая
+/// уровень (счётчик показывает выбранный).
+int zipLevelToSend(String text, int selected, {int max = maxMessageBytes}) {
+  final t = text.trim();
+  for (var l = 1; l < selected; l++) {
+    if (messageBytes(GlyphZip.apply(t, l)) <= max) return l;
+  }
+  return selected;
 }

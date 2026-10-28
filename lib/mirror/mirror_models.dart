@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'avatar_frames.dart';
+
 /// Модели API зеркала (`/api/nodes`, `/api/chat/history`, WS `/ws`).
 /// Перенос 1:1 из iOS-клиента. JSON в snake_case; почти все поля опциональны.
 
@@ -193,7 +195,17 @@ sealed class MirrorEvent {
   const MirrorEvent();
 
   static MirrorEvent parse(Map<String, dynamic> j) => switch (j['type']) {
-    'init' => MirrorInit(_messages(j['messages'])),
+    'init' => MirrorInit(
+      _messages(j['messages']),
+      ranks: j.containsKey('chatty_ranks')
+          ? parseChattyRanks(j['chatty_ranks'])
+          : null,
+      frames: j.containsKey('avatar_frames')
+          ? parseCustomFrames(j['avatar_frames'])
+          : null,
+    ),
+    'chatty_ranks' => MirrorChattyRanks(parseChattyRanks(j['ranks'])),
+    'avatar_frames' => MirrorAvatarFrames(parseCustomFrames(j['frames'])),
     'new_message' => switch (MirrorMessage.tryParse(j['message'])) {
       final m? => MirrorNewMessage(m),
       null => const MirrorOther(),
@@ -213,8 +225,24 @@ sealed class MirrorEvent {
 }
 
 class MirrorInit extends MirrorEvent {
-  MirrorInit(this.messages);
+  MirrorInit(this.messages, {this.ranks, this.frames});
   final List<MirrorMessage> messages;
+
+  /// Старое зеркало полей не шлёт — null.
+  final Map<int, ChattyRank>? ranks;
+  final Map<int, CustomFrame>? frames;
+}
+
+/// Топ-3 болтливых изменился.
+class MirrorChattyRanks extends MirrorEvent {
+  MirrorChattyRanks(this.ranks);
+  final Map<int, ChattyRank> ranks;
+}
+
+/// Рамки из админки изменились.
+class MirrorAvatarFrames extends MirrorEvent {
+  MirrorAvatarFrames(this.frames);
+  final Map<int, CustomFrame> frames;
 }
 
 class MirrorNewMessage extends MirrorEvent {
