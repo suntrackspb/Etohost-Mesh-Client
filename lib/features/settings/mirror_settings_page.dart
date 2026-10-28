@@ -210,5 +210,6 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
     MirrorState.connecting => 'Подключение…',
     MirrorState.connected => 'На связи',
     MirrorState.waiting => 'Нет связи, повтор через ${rt!.retryIn} с',
+    MirrorState.outdated => 'Версия приложения устарела — обновите его',
   };
 }

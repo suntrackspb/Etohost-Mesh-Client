@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../core/proto/generated/meshtastic/config.pb.dart';
 import 'avatar_frames.dart';
 
 /// Модели API зеркала (`/api/nodes`, `/api/chat/history`, WS `/ws`).
@@ -97,6 +98,7 @@ class MirrorNode {
     this.longName,
     this.shortName,
     this.hwModel,
+    this.role,
     this.lastLat,
     this.lastLon,
     this.precisionBits,
@@ -107,11 +109,26 @@ class MirrorNode {
     this.goodAt,
     this.lastSeenAt,
     this.batteryLevel,
+    this.voltage,
+    this.channelUtilization,
+    this.airUtilTx,
+    this.uptimeSeconds,
+    this.isUnmessagable,
     this.lastSnr,
     this.modemPreset,
     this.publicKey,
     this.firmwareVersion,
   });
+
+  static int? _role(Object? v) => switch (v) {
+    int() => v,
+    String() =>
+      Config_DeviceConfig_Role.values
+          .where((r) => r.name == v)
+          .firstOrNull
+          ?.value,
+    _ => null,
+  };
 
   static MirrorNode? tryParse(Object? raw) {
     if (raw is! Map<String, dynamic>) return null;
@@ -122,6 +139,7 @@ class MirrorNode {
       longName: raw['long_name'] as String?,
       shortName: raw['short_name'] as String?,
       hwModel: _int(raw['hw_model']),
+      role: _role(raw['role']),
       lastLat: _double(raw['last_lat']),
       lastLon: _double(raw['last_lon']),
       precisionBits: _int(raw['last_precision_bits']),
@@ -132,6 +150,13 @@ class MirrorNode {
       goodAt: parseMirrorDate(raw['last_good_at'] as String?),
       lastSeenAt: parseMirrorDate(raw['last_seen_at'] as String?),
       batteryLevel: _int(raw['battery_level']),
+      voltage: _double(raw['voltage']),
+      channelUtilization: _double(raw['channel_utilization']),
+      airUtilTx: _double(raw['air_util_tx']),
+      uptimeSeconds: _int(raw['uptime_seconds']),
+      isUnmessagable: raw['is_unmessagable'] is bool
+          ? raw['is_unmessagable'] as bool
+          : null,
       lastSnr: _double(raw['last_snr']),
       modemPreset: raw['modem_preset'] is String
           ? raw['modem_preset'] as String
@@ -147,6 +172,9 @@ class MirrorNode {
   final String? longName;
   final String? shortName;
   final int? hwModel;
+
+  /// Номер Config.DeviceConfig.Role; сервер отдаёт имя (`CLIENT_MUTE`).
+  final int? role;
   final double? lastLat;
   final double? lastLon;
   final int? precisionBits;
@@ -164,6 +192,13 @@ class MirrorNode {
   final DateTime? goodAt;
   final DateTime? lastSeenAt;
   final int? batteryLevel;
+
+  // Телеметрия и флаг — только в карточке ноды, в общем списке их нет.
+  final double? voltage;
+  final double? channelUtilization;
+  final double? airUtilTx;
+  final int? uptimeSeconds;
+  final bool? isUnmessagable;
   final double? lastSnr;
   final String? modemPreset;
 

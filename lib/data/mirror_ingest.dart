@@ -135,6 +135,9 @@ class MirrorIngest {
               longName: fill(n.longName, old?.longName),
               shortName: fill(n.shortName, old?.shortName),
               hwModel: fill(n.hwModel, old?.hwModel == 0 ? null : old?.hwModel),
+              // 0 (CLIENT) — и значение по умолчанию: у ноды с радио его не
+              // отличить от «не знаем», поэтому там роль радио не трогаем.
+              role: fill(n.role, radio ? old?.role : null),
               // Координаты зеркала — в свои поля; радио их не трогает.
               mirrorLat: hasPos ? Value(n.lastLat) : const Value.absent(),
               mirrorLon: hasPos ? Value(n.lastLon) : const Value.absent(),
@@ -151,6 +154,18 @@ class MirrorIngest {
               mirrorGoodLon: Value(good ? n.goodLon : null),
               mirrorGoodAt: Value(good ? n.goodAt : null),
               batteryLevel: fill(n.batteryLevel, old?.batteryLevel),
+              voltage: fill(n.voltage, old?.voltage),
+              channelUtilization: fill(
+                n.channelUtilization,
+                old?.channelUtilization,
+              ),
+              airUtilTx: fill(n.airUtilTx, old?.airUtilTx),
+              uptimeSeconds: fill(n.uptimeSeconds, old?.uptimeSeconds),
+              // false — и значение по умолчанию, как у роли.
+              isUnmessagable: fill(
+                n.isUnmessagable,
+                radio ? old?.isUnmessagable : null,
+              ),
               snr: fill(n.lastSnr, old?.snr),
               modemPreset: fill(n.modemPreset, old?.modemPreset),
               // По эфиру версию чужих нод не узнать — берём из зеркала всегда,

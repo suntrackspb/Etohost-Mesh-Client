@@ -25,7 +25,7 @@ LinkLevel linkLevel(RadioState s) => switch (s) {
 LinkLevel? mirrorLevel(MirrorState? s) => switch (s) {
   null => null,
   MirrorState.connected => LinkLevel.connected,
-  MirrorState.waiting => LinkLevel.disconnected,
+  MirrorState.waiting || MirrorState.outdated => LinkLevel.disconnected,
   MirrorState.idle || MirrorState.connecting => LinkLevel.connecting,
 };
 

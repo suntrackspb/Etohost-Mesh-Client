@@ -7,16 +7,24 @@ import 'package:flutter/foundation.dart';
 import '../core/client_version.dart';
 import 'mirror_models.dart';
 
-enum MirrorState { idle, connecting, connected, waiting }
+enum MirrorState { idle, connecting, connected, waiting, outdated }
+
+/// Код закрытия WebSocket: зеркало отказало этой версии приложения.
+const wsCloseOutdated = 4426;
 
 /// WebSocket-подписка на зеркало с переподключением (1, 2, 4, 8, 15, 15… с).
 /// Радио-часть от неё не зависит: падение сети здесь — только повторные попытки.
 class MirrorRealtime extends ChangeNotifier {
-  MirrorRealtime(this.url, this.onEvent, {this.log});
+  MirrorRealtime(this.url, this.onEvent, {this.log, this.onOutdated});
 
   final Uri url;
   final Future<void> Function(MirrorEvent e) onEvent;
   final void Function(String)? log;
+
+  /// Зеркало отказало этой версии ([wsCloseOutdated]). Переподключений нет
+  /// до [reconnectNow] (возврат в приложение) — повтор каждые 15 с не
+  /// поможет, пока приложение не обновят.
+  final void Function()? onOutdated;
 
   MirrorState state = MirrorState.idle;
   int retryIn = 0;
@@ -107,6 +115,12 @@ class MirrorRealtime extends ChangeNotifier {
   void _onClosed(WebSocket ws) {
     if (!identical(ws, _ws)) return; // закрыли сами при reconnectNow/stop
     _ws = null;
+    if (ws.closeCode == wsCloseOutdated) {
+      log?.call('Зеркало: версия приложения устарела');
+      _set(MirrorState.outdated);
+      onOutdated?.call();
+      return;
+    }
     log?.call(
       'Зеркало: соединение закрыто${lastError == null ? '' : ' ($lastError)'}',
     );

@@ -88,6 +88,11 @@ class MirrorApi {
     }),
   );
 
+  /// Лёгкий запрос ради ответа о версии: сервер отказал по WebSocket
+  /// (4426) — текст плашки берём из HTTP-ответа 426 (его ловит
+  /// VersionedClient).
+  Future<void> checkVersion() => _get('api/avatar-frames');
+
   /// Проверка адреса перед включением: отвечает ли сервер как зеркало.
   Future<int> probe() async => (await nodes()).length;
 

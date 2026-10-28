@@ -9,6 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:universal_ble/universal_ble.dart';
 
+import '../core/client_version.dart';
 import '../core/diagnostics/journal_file.dart';
 import '../core/geo/geo.dart';
 import '../core/proto/channel_names.dart';
@@ -325,28 +326,38 @@ final mirrorRealtimeProvider = ChangeNotifierProvider<MirrorRealtime?>((ref) {
         log('Зеркало: зоны глушилок не загружены', e);
       });
 
-  final rt = MirrorRealtime(ws, (e) async {
-    switch (e) {
-      case MirrorInit(:final messages, :final ranks, :final frames):
-        final f = ref.read(avatarFramesProvider.notifier);
-        f.state = f.state.copyWith(ranks: ranks, custom: frames);
-        await ingest.messages(messages);
-      case MirrorChattyRanks(:final ranks):
-        final f = ref.read(avatarFramesProvider.notifier);
-        f.state = f.state.copyWith(ranks: ranks);
-      case MirrorAvatarFrames(:final frames):
-        final f = ref.read(avatarFramesProvider.notifier);
-        f.state = f.state.copyWith(custom: frames);
-      case MirrorNewMessage(:final message):
-        await ingest.messages([message], live: true);
-      case MirrorRelayUpdate(:final messageId, :final relay):
-        await ingest.relay(messageId, relay);
-      case MirrorNodeUpdate(:final node):
-        await ingest.nodes([node]);
-      case MirrorOther():
-        break;
-    }
-  }, log: log)..start();
+  final rt = MirrorRealtime(
+    ws,
+    (e) async {
+      switch (e) {
+        case MirrorInit(:final messages, :final ranks, :final frames):
+          final f = ref.read(avatarFramesProvider.notifier);
+          f.state = f.state.copyWith(ranks: ranks, custom: frames);
+          await ingest.messages(messages);
+        case MirrorChattyRanks(:final ranks):
+          final f = ref.read(avatarFramesProvider.notifier);
+          f.state = f.state.copyWith(ranks: ranks);
+        case MirrorAvatarFrames(:final frames):
+          final f = ref.read(avatarFramesProvider.notifier);
+          f.state = f.state.copyWith(custom: frames);
+        case MirrorNewMessage(:final message):
+          await ingest.messages([message], live: true);
+        case MirrorRelayUpdate(:final messageId, :final relay):
+          await ingest.relay(messageId, relay);
+        case MirrorNodeUpdate(:final node):
+          await ingest.nodes([node]);
+        case MirrorOther():
+          break;
+      }
+    },
+    log: log,
+    onOutdated: () {
+      // Текст плашки — из HTTP-ответа 426; ответа нет — хотя бы общий.
+      api.checkVersion().then((_) {}, onError: (_) {}).whenComplete(() {
+        outdatedMessage.value ??= defaultOutdatedText;
+      });
+    },
+  )..start();
   // dispose вызывает сам ChangeNotifierProvider; второй вызов — ошибка.
   return rt;
 });
