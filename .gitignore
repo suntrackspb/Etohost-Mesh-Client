@@ -5,6 +5,7 @@ build/
 .flutter-plugins-dependencies
 *.iml
 .idea/
+.DS_Store
 # Платформенные папки генерирует CI (flutter create), см. .github/workflows/build.yml
 android/
 ios/
