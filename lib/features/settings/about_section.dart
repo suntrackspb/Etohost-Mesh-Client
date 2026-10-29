@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/toasts.dart';
 import '../../app/providers.dart';
+import '../../core/store_build.dart';
 import '../../core/update/release_notes.dart';
 import '../../core/update/update_checker.dart';
 import '../../data/database.dart';
@@ -130,7 +131,8 @@ Future<void> openRelease(AppRelease r) =>
 Future<void> openDownloads() =>
     launchUrl(downloadsPage, mode: LaunchMode.externalApplication);
 
-/// «О приложении»: версия, ручная проверка, автопроверка.
+/// «О приложении»: версия, ручная проверка, автопроверка (проверки — не в
+/// магазинной сборке).
 class AboutSection extends ConsumerStatefulWidget {
   const AboutSection({super.key});
 
@@ -178,26 +180,28 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
           leading: const Icon(Icons.info_outline),
           trailing: Text(version),
         ),
-        MeshTile(
-          title: 'Проверить обновления',
-          leading: const Icon(Icons.system_update),
-          trailing: _checking
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : null,
-          onTap: _checking ? null : _check,
-        ),
-        SwitchListTile(
-          secondary: const Icon(Icons.update),
-          title: const Text('Проверять при запуске'),
-          value: auto,
-          onChanged: (v) => ref
-              .read(databaseProvider)
-              .setSetting(AppSettingKeys.updateAutoCheck, '$v'),
-        ),
+        if (!storeBuild) ...[
+          MeshTile(
+            title: 'Проверить обновления',
+            leading: const Icon(Icons.system_update),
+            trailing: _checking
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : null,
+            onTap: _checking ? null : _check,
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.update),
+            title: const Text('Проверять при запуске'),
+            value: auto,
+            onChanged: (v) => ref
+                .read(databaseProvider)
+                .setSetting(AppSettingKeys.updateAutoCheck, '$v'),
+          ),
+        ],
       ],
     );
   }

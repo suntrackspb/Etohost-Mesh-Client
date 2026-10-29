@@ -10,8 +10,8 @@ import '../../data/images/image_uploader.dart';
 import '../../ui/kit/kit.dart';
 import '../../app/link_badge.dart';
 
-/// Превью картинок из ссылок сообщения (только свои сервисы, см.
-/// [imagePreview]). Размер фиксированный — лента не прыгает при загрузке.
+/// Превью картинок из ссылок сообщения (только сервис картинок
+/// подключённого зеркала, см. [imagePreview]). Размер фиксированный — лента не прыгает при загрузке.
 class MessageImages extends ConsumerWidget {
   const MessageImages(this.text, {super.key});
 
@@ -28,7 +28,7 @@ class MessageImages extends ConsumerWidget {
     if (!(ref.watch(showImagesProvider).value ?? true)) {
       return const SizedBox.shrink();
     }
-    final urls = imagePreviews(text);
+    final urls = imagePreviews(text, ref.watch(imagePreviewHostsProvider));
     if (urls.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: Tokens.s4),
@@ -112,21 +112,24 @@ class _FullImageState extends ConsumerState<_FullImage> {
   /// Сколько протянуть вниз, чтобы закрыть.
   static const _closeAt = 120.0;
 
-  /// Своя картинка i.jab.su (есть токен удаления); null — чужая или не знаем.
+  /// Своя картинка сервиса (есть токен удаления); null — чужая или не знаем.
   UploadedImage? _own;
   bool _busy = false;
 
   @override
   void initState() {
     super.initState();
-    final id = jabImageId(widget.url);
     final images = ref.read(imageUploadsProvider);
+    final id = images == null ? null : _id(images);
     if (id != null && images != null) {
       images.own(id).then((v) {
         if (mounted) setState(() => _own = v);
       });
     }
   }
+
+  String? _id(ImageUploads images) =>
+      serviceImageId(widget.url, images.capability.host);
 
   Future<void> _run(Future<void> Function() action, String done) async {
     setState(() => _busy = true);
@@ -174,6 +177,7 @@ class _FullImageState extends ConsumerState<_FullImage> {
 
   Future<void> _report(ImageUploads images, String id) async {
     final reason = TextEditingController();
+    final contact = ref.read(mirrorCapabilitiesProvider).value?.contact;
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
@@ -181,8 +185,12 @@ class _FullImageState extends ConsumerState<_FullImage> {
         content: TextField(
           controller: reason,
           maxLength: 200,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Что не так (необязательно)',
+            helperText: contact == null
+                ? 'Жалоба уйдёт оператору сервера'
+                : 'Жалоба уйдёт оператору сервера ($contact)',
+            helperMaxLines: 2,
           ),
         ),
         actions: [
@@ -205,8 +213,9 @@ class _FullImageState extends ConsumerState<_FullImage> {
 
   List<Widget> _actions() {
     final images = ref.watch(imageUploadsProvider);
-    final id = jabImageId(widget.url);
+    final id = images == null ? null : _id(images);
     if (images == null || id == null) return const [];
+    final cap = images.capability;
     if (_busy) {
       return const [
         Padding(
@@ -220,13 +229,13 @@ class _FullImageState extends ConsumerState<_FullImage> {
     }
     final own = _own;
     return [
-      if (own != null)
+      if (own != null && cap.delete)
         IconButton(
           tooltip: 'Удалить',
           icon: const Icon(Icons.delete_outline),
           onPressed: () => _delete(images, own),
         )
-      else
+      else if (own == null && cap.report)
         IconButton(
           tooltip: 'Пожаловаться',
           icon: const Icon(Icons.flag_outlined),

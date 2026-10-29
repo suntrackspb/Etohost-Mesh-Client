@@ -5,13 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../core/client_version.dart';
-import '../core/diagnostics/report_uploader.dart';
 import '../core/notices/notices.dart';
+import '../core/store_build.dart';
 import '../core/update/update_checker.dart' show downloadsPage;
 import '../data/database.dart';
+import '../mirror/mirror_capabilities.dart';
 import 'providers.dart';
 
-/// Объявления разработчика с сервиса отчётов. Проверка — при запуске,
+/// Объявления с сервера отчётов, который указало подключённое зеркало
+/// (без зеркала — никуда не ходим). Проверка — при запуске,
 /// возврате на экран и подключении к ноде, не чаще [noticesInterval].
 /// Ошибки сети молча пропускаем: объявления не главное.
 class NoticesController extends Notifier<List<Notice>> {
@@ -20,13 +22,24 @@ class NoticesController extends Notifier<List<Notice>> {
   @override
   List<Notice> build() => const [];
 
-  Future<void> refresh() async {
-    const url = ReportUploader.configuredUrl;
+  /// [force] — без учёта интервала (сменилось зеркало).
+  Future<void> refresh({bool force = false}) async {
     final now = DateTime.now();
-    if (url.isEmpty || !noticesDue(_last, now)) return;
+    if (!force && !noticesDue(_last, now)) return;
+    final MirrorCapabilities? caps;
+    try {
+      caps = await ref.read(mirrorCapabilitiesProvider.future);
+    } catch (_) {
+      return;
+    }
+    final cap = caps?.reports;
+    if (cap == null || !cap.notices) {
+      state = const [];
+      return;
+    }
     _last = now;
     try {
-      state = await fetchNotices(Uri.parse(url), ReportUploader.configuredKey);
+      state = await fetchNotices(cap.baseUrl, cap.apiKey);
     } catch (_) {}
   }
 
@@ -79,8 +92,9 @@ final outdatedNoticeProvider = Provider<Notice?>((ref) {
           id: 'outdated',
           text: text,
           level: NoticeLevel.critical,
-          linkUrl: downloadsPage,
-          linkLabel: 'Скачать',
+          // В магазинной сборке обновляет магазин — ссылки мимо него нет.
+          linkUrl: storeBuild ? null : downloadsPage,
+          linkLabel: storeBuild ? null : 'Скачать',
         );
 });
 
@@ -115,5 +129,9 @@ final _visibleServerNoticesProvider = Provider<List<Notice>>((ref) {
 final noticesOnConnectProvider = Provider<void>((ref) {
   ref.listen(canSendProvider, (was, ready) {
     if (ready && was != true) ref.read(noticesProvider.notifier).refresh();
+  });
+  // Зеркало подключили или отключили — объявления с его сервера или никаких.
+  ref.listen(mirrorCapabilitiesProvider, (_, _) {
+    ref.read(noticesProvider.notifier).refresh(force: true);
   });
 });

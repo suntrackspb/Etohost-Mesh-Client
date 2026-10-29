@@ -10,15 +10,6 @@ class ReportUploader {
   ReportUploader(this.baseUrl, this.apiKey, {http.Client? client})
     : _client = client ?? http.Client();
 
-  /// Адрес и ключ задаются при сборке:
-  /// `--dart-define=REPORT_URL=https://… --dart-define=REPORT_KEY=…`.
-  static const configuredUrl = String.fromEnvironment('REPORT_URL');
-  static const configuredKey = String.fromEnvironment('REPORT_KEY');
-
-  static ReportUploader? fromEnvironment() => configuredUrl.isEmpty
-      ? null
-      : ReportUploader(Uri.parse(configuredUrl), configuredKey);
-
   final Uri baseUrl;
   final String apiKey;
   final http.Client _client;

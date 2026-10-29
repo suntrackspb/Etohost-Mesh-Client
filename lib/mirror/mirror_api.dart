@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../core/client_version.dart';
 
 import '../data/jammer_zones.dart';
+import 'mirror_capabilities.dart';
 import 'mirror_models.dart';
 
 /// «9c:13:9e:ef:f1:20» → байты; нулевой и неверный — null.
@@ -27,8 +28,11 @@ List<int>? parsePublicKey(Object? v) {
 }
 
 class MirrorApiException implements Exception {
-  MirrorApiException(this.message);
+  MirrorApiException(this.message, {this.status});
   final String message;
+
+  /// HTTP-код, если сервер ответил ошибкой.
+  final int? status;
   @override
   String toString() => message;
 }
@@ -93,6 +97,16 @@ class MirrorApi {
   /// VersionedClient).
   Future<void> checkVersion() => _get('api/avatar-frames');
 
+  /// Что умеет экземпляр. Старое зеркало без этой ручки — ничего (404).
+  Future<MirrorCapabilities> capabilities() async {
+    try {
+      return MirrorCapabilities.parse(await _get('api/v1/capabilities'));
+    } on MirrorApiException catch (e) {
+      if (e.status == 404) return MirrorCapabilities.none;
+      rethrow;
+    }
+  }
+
   /// Проверка адреса перед включением: отвечает ли сервер как зеркало.
   Future<int> probe() async => (await nodes()).length;
 
@@ -110,7 +124,10 @@ class MirrorApi {
       throw MirrorApiException('нет связи с сервером: $e');
     }
     if (r.statusCode < 200 || r.statusCode >= 300) {
-      throw MirrorApiException('сервер ответил ${r.statusCode} на /$path');
+      throw MirrorApiException(
+        'сервер ответил ${r.statusCode} на /$path',
+        status: r.statusCode,
+      );
     }
     try {
       return jsonDecode(utf8.decode(r.bodyBytes));

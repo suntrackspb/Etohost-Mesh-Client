@@ -154,7 +154,8 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           if (!configured) ...[
             const SizedBox(height: Tokens.s8),
             Text(
-              'В этой сборке не задан адрес сервера отчётов.',
+              'Отчёты отправляются через подключённый сервер, а он их не '
+              'принимает или не подключён.',
               style: TextStyle(color: theme.colorScheme.error),
             ),
           ],

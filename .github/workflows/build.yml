@@ -105,26 +105,15 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: echo "VERSION_ARGS=--build-name=${GITHUB_REF_NAME#v} --build-number=${{ github.run_number }}" >> "$GITHUB_ENV"
-      # Сервис картинок: переменные репозитория IMAGES_URL и IMAGES_KEY
-      # (не секреты — адрес и публичный ключ). Пусто — кнопки «Картинка» нет.
       # CARTO_KEY — тёмная подложка карты; пусто — только OSM.
-      # Отчёты: переменная REPORT_URL и секрет REPORT_KEY; пусто — отправки нет.
       - name: Build
         shell: bash
         env:
-          REPORT_URL: ${{ vars.REPORT_URL }}
-          REPORT_KEY: ${{ secrets.REPORT_KEY }}
-          IMAGES_URL: ${{ vars.IMAGES_URL }}
-          IMAGES_KEY: ${{ vars.IMAGES_KEY }}
           CARTO_KEY: ${{ vars.CARTO_KEY }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           defines=(
-            --dart-define=REPORT_URL="$REPORT_URL"
-            --dart-define=REPORT_KEY="$REPORT_KEY"
-            --dart-define=IMAGES_URL="$IMAGES_URL"
-            --dart-define=IMAGES_KEY="$IMAGES_KEY"
             --dart-define=CARTO_KEY="$CARTO_KEY"
           )
           ${{ matrix.cmd }} $VERSION_ARGS "${defines[@]}"

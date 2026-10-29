@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/toasts.dart';
+import '../../app/diagnostics_providers.dart';
 import '../../app/providers.dart';
 import '../../core/radio/journal.dart';
 import '../../ui/kit/kit.dart';
@@ -65,11 +66,12 @@ class _JournalPageState extends ConsumerState<JournalPage> {
               toasts.success('Журнал скопирован');
             },
           ),
-          IconButton(
-            tooltip: 'Отправить отчёт',
-            icon: const Icon(Icons.bug_report_outlined),
-            onPressed: () => context.go('/settings/report'),
-          ),
+          if (ref.watch(reportUploaderProvider) != null)
+            IconButton(
+              tooltip: 'Отправить отчёт',
+              icon: const Icon(Icons.bug_report_outlined),
+              onPressed: () => context.go('/settings/report'),
+            ),
           IconButton(
             tooltip: 'Очистить',
             icon: const Icon(Icons.delete_outline),

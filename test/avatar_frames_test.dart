@@ -62,7 +62,9 @@ void main() {
   test('custom frame wins over rank', () {
     final frames = AvatarFrames(
       ranks: {1: (rank: 1, days: 7), 2: (rank: 3, days: 90)},
-      custom: {1: CustomFrame.tryParse({'color1': '#ff0000'})!},
+      custom: {
+        1: CustomFrame.tryParse({'color1': '#ff0000'})!,
+      },
     );
     expect(frames.decorFor(1)!.colors, [const Color(0xFFFF0000)]);
     final r = frames.decorFor(2)!;

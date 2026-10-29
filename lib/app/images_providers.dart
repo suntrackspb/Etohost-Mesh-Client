@@ -8,28 +8,42 @@ import 'package:drift/drift.dart';
 import '../core/proto/mesh.dart';
 import '../data/database.dart';
 import '../data/images/image_uploader.dart';
+import '../mirror/mirror_capabilities.dart';
 import 'providers.dart';
 
-/// Сервис картинок; null — сборка без IMAGES_URL, кнопки нет.
-final imageUploaderProvider = Provider<ImageUploader?>(
-  (ref) => ImageUploader.fromEnvironment(),
+/// Сервис картинок подключённого зеркала; null — зеркала нет или оно
+/// картинок не объявило: ни кнопки загрузки, ни превью.
+final imagesCapabilityProvider = Provider<ImagesCapability?>(
+  (ref) => ref.watch(mirrorCapabilitiesProvider).value?.images,
 );
 
+/// Хосты, с которых показываем превью; пусто — превью нет.
+final imagePreviewHostsProvider = Provider<Set<String>>(
+  (ref) => ref.watch(imagesCapabilityProvider)?.previewHosts ?? const {},
+);
+
+final imageUploaderProvider = Provider<ImageUploader?>((ref) {
+  final cap = ref.watch(imagesCapabilityProvider);
+  return cap == null ? null : ImageUploader(cap.baseUrl, cap.publicKey);
+});
+
 final imageUploadsProvider = Provider<ImageUploads?>((ref) {
+  final cap = ref.watch(imagesCapabilityProvider);
   final up = ref.watch(imageUploaderProvider);
-  if (up == null) return null;
-  return ImageUploads(ref, up);
+  if (cap == null || up == null) return null;
+  return ImageUploads(ref, up, cap);
 });
 
 /// Загрузка своей картинки: подпись ключом подключённой ноды, токены
 /// удаления — в настройках приложения.
 class ImageUploads {
-  ImageUploads(this._ref, this._up);
+  ImageUploads(this._ref, this._up, this.capability);
 
   final Ref _ref;
   final ImageUploader _up;
 
-  static const maxBytes = 10 * 1024 * 1024;
+  /// Что объявил сервис: лимит, хост, есть ли жалобы и удаление.
+  final ImagesCapability capability;
 
   /// Вся операция целиком: чтобы колесо не крутилось вечно.
   static const timeout = Duration(minutes: 2);
@@ -58,8 +72,9 @@ class ImageUploads {
   }
 
   Future<UploadedImage> _upload(Uint8List body) async {
-    if (body.length > maxBytes) {
-      throw const ImageError('Картинка больше 10 МБ');
+    final max = capability.maxBytes;
+    if (body.length > max) {
+      throw ImageError('Картинка больше ${max ~/ (1024 * 1024)} МБ');
     }
     final (node, key) = await _me();
     final img = await _up.upload(body: body, node: node, nodePrivateKey: key);

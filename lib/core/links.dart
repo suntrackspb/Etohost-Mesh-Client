@@ -53,38 +53,41 @@ final _etohostFile = RegExp(
   caseSensitive: false,
 );
 
-/// Ссылка на картинку, которую можно показать прямо в ленте: только свои
-/// сервисы (i.jab.su и img.etohost.ru), чужие адреса не грузим — иначе
-/// любой собеседник узнает IP по запросу к своему серверу. Ссылку http
-/// грузим по https: оба сервиса его отдают, а iOS http без исключений не
-/// пускает.
-Uri? imagePreview(Uri link) {
+/// Ссылка на картинку, которую можно показать прямо в ленте: только с
+/// хостов сервиса картинок подключённого зеркала ([hosts]), чужие адреса не
+/// грузим — иначе любой собеседник узнает IP по запросу к своему серверу.
+/// Ссылку http грузим по https: iOS http без исключений не пускает.
+Uri? imagePreview(Uri link, Set<String> hosts) {
   if (!const {'http', 'https'}.contains(link.scheme) ||
       link.hasQuery ||
-      link.hasFragment) {
+      link.hasFragment ||
+      !hosts.contains(link.host.toLowerCase())) {
     return null;
   }
-  link = link.replace(scheme: 'https');
-  return switch (link.host.toLowerCase()) {
-    'i.jab.su' when _jabId.hasMatch(link.path) => link,
-    'img.etohost.ru' when _etohostFile.hasMatch(link.path) => link,
-    _ => null,
-  };
+  // id сервиса (7 символов) или файл с расширением картинки.
+  if (!_jabId.hasMatch(link.path) && !_etohostFile.hasMatch(link.path)) {
+    return null;
+  }
+  return link.replace(scheme: 'https');
 }
 
 /// Картинки для превью из текста сообщения (без повторов, не больше [max]).
-List<Uri> imagePreviews(String text, {int max = 3}) {
+List<Uri> imagePreviews(String text, Set<String> hosts, {int max = 3}) {
+  if (hosts.isEmpty) return const [];
   final out = <Uri>[];
   for (final p in splitLinks(text)) {
-    final u = p.link == null ? null : imagePreview(p.link!);
+    final u = p.link == null ? null : imagePreview(p.link!, hosts);
     if (u != null && !out.contains(u)) out.add(u);
     if (out.length == max) break;
   }
   return out;
 }
 
-/// id картинки сервиса i.jab.su (там есть удаление и жалобы), иначе null.
-String? jabImageId(Uri link) =>
-    link.host.toLowerCase() == 'i.jab.su' && imagePreview(link) != null
+/// id картинки самого сервиса ([serviceHost] — там есть удаление и жалобы),
+/// иначе null.
+String? serviceImageId(Uri link, String serviceHost) =>
+    link.host.toLowerCase() == serviceHost &&
+        _jabId.hasMatch(link.path) &&
+        imagePreview(link, {serviceHost}) != null
     ? link.path.substring(1)
     : null;

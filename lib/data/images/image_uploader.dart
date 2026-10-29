@@ -6,7 +6,8 @@ import 'package:http/http.dart' as http;
 
 import '../../core/client_version.dart';
 
-/// Загрузка картинки на сервис Etohost Mesh Images (i.jab.su).
+/// Загрузка картинки на сервис картинок подключённого зеркала (адрес и ключ
+/// — из его capabilities).
 ///
 /// Запрос подписан ключом своей ноды: secret = X25519(ключ ноды, ключ
 /// сервиса), из него HKDF-SHA256 даёт ключ HMAC, им подписано
@@ -15,16 +16,6 @@ import '../../core/client_version.dart';
 class ImageUploader {
   ImageUploader(this.baseUrl, this.servicePublicKey, {http.Client? client})
     : _client = client ?? VersionedClient();
-
-  /// Задаются при сборке: `--dart-define=IMAGES_URL=https://i.jab.su/
-  /// --dart-define=IMAGES_KEY=…` (base64 публичного ключа сервиса).
-  static const configuredUrl = String.fromEnvironment('IMAGES_URL');
-  static const configuredKey = String.fromEnvironment('IMAGES_KEY');
-
-  static ImageUploader? fromEnvironment() =>
-      configuredUrl.isEmpty || configuredKey.isEmpty
-      ? null
-      : ImageUploader(Uri.parse(configuredUrl), base64.decode(configuredKey));
 
   final Uri baseUrl;
   final List<int> servicePublicKey;

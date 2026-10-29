@@ -9,12 +9,20 @@ import '../core/diagnostics/device_model.dart';
 import '../core/diagnostics/report_uploader.dart';
 import '../core/proto/mesh.dart';
 import '../data/diagnostics/report.dart';
+import '../mirror/mirror_capabilities.dart';
 import 'providers.dart';
 
-/// Отправка отчётов; null — адрес сервера не задан при сборке.
-final reportUploaderProvider = Provider<ReportUploader?>(
-  (ref) => ReportUploader.fromEnvironment(),
+/// Сервер отчётов, который указало подключённое зеркало; null — зеркала
+/// нет или оно отчётов не объявило.
+final reportsCapabilityProvider = Provider<ReportsCapability?>(
+  (ref) => ref.watch(mirrorCapabilitiesProvider).value?.reports,
 );
+
+/// Отправка отчётов; null — отправлять некуда.
+final reportUploaderProvider = Provider<ReportUploader?>((ref) {
+  final cap = ref.watch(reportsCapabilityProvider);
+  return cap == null ? null : ReportUploader(cap.baseUrl, cap.apiKey);
+});
 
 /// Собрать отчёт: сведения из системы, соединения и базы + файл журнала.
 Future<DiagnosticReport> collectReport(Ref ref) async {

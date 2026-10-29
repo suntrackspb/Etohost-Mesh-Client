@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/diagnostics_providers.dart';
 import '../../app/providers.dart';
 import '../../ui/kit/kit.dart';
 import 'about_section.dart';
@@ -276,13 +277,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             SectionCard(
               title: 'Поддержка',
               children: [
-                MeshTile(
-                  title: 'Отправить отчёт разработчику',
-                  subtitle: 'Журнал и сведения о приложении и ноде',
-                  leading: const Icon(Icons.bug_report_outlined),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.go('/settings/report'),
-                ),
+                if (ref.watch(reportUploaderProvider) != null)
+                  MeshTile(
+                    title: 'Отправить отчёт разработчику',
+                    subtitle: 'Журнал и сведения о приложении и ноде',
+                    leading: const Icon(Icons.bug_report_outlined),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.go('/settings/report'),
+                  ),
                 MeshTile(
                   title: 'Аппаратные id ноды',
                   subtitle: 'MAC и device_id подключённой ноды',

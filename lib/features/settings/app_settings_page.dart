@@ -234,7 +234,8 @@ class AppSettingsPage extends ConsumerWidget {
               SwitchListTile(
                 title: const Text('Показывать картинки'),
                 subtitle: const Text(
-                  'Превью ссылок i.jab.su и img.etohost.ru прямо в ленте',
+                  'Превью ссылок сервиса картинок подключённого сервера '
+                  'прямо в ленте',
                 ),
                 value: images,
                 onChanged: (v) => save(AppSettingKeys.showImages, '$v'),

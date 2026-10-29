@@ -9,6 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:universal_ble/universal_ble.dart';
 
+import '../core/store_build.dart';
 import '../core/client_version.dart';
 import '../core/diagnostics/journal_file.dart';
 import '../core/geo/geo.dart';
@@ -40,6 +41,7 @@ import '../data/mirror_ingest.dart';
 import '../data/node_db_store.dart';
 import '../data/node_dbs.dart';
 import '../data/packet_router.dart';
+import '../mirror/mirror_capabilities.dart';
 import '../mirror/avatar_frames.dart';
 import '../mirror/mirror_api.dart';
 import '../mirror/mirror_config.dart';
@@ -278,6 +280,21 @@ final mirrorApiProvider = Provider<MirrorApi?>((ref) {
   final api = MirrorApi(base);
   ref.onDispose(api.close);
   return api;
+});
+
+/// Что объявило подключённое зеркало; null — зеркало не подключено.
+/// Ошибку сети считаем «ничего не умеет»: картинки и отчёты просто не появятся,
+/// а при следующем включении зеркала спросим снова.
+final mirrorCapabilitiesProvider = FutureProvider<MirrorCapabilities?>((
+  ref,
+) async {
+  final api = ref.watch(mirrorApiProvider);
+  if (api == null) return null;
+  try {
+    return await api.capabilities();
+  } catch (_) {
+    return MirrorCapabilities.none;
+  }
 });
 
 /// Рамки аватаров из зеркала (топ болтливых, рамки из админки). Живут
@@ -820,6 +837,7 @@ final updateAutoCheckProvider = StreamProvider<bool>(
 /// Последний релиз, если он новее установленного; null — обновлений нет.
 /// Ошибки сети не показываем (проверка фоновая); ручная — через [checkForUpdate].
 final latestReleaseProvider = FutureProvider<AppRelease?>((ref) async {
+  if (storeBuild) return null;
   final auto = await ref.watch(updateAutoCheckProvider.future);
   if (!auto) return null;
   try {
