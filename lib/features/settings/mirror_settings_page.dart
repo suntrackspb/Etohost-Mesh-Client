@@ -87,7 +87,8 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
           SectionCard(
             footer:
                 'Адрес сервера зеркала: с него приходят чат и ноды из MQTT. '
-                'Пока зеркало выключено, приложение не обращается ни к каким серверам.',
+                'Пока зеркало выключено, приложение не подключается к нему. '
+                'Проверка адреса тоже отправляет запрос на указанный сервер.',
             children: [
               SwitchListTile.adaptive(
                 secondary: const Icon(Icons.public),
@@ -122,6 +123,15 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                   }),
                   onSubmitted: (_) => _checkAndEnable(),
                 ),
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(
+                  Tokens.s16,
+                  0,
+                  Tokens.s16,
+                  Tokens.s16,
+                ),
+                child: _ServerDisclosure(),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -212,4 +222,54 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
     MirrorState.waiting => 'Нет связи, повтор через ${rt!.retryIn} с',
     MirrorState.outdated => 'Версия приложения устарела — обновите его',
   };
+}
+
+/// Видно до первой проверки адреса: даже она раскрывает IP серверу.
+class _ServerDisclosure extends StatelessWidget {
+  const _ServerDisclosure();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(Tokens.s16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(Tokens.radiusM),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Подключение к серверу сообщества',
+            style: theme.textTheme.titleSmall,
+          ),
+          const SizedBox(height: Tokens.s8),
+          const Text(
+            'Вы сами выбираете сервер. Его оператор управляет содержимым, '
+            'доступностью и хранением данных; клиент не управляет этим сервером. '
+            'Подключайтесь к операторам, которым доверяете.',
+          ),
+          const SizedBox(height: Tokens.s8),
+          const Text(
+            'При проверке адреса и подключении сервер получает:\n'
+            '• IP-адрес вашего соединения и время запросов;\n'
+            '• версию приложения и платформу;\n'
+            '• запрашиваемые данные — например, ID просматриваемой ноды '
+            'или диапазон истории сообщений.\n'
+            'Оператор может сохранять эти сведения в журнале сервера.',
+          ),
+          const SizedBox(height: Tokens.s8),
+          const Text(
+            'Сервер также может предлагать сервисы изображений и отчётов '
+            'на других адресах. При обращении к ним их операторы тоже видят '
+            'IP-адрес и запросы. При загрузке изображения передаются файл '
+            'и ID ноды; при жалобе — ID ноды, ID изображения '
+            'и причина жалобы. Состав диагностического отчёта '
+            'показан отдельно перед отправкой.',
+          ),
+        ],
+      ),
+    );
+  }
 }

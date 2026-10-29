@@ -9,6 +9,7 @@ import '../../core/update/release_notes.dart';
 import '../../core/update/update_checker.dart';
 import '../../data/database.dart';
 import '../../ui/kit/kit.dart';
+import 'app_information_page.dart';
 
 /// Плашка «вышла новая версия» (пока пользователь её не скрыл).
 class UpdateBanner extends ConsumerWidget {
@@ -179,6 +180,33 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
           title: 'Версия',
           leading: const Icon(Icons.info_outline),
           trailing: Text(version),
+        ),
+        MeshTile(
+          title: 'Политика конфиденциальности',
+          leading: const Icon(Icons.privacy_tip_outlined),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const AppInformationPage.privacy(),
+            ),
+          ),
+        ),
+        MeshTile(
+          title: 'Поддержка',
+          leading: const Icon(Icons.help_outline),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const AppInformationPage.support(),
+            ),
+          ),
+        ),
+        MeshTile(
+          title: 'Лицензии',
+          leading: const Icon(Icons.description_outlined),
+          onTap: () => showLicensePage(
+            context: context,
+            applicationName: 'Etohost Mesh',
+            applicationVersion: version,
+          ),
         ),
         if (!storeBuild) ...[
           MeshTile(

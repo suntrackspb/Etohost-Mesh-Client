@@ -265,6 +265,28 @@ class KeyBackupCard extends ConsumerWidget {
     int me,
     String key,
   ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Экспорт приватного ключа'),
+        content: const Text(
+          'JSON-файл содержит незашифрованный приватный ключ ноды. '
+          'Любой, у кого есть этот файл, сможет использовать ключ вашей ноды. '
+          'Храните файл в защищённом месте и не передавайте посторонним.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Сохранить файл'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
     final name = ref.read(ownNodeProvider).value?.longName;
     final b = await KeyBackup.make(me, key, longName: name);
     if (b == null) return;
