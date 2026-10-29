@@ -10,6 +10,7 @@ import '../../data/node_row_info.dart';
 import '../../ui/kit/kit.dart';
 import 'contact_import_ui.dart';
 import 'node_detail_page.dart';
+import 'node_actions_ui.dart';
 import '../../data/hardware_catalog.dart';
 import '../../data/node_details.dart';
 import '../../data/node_layout.dart';
@@ -297,6 +298,7 @@ class NodeTile extends ConsumerWidget {
         ],
       ),
       onTap: onTap,
+      onLongPress: () => showNodeActions(context, node),
     );
   }
 }

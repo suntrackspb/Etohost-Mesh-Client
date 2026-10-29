@@ -32,7 +32,15 @@ DirectBlock? directBlock(Node? n) {
 /// Отправка текстовых сообщений: запись в БД сразу (статус «ждём»),
 /// затем статус по итогу очереди отправки.
 class MessageSender {
-  MessageSender(this.db, this._send, this._myNum, this._nextId);
+  MessageSender(
+    this.db,
+    this._send,
+    this._myNum,
+    this._nextId, {
+    this.prepareDirect,
+  });
+
+  final Future<void> Function(int)? prepareDirect;
 
   final AppDatabase db;
   final Future<DeliveryResult> Function(MeshPacket p) _send;
@@ -78,6 +86,7 @@ class MessageSender {
       throw ArgumentError('длиннее $maxMessageBytes байт');
     }
     final key = to == broadcastNum ? null : await _publicKey(to);
+    if (_myNum() != me) throw StateError('соединение с нодой изменилось');
     final id = _nextId();
     await db
         .into(db.messages)
@@ -129,6 +138,7 @@ class MessageSender {
 
   /// Ключ получателя; без него личное не отправляем (прошивка всё равно откажет).
   Future<Uint8List> _publicKey(int num) async {
+    await prepareDirect?.call(num);
     final n = await (db.select(
       db.nodes,
     )..where((r) => r.num.equals(num))).getSingleOrNull();

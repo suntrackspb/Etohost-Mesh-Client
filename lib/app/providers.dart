@@ -1,3 +1,4 @@
+import '../data/mirror_node_key.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -698,15 +699,31 @@ final totalUnreadProvider = Provider<int>((ref) {
 /// Отправка сообщений через текущее соединение.
 final messageSenderProvider = Provider<MessageSender>((ref) {
   final radio = ref.read(radioProvider);
+  final db = ref.watch(databaseProvider);
   return MessageSender(
-    ref.watch(databaseProvider),
+    db,
     radio.sendPacket,
     () => radio.state == RadioState.ready ? radio.myNodeNum : null,
     radio.queue.nextId,
+    prepareDirect: (peer) async {
+      final api = ref.read(mirrorApiProvider);
+      final actions = ref.read(nodeActionsProvider);
+      final node = await (db.select(
+        db.nodes,
+      )..where((n) => n.num.equals(peer))).getSingleOrNull();
+      if (node != null &&
+          node.onMirror &&
+          !(node.publicKey?.isNotEmpty ?? false) &&
+          api != null) {
+        await loadMirrorNodeKey(db, api, peer);
+      }
+      await actions.prepareDirectContact(peer);
+    },
   );
 });
 
-final nodeActionsProvider = Provider<NodeActions>((ref) {
+final nodeActionsProvider = ChangeNotifierProvider<NodeActions>((ref) {
+  ref.watch(radioProvider.select((r) => r.connectedSince));
   final radio = ref.read(radioProvider);
   return NodeActions(
     ref.watch(databaseProvider),
@@ -956,6 +973,16 @@ final mirrorNodeDetailProvider = FutureProvider.autoDispose.family<void, int>((
     final n = await api.node(nodeIdString(node));
     if (n != null) await MirrorIngest(ref.read(databaseProvider)).nodes([n]);
   } catch (_) {}
+});
+
+/// Ключ загружается отдельно от общей карточки, в том числе при известной версии.
+final mirrorNodeKeyProvider = FutureProvider.autoDispose.family<void, int>((
+  ref,
+  peer,
+) async {
+  final api = ref.watch(mirrorApiProvider);
+  final db = ref.watch(databaseProvider);
+  if (api != null) await loadMirrorNodeKey(db, api, peer);
 });
 
 /// Личная заметка о ноде; пусто — нет.

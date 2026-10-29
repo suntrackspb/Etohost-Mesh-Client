@@ -78,6 +78,9 @@ class NodeDetailPage extends ConsumerWidget {
           if (!isMe && n.onMirror && n.firmwareVersion == null) {
             ref.watch(mirrorNodeDetailProvider(n.num));
           }
+          final keyLoad = !isMe && n.onMirror
+              ? ref.watch(mirrorNodeKeyProvider(n.num))
+              : null;
           final block = directBlock(n);
           final pos = nodePositionBy(n, ref.watch(positionRulesProvider));
           return ListView(
@@ -99,6 +102,17 @@ class NodeDetailPage extends ConsumerWidget {
                           ChatPage.location(DirectTarget(n.num).id),
                         )
                       : null,
+                ),
+              if (keyLoad?.isLoading == true && block == DirectBlock.noKey)
+                const MeshTile(title: 'Получение ключа из зеркала…'),
+              if (keyLoad?.hasError == true && block == DirectBlock.noKey)
+                MeshTile(
+                  title: 'Не удалось получить ключ из зеркала',
+                  trailing: TextButton(
+                    onPressed: () =>
+                        ref.invalidate(mirrorNodeKeyProvider(n.num)),
+                    child: const Text('Повторить'),
+                  ),
                 ),
               _BoardCard(n.hwModel),
               _DetailsCard(n),

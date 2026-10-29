@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:swipeable_page_route/swipeable_page_route.dart';
 import 'package:universal_ble/universal_ble.dart';
 
 import '../../app/providers.dart';
@@ -15,6 +16,7 @@ import '../../core/transport/net_discovery.dart';
 import '../../core/transport/serial_transport.dart';
 import '../../data/database.dart';
 import '../../data/radio_stats.dart';
+import '../settings/radio/administration_page.dart';
 import '../../ui/kit/kit.dart';
 import '../../app/link_badge.dart';
 
@@ -137,6 +139,16 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
         padding: pagePadding(context),
         children: [
           _StatusCard(radio: radio),
+          if (radio.pairingHint != null)
+            SectionCard(
+              title: 'Сопряжение Bluetooth в Linux',
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(Tokens.s16),
+                  child: SelectableText(radio.pairingHint!),
+                ),
+              ],
+            ),
           _RecentCard(onConnect: _connect),
           SectionCard(
             title: 'Wi-Fi (TCP)',
@@ -377,6 +389,20 @@ class _StatusCard extends ConsumerWidget {
               _StatsGrid(stats),
             ],
           ),
+        ),
+        // Строка остаётся на месте при обрыве, как и статистика выше.
+        ListTile(
+          title: const Text('Администрирование'),
+          leading: const Icon(Icons.admin_panel_settings_outlined),
+          trailing: const Icon(Icons.chevron_right),
+          enabled: radio.state == RadioState.ready && radio.myNodeNum != null,
+          onTap: radio.state == RadioState.ready && radio.myNodeNum != null
+              ? () => Navigator.of(context).push(
+                  SwipeablePageRoute<void>(
+                    builder: (_) => const AdministrationPage(),
+                  ),
+                )
+              : null,
         ),
         SwitchListTile.adaptive(
           dense: true,

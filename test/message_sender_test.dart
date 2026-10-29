@@ -33,6 +33,28 @@ void main() {
 
   Future<Message> only() => db.select(db.messages).getSingle();
 
+  test('failed contact import sends no text', () async {
+    final sender = MessageSender(
+      db,
+      (p) async {
+        sent.add(p);
+        return const DeliveryResult(DeliveryStatus.acked);
+      },
+      () => 0xAA,
+      () => nextId++,
+      prepareDirect: (peer) async {
+        expect(peer, 0x42);
+        throw StateError('import not acknowledged');
+      },
+    );
+    await expectLater(
+      sender.sendDirect(to: 0x42, text: 'test'),
+      throwsStateError,
+    );
+    expect(sent, isEmpty);
+    expect(await db.select(db.messages).get(), isEmpty);
+  });
+
   test(
     'сообщение сразу в ленте со статусом «ждём», затем доставлено',
     () async {
@@ -91,10 +113,41 @@ void main() {
     );
   });
 
+  test(
+    'direct send uses the key obtained during recipient preparation',
+    () async {
+      var prepared = false;
+      final s = MessageSender(
+        db,
+        (packet) async {
+          expect(prepared, isTrue);
+          sent.add(packet);
+          return const DeliveryResult(DeliveryStatus.acked);
+        },
+        () => 0xAA,
+        () => nextId++,
+        prepareDirect: (peer) async {
+          await db
+              .into(db.nodes)
+              .insert(
+                NodesCompanion.insert(
+                  num: Value(peer),
+                  publicKey: Value(Uint8List.fromList(List.filled(32, 9))),
+                ),
+              );
+          prepared = true;
+        },
+      );
+      await s.sendDirect(to: 0x42, text: 'test');
+      expect(sent.single.publicKey, List.filled(32, 9));
+      expect(sent.single.pkiEncrypted, isTrue);
+    },
+  );
+
   test('личное: без ключа не отправляется, с ключом — PKI', () async {
     final s = sender();
-    expect(
-      () => s.sendDirect(to: 0xBB, text: 'hi'),
+    await expectLater(
+      s.sendDirect(to: 0xBB, text: 'hi'),
       throwsA(isA<StateError>()),
     );
     await db

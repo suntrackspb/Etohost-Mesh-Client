@@ -226,9 +226,14 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
             : null;
       case DirectTarget(:final num):
         title = _authorName(nodes, num);
+        final keyLoad = nodes[num]?.onMirror == true
+            ? ref.watch(mirrorNodeKeyProvider(num))
+            : null;
         blocked = switch (directBlock(nodes[num])) {
           DirectBlock.noKey =>
-            'Нет публичного ключа ноды — писать можно будет, когда придёт её NodeInfo.',
+            keyLoad?.isLoading == true
+                ? 'Получение публичного ключа из зеркала…'
+                : 'Нет публичного ключа ноды — дождитесь NodeInfo или повторите загрузку из зеркала в карточке ноды.',
           DirectBlock.unmessagable => 'Нода не принимает личные сообщения.',
           null => null,
         };

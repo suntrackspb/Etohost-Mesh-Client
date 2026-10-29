@@ -11,6 +11,8 @@ import '../../core/proto/mesh.dart';
 import '../../core/radio/send_queue.dart';
 import '../../data/database.dart';
 import '../../data/node_actions.dart';
+import '../../data/message_sender.dart';
+import '../chat/chat_page.dart';
 import '../../data/node_position.dart';
 import '../../ui/kit/kit.dart';
 import '../settings/radio/administration_page.dart';
@@ -102,38 +104,44 @@ final _ownNodeProvider = StreamProvider<Node?>((ref) {
 });
 
 /// Действия с чужой нодой: сверху частые кнопками, ниже — строки.
-/// Команды по радио — только для нод из эфира; игнор и уведомления
+/// Запросы по радио доступны и для нод зеркала; игнор и уведомления
 /// работают и без подключения (прячут и сообщения из зеркала).
 class NodeActionsCard extends ConsumerWidget {
-  const NodeActionsCard(this.n, {super.key, this.onWrite});
+  const NodeActionsCard(this.n, {super.key, this.onWrite, this.quick = false});
 
   final Node n;
 
   /// null — кнопки «Написать» нет (нода не принимает личные и т. п.).
   final VoidCallback? onWrite;
 
+  /// Короткое меню списка без карты и QR контакта.
+  final bool quick;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final canSend = ref.watch(canSendProvider) && n.onRadio;
+    final connected = ref.watch(canSendProvider);
+    final canSend = connected && n.onRadio;
     final own = ref.watch(_ownNodeProvider).value;
     final muted = ref.watch(nodeMutedProvider(n.num)).value ?? false;
-    final a = ref.read(nodeActionsProvider);
+    final a = ref.watch(nodeActionsProvider);
     final url = contactUrl(n, own: false);
     VoidCallback? run(Future<Object?> Function() f, String ok) =>
-        canSend ? () => runNodeAction(context, f, ok) : null;
+        connected ? () => runNodeAction(context, f, ok) : null;
     return SectionCard(
       title: 'Действия',
       children: [
         _ActionRow([
-          if (onWrite != null)
+          if (onWrite != null || quick)
             _Action(Icons.chat_outlined, 'Написать', onWrite),
           _Action(
             Icons.route,
             'Трассировка маршрута',
-            run(
-              () => a.traceroute(n.num),
-              'Трассировка отправлена — ждём ответ',
-            ),
+            a.blocked(n.num, NodeAction.traceroute)
+                ? null
+                : run(
+                    () => a.traceroute(n.num),
+                    'Трассировка отправлена — ждём ответ',
+                  ),
           ),
           _Action(
             Icons.badge_outlined,
@@ -151,7 +159,7 @@ class NodeActionsCard extends ConsumerWidget {
                 : null,
           ),
         ]),
-        if (nodePosition(n, correction: false) != null)
+        if (!quick && nodePosition(n, correction: false) != null)
           MeshTile(
             leading: const Icon(Icons.map_outlined),
             title: 'Перейти к ноде',
@@ -160,7 +168,7 @@ class NodeActionsCard extends ConsumerWidget {
               context.go('/map');
             },
           ),
-        if (url != null)
+        if (!quick && url != null)
           MeshTile(
             leading: const Icon(Icons.qr_code_2),
             title: 'Поделиться QR контакта',
@@ -175,10 +183,12 @@ class NodeActionsCard extends ConsumerWidget {
               .setSetting(AppSettingKeys.nodeMuted(n.num), '$v'),
         ),
         SwitchListTile(
-          secondary: const Icon(Icons.star_border),
+          secondary: a.blocked(n.num, NodeAction.favorite)
+              ? const _ActionProgress()
+              : const Icon(Icons.star_border),
           title: const Text('Избранное'),
           value: n.isFavorite,
-          onChanged: canSend
+          onChanged: canSend && !a.blocked(n.num, NodeAction.favorite)
               ? (v) => runNodeAction(
                   context,
                   () => a.setFavorite(n.num, v),
@@ -187,18 +197,122 @@ class NodeActionsCard extends ConsumerWidget {
               : null,
         ),
         SwitchListTile(
-          secondary: const Icon(Icons.block),
+          secondary: a.blocked(n.num, NodeAction.ignored)
+              ? const _ActionProgress()
+              : const Icon(Icons.block),
           title: const Text('Игнорировать'),
           value: n.isIgnored,
-          onChanged: (v) => runNodeAction(
-            context,
-            () => a.setIgnored(n.num, v, radio: canSend),
-            v ? 'Нода игнорируется' : 'Нода больше не игнорируется',
-          ),
+          onChanged: a.blocked(n.num, NodeAction.ignored)
+              ? null
+              : (v) => runNodeAction(
+                  context,
+                  () => a.setIgnored(n.num, v, radio: canSend),
+                  v ? 'Нода игнорируется' : 'Нода больше не игнорируется',
+                ),
         ),
       ],
     );
   }
+}
+
+final _actionNodeProvider = StreamProvider.autoDispose.family<Node?, int>((
+  ref,
+  peer,
+) {
+  final db = ref.watch(databaseProvider);
+  return (db.select(
+    db.nodes,
+  )..where((n) => n.num.equals(peer))).watchSingleOrNull();
+});
+
+/// Меню сохраняет живую подписку на ноду даже после её скрытия фильтром игнора.
+Future<void> showNodeActions(BuildContext context, Node node) =>
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => _NodeQuickActions(node),
+    );
+
+class _NodeQuickActions extends ConsumerWidget {
+  const _NodeQuickActions(this.initial);
+
+  final Node initial;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final n = ref.watch(_actionNodeProvider(initial.num)).value ?? initial;
+    final me = ref.watch(radioProvider.select((r) => r.myNodeNum));
+    final own = me == n.num;
+    final keyLoad = !own && n.onMirror
+        ? ref.watch(mirrorNodeKeyProvider(n.num))
+        : null;
+    final canWrite =
+        directBlock(n) == null ||
+        (ref.watch(hasDirectChatProvider(n.num)).value ?? false);
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          Tokens.s16,
+          0,
+          Tokens.s16,
+          Tokens.s16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              n.longName.isEmpty ? nodeIdString(n.num) : n.longName,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            Text(
+              nodeIdString(n.num),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: Tokens.s8),
+            if (own)
+              OwnNodeActionsCard(n)
+            else
+              NodeActionsCard(
+                n,
+                quick: true,
+                onWrite: canWrite
+                    ? () {
+                        final router = GoRouter.of(context);
+                        Navigator.pop(context);
+                        router.go(ChatPage.location(DirectTarget(n.num).id));
+                      }
+                    : null,
+              ),
+            if (keyLoad?.isLoading == true &&
+                directBlock(n) == DirectBlock.noKey)
+              const Padding(
+                padding: EdgeInsets.all(Tokens.s8),
+                child: Text('Получение публичного ключа из зеркала…'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Занимает место обычной иконки, чтобы строка не сдвигалась при ожидании.
+class _ActionProgress extends StatelessWidget {
+  const _ActionProgress();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.square(
+    dimension: 24,
+    child: Padding(
+      padding: EdgeInsets.all(2),
+      child: CircularProgressIndicator(
+        strokeWidth: 2,
+        semanticsLabel: 'Подождите, действие временно недоступно',
+      ),
+    ),
+  );
 }
 
 /// QR со ссылкой-контактом: сканируется официальными клиентами.

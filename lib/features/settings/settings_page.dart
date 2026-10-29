@@ -261,12 +261,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               title: 'Обслуживание',
               children: [
                 MeshTile(
-                  title: 'Администрирование',
-                  leading: const Icon(Icons.admin_panel_settings_outlined),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.go('/settings/admin'),
-                ),
-                MeshTile(
                   title: 'Резервная копия и восстановление',
                   leading: const Icon(Icons.settings_backup_restore),
                   trailing: const Icon(Icons.chevron_right),

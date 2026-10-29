@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
 import 'dart:convert';
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
@@ -44,6 +47,102 @@ void main() {
 
   Future<Node> node(int n) =>
       (db.select(db.nodes)..where((r) => r.num.equals(n))).getSingle();
+
+  test('cooldowns isolate nodes/actions and keep pending commands locked', () {
+    fakeAsync((clock) {
+      final response = Completer<DeliveryResult>();
+      var sends = 0;
+      final a = NodeActions(
+        db,
+        (_) {
+          sends++;
+          return response.future;
+        },
+        () => 0xAA,
+        () => nextId++,
+      );
+      final first = a.setFavorite(0x42, true);
+      expect(a.blocked(0x42, NodeAction.favorite), isTrue);
+      expect(a.blocked(0x43, NodeAction.favorite), isFalse);
+      expect(a.blocked(0x42, NodeAction.ignored), isFalse);
+      expect(a.setFavorite(0x42, false), throwsStateError);
+      clock.flushMicrotasks();
+      expect(sends, 1);
+      clock.elapse(const Duration(seconds: 4));
+      expect(a.blocked(0x42, NodeAction.favorite), isTrue);
+      response.complete(const DeliveryResult(DeliveryStatus.timeout));
+      first.then((_) {});
+      clock.flushMicrotasks();
+      expect(a.blocked(0x42, NodeAction.favorite), isFalse);
+      a.dispose();
+    });
+  });
+
+  test('failed commands retain the 3 and 30 second cooldowns', () {
+    fakeAsync((clock) {
+      final a = NodeActions(
+        db,
+        (_) async => const DeliveryResult(DeliveryStatus.timeout),
+        () => null,
+        () => nextId++,
+      );
+      expect(a.setFavorite(0x42, true), throwsStateError);
+      expect(a.traceroute(0x42), throwsStateError);
+      clock.flushMicrotasks();
+      clock.elapse(const Duration(seconds: 2));
+      expect(a.blocked(0x42, NodeAction.favorite), isTrue);
+      clock.elapse(const Duration(seconds: 1));
+      expect(a.blocked(0x42, NodeAction.favorite), isFalse);
+      expect(a.blocked(0x42, NodeAction.traceroute), isTrue);
+      clock.elapse(const Duration(seconds: 26));
+      expect(a.blocked(0x42, NodeAction.traceroute), isTrue);
+      clock.elapse(const Duration(seconds: 1));
+      expect(a.blocked(0x42, NodeAction.traceroute), isFalse);
+      a.dispose();
+    });
+  });
+
+  test('mirror contact is imported once per connection and key', () async {
+    await (db.update(db.nodes)..where((n) => n.num.equals(0x42))).write(
+      NodesCompanion(
+        onMirror: const Value(true),
+        publicKey: Value(Uint8List.fromList(List.filled(32, 7))),
+      ),
+    );
+    final a = actions();
+    addTearDown(a.dispose);
+    await a.prepareDirectContact(0x42);
+    final contact = AdminMessage.fromBuffer(
+      sent.single.decoded.payload,
+    ).addContact;
+    expect(contact.nodeNum, 0x42);
+    expect(contact.user.publicKey, List.filled(32, 7));
+    expect(sent.single.to, 0xAA);
+    expect((await node(0x42)).onRadio, isFalse);
+    await a.prepareDirectContact(0x42);
+    expect(sent, hasLength(1));
+    await (db.update(db.nodes)..where((n) => n.num.equals(0x42))).write(
+      NodesCompanion(publicKey: Value(Uint8List.fromList(List.filled(32, 8)))),
+    );
+    await a.prepareDirectContact(0x42);
+    expect(sent, hasLength(2));
+  });
+
+  test('failed contact import remains retryable', () async {
+    await (db.update(db.nodes)..where((n) => n.num.equals(0x42))).write(
+      NodesCompanion(
+        onMirror: const Value(true),
+        publicKey: Value(Uint8List.fromList(List.filled(32, 7))),
+      ),
+    );
+    final a = actions();
+    addTearDown(a.dispose);
+    status = DeliveryStatus.timeout;
+    await expectLater(a.prepareDirectContact(0x42), throwsStateError);
+    status = DeliveryStatus.acked;
+    await a.prepareDirectContact(0x42);
+    expect(sent, hasLength(2));
+  });
 
   test('избранное: админ-пакет своей ноде, флаг после подтверждения', () async {
     expect(await actions().setFavorite(0x42, true), isTrue);

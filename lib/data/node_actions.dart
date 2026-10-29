@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
@@ -9,9 +12,11 @@ import 'id_bug.dart';
 import 'message_sender.dart' show directBlock;
 import 'telemetry.dart';
 
+enum NodeAction { favorite, ignored, traceroute }
+
 /// Действия с нодой из карточки — как в официальном iOS-клиенте.
 /// hop_limit не задаём никогда: решает прошивка (масштабирование хопов в 2.8).
-class NodeActions {
+class NodeActions extends ChangeNotifier {
   NodeActions(
     this.db,
     this._send,
@@ -19,6 +24,49 @@ class NodeActions {
     this._nextId, [
     this._radioUser,
   ]);
+
+  final _blocked = <(int, NodeAction), Timer>{};
+  final _pending = <(int, NodeAction)>{};
+  bool _disposed = false;
+
+  bool blocked(int num, NodeAction action) =>
+      _blocked.containsKey((num, action)) || _pending.contains((num, action));
+
+  Future<T> _guard<T>(
+    int num,
+    NodeAction action,
+    Future<T> Function() run,
+  ) async {
+    if (blocked(num, action)) {
+      throw StateError('Подождите перед повторной командой');
+    }
+    final key = (num, action);
+    _pending.add(key);
+    _blocked[key] = Timer(
+      Duration(seconds: action == NodeAction.traceroute ? 30 : 3),
+      () {
+        _blocked.remove(key);
+        if (!_disposed) notifyListeners();
+      },
+    );
+    notifyListeners();
+    try {
+      return await run();
+    } finally {
+      _pending.remove(key);
+      if (!_disposed) notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    for (final timer in _blocked.values) {
+      timer.cancel();
+    }
+    _blocked.clear();
+    super.dispose();
+  }
 
   final AppDatabase db;
   final Future<DeliveryResult> Function(MeshPacket p) _send;
@@ -53,6 +101,61 @@ class NodeActions {
     return r.status == DeliveryStatus.acked;
   }
 
+  final _preparedContacts = <String>{};
+  final _preparingContacts = <String, Future<void>>{};
+
+  /// Для нод из зеркала ключ должен попасть и в NodeDB радиостанции.
+  /// Подтверждение обязательно: локальной записи ключа для PKI недостаточно.
+  Future<void> prepareDirectContact(int num) async {
+    final me = _me();
+    final node = await (db.select(
+      db.nodes,
+    )..where((n) => n.num.equals(num))).getSingleOrNull();
+    if (_disposed || _me() != me) {
+      throw StateError('соединение с нодой изменилось');
+    }
+    if (node == null || !node.onMirror) return;
+    if (node.isUnmessagable) {
+      throw StateError('нода не принимает личные сообщения');
+    }
+    final key = node.publicKey;
+    if (key == null || key.length != 32 || key.every((b) => b == 0)) {
+      throw StateError('нет публичного ключа ноды');
+    }
+    final token = '$me:$num:${base64Encode(key)}';
+    if (_preparedContacts.contains(token)) return;
+    final pending = _preparingContacts[token];
+    if (pending != null) return pending;
+    final future = () async {
+      final ok = await _admin(
+        AdminMessage(
+          addContact: SharedContact(
+            nodeNum: num,
+            user: User(
+              id: nodeIdOf(num),
+              longName: node.longName,
+              shortName: node.shortName,
+              hwModel: HardwareModel.valueOf(node.hwModel),
+              publicKey: key,
+              isUnmessagable: node.isUnmessagable,
+            ),
+          ),
+        ),
+      );
+      if (!ok) throw StateError('Нода не подтвердила импорт ключа получателя');
+      if (_disposed || _me() != me) {
+        throw StateError('соединение с нодой изменилось');
+      }
+      _preparedContacts.add(token);
+    }();
+    _preparingContacts[token] = future;
+    try {
+      await future;
+    } finally {
+      _preparingContacts.remove(token);
+    }
+  }
+
   /// Импорт контакта (QR / ссылка): `add_contact` своей ноде и запись в БД,
   /// как в официальных клиентах. Без ключа не импортируем: прошивка
   /// записывает ключ безусловно, и пустой сотрёт уже известный.
@@ -85,7 +188,10 @@ class NodeActions {
   Future<void> _update(int num, NodesCompanion c) =>
       (db.update(db.nodes)..where((n) => n.num.equals(num))).write(c);
 
-  Future<bool> setFavorite(int num, bool favorite) async {
+  Future<bool> setFavorite(int num, bool favorite) =>
+      _guard(num, NodeAction.favorite, () => _setFavorite(num, favorite));
+
+  Future<bool> _setFavorite(int num, bool favorite) async {
     final ok = await _admin(
       favorite
           ? AdminMessage(setFavoriteNode: num)
@@ -98,7 +204,14 @@ class NodeActions {
   /// Игнор: флаг в нашей базе ставится всегда — он же прячет сообщения из
   /// зеркала. [radio] — нода есть в базе своей ноды и она подключена: тогда
   /// команда уходит и ей (перестанет принимать пакеты от этой ноды).
-  Future<bool> setIgnored(int num, bool ignored, {required bool radio}) async {
+  Future<bool> setIgnored(int num, bool ignored, {required bool radio}) =>
+      _guard(
+        num,
+        NodeAction.ignored,
+        () => _setIgnored(num, ignored, radio: radio),
+      );
+
+  Future<bool> _setIgnored(int num, bool ignored, {required bool radio}) async {
     await _update(num, NodesCompanion(isIgnored: Value(ignored)));
     if (!radio) return true;
     return _admin(
@@ -122,7 +235,10 @@ class NodeActions {
   /// Трассировка: ответ придёт TRACEROUTE_APP с request_id = id запроса
   /// (PacketRouter заполнит запись). Запись в журнале создаётся сразу —
   /// без ответа она остаётся «нет ответа». Возвращает id запроса.
-  Future<(int, DeliveryResult)> traceroute(int num) async {
+  Future<(int, DeliveryResult)> traceroute(int num) =>
+      _guard(num, NodeAction.traceroute, () => _traceroute(num));
+
+  Future<(int, DeliveryResult)> _traceroute(int num) async {
     _me();
     final id = _nextId();
     final row = await db

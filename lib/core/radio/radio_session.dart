@@ -1,5 +1,9 @@
 import 'node_log_lines.dart';
 import 'dart:async';
+import 'dart:io';
+
+import '../transport/ble_transport.dart';
+import '../transport/ble_pairing_hint.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -69,6 +73,8 @@ class RadioSession extends ChangeNotifier {
 
   RadioState state = RadioState.idle;
   RadioTarget? target;
+
+  String? pairingHint;
   DateTime? connectedSince;
   DateTime? lastRx;
 
@@ -119,6 +125,7 @@ class RadioSession extends ChangeNotifier {
   Future<void> connect(RadioTarget t) async {
     await disconnect(quiet: true);
     target = t;
+    pairingHint = null;
     attempts = 0;
     disconnects = 0;
     _stopped = false;
@@ -152,6 +159,9 @@ class RadioSession extends ChangeNotifier {
         (_) => _sendHeartbeat(),
       );
     } catch (e) {
+      if (t is BleTransport) {
+        pairingHint = blePairingHint(e, t.deviceId, linux: Platform.isLinux);
+      }
       _app(
         'Ошибка подключения: $e'
         '${e is TimeoutException ? ' (возможно, ждали ввода PIN при сопряжении)' : ''}',
@@ -206,6 +216,7 @@ class RadioSession extends ChangeNotifier {
       _app('Не разобран FromRadio (${data.length} байт): $e');
       return;
     }
+    pairingHint = null;
     packetCount++;
     lastRx = DateTime.now();
     _rxSeq++;
@@ -332,6 +343,9 @@ class RadioSession extends ChangeNotifier {
   Future<void> _onClosed(Transport t, String reason) async {
     // Закрытие из _teardown (наша же ошибка/остановка) — не второй разрыв.
     if (_stopped || !identical(t, _t)) return;
+    if (t is BleTransport) {
+      pairingHint = blePairingHint(reason, t.deviceId, linux: Platform.isLinux);
+    }
     disconnects++;
     final held = connectedSince == null
         ? ''

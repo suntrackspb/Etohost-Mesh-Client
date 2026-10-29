@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:universal_ble/universal_ble.dart';
 
 import 'transport.dart';
+import 'ble_pairing_hint.dart';
 
 /// UUID GATT-сервиса Meshtastic.
 class MeshBle {
@@ -185,6 +186,9 @@ class BleTransport implements Transport {
       } while (_drainAgain && !_closed.isCompleted);
     } catch (e) {
       log('BLE: ошибка чтения fromRadio: $e');
+      if (blePairingHint(e, deviceId, linux: Platform.isLinux) != null) {
+        _finish('BLE: ошибка чтения fromRadio: $e');
+      }
     } finally {
       _draining = false;
     }
