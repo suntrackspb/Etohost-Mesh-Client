@@ -98,6 +98,12 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
+  /// No description provided for @journalAir.
+  ///
+  /// In ru, this message translates to:
+  /// **'Эфир'**
+  String get journalAir;
+
   /// No description provided for @language.
   ///
   /// In ru, this message translates to:

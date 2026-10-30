@@ -11,6 +11,41 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 void main() {
+  test(
+    'вкладки разделяют просмотр, очистка не меняет общий файл отчёта',
+    () async {
+      final dir = await Directory.systemTemp.createTemp('journal-tabs');
+      addTearDown(() => dir.delete(recursive: true));
+      final file = JournalFile(Future.value(dir));
+      final journal = Journal()..sink = file.add;
+      addTearDown(journal.dispose);
+      for (final kind in JournalKind.values) {
+        journal.add(kind, 'screen-${kind.name}', fileText: 'safe-${kind.name}');
+      }
+      expect(
+        journal.lines
+            .where((l) => JournalTab.radio.includes(l.kind))
+            .map((l) => l.kind),
+        [JournalKind.radio],
+      );
+      expect(
+        journal.lines
+            .where((l) => JournalTab.app.includes(l.kind))
+            .map((l) => l.kind),
+        [JournalKind.app, JournalKind.node, JournalKind.error],
+      );
+      journal.clear(tab: JournalTab.radio);
+      expect(journal.lines, hasLength(3));
+      final log = await file.readAll();
+      for (final kind in JournalKind.values) {
+        expect(log, contains('safe-${kind.name}'));
+      }
+      expect(log, isNot(contains('screen-')));
+      journal.clear(tab: JournalTab.app);
+      expect(journal.lines, isEmpty);
+    },
+  );
+
   test('в файл журнала не попадает текст сообщений и название канала', () {
     final text = FromRadio(
       packet: MeshPacket(

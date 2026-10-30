@@ -6,6 +6,16 @@ import '../proto/mesh.dart';
 
 enum JournalKind { app, radio, node, error }
 
+/// Фильтр просмотра; запись в общий файл от него не зависит.
+enum JournalTab {
+  app,
+  radio;
+
+  bool includes(JournalKind kind) => this == JournalTab.radio
+      ? kind == JournalKind.radio
+      : kind != JournalKind.radio;
+}
+
 class JournalLine {
   JournalLine(this.time, this.kind, this.text, [String? fileText])
     : fileText = fileText ?? text;
@@ -51,8 +61,12 @@ class Journal extends ChangeNotifier {
   void fileOnly(JournalKind kind, String text) =>
       sink?.call(JournalLine(DateTime.now(), kind, text));
 
-  void clear() {
-    _lines.clear();
+  void clear({JournalTab? tab}) {
+    if (tab == null) {
+      _lines.clear();
+    } else {
+      _lines.removeWhere((line) => tab.includes(line.kind));
+    }
     notifyListeners();
   }
 }

@@ -9,6 +9,9 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get journalAir => 'Radio traffic';
+
+  @override
   String get language => 'Language';
 
   @override

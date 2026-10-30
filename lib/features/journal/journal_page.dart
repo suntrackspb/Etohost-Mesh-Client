@@ -20,13 +20,19 @@ class JournalPage extends ConsumerStatefulWidget {
 }
 
 class _JournalPageState extends ConsumerState<JournalPage> {
-  final _scroll = ScrollController();
-  bool _follow = true;
+  final _scrolls = [ScrollController(), ScrollController()];
+  final _following = [true, true];
+  JournalTab _tab = JournalTab.app;
+  ScrollController get _scroll => _scrolls[_tab.index];
+  bool get _follow => _following[_tab.index];
+  set _follow(bool value) => _following[_tab.index] = value;
   bool _onlyNode = false;
 
   @override
   void dispose() {
-    _scroll.dispose();
+    for (final controller in _scrolls) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -38,8 +44,8 @@ class _JournalPageState extends ConsumerState<JournalPage> {
   Widget build(BuildContext context) {
     final journal = ref.watch(journalProvider);
     final cs = Theme.of(context).colorScheme;
-    final all = journal.lines;
-    final lines = _onlyNode
+    final all = journal.lines.where((l) => _tab.includes(l.kind)).toList();
+    final lines = _tab == JournalTab.app && _onlyNode
         ? all.where((l) => l.kind == JournalKind.node).toList()
         : all;
 
@@ -61,7 +67,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
             onPressed: () {
               Clipboard.setData(
                 ClipboardData(
-                  text: all.map((l) => '${_ts(l.time)} ${l.text}').join('\n'),
+                  text: lines.map((l) => '${_ts(l.time)} ${l.text}').join('\n'),
                 ),
               );
               toasts.success(context.l10n.journalCopied_1ee14a);
@@ -76,13 +82,31 @@ class _JournalPageState extends ConsumerState<JournalPage> {
           IconButton(
             tooltip: context.l10n.clear_98b207,
             icon: const Icon(Icons.delete_outline),
-            onPressed: journal.clear,
+            onPressed: () => journal.clear(tab: _tab),
           ),
           const LinkBadge(),
         ],
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(Tokens.s8),
+            child: SegmentedButton<JournalTab>(
+              segments: [
+                ButtonSegment(
+                  value: JournalTab.app,
+                  label: Text(context.l10n.app_f9886c),
+                ),
+                ButtonSegment(
+                  value: JournalTab.radio,
+                  label: Text(context.l10n.journalAir),
+                ),
+              ],
+              selected: {_tab},
+              onSelectionChanged: (value) =>
+                  setState(() => _tab = value.single),
+            ),
+          ),
           Expanded(
             child: NotificationListener<UserScrollNotification>(
               onNotification: (n) {
@@ -94,6 +118,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
               },
               child: SelectionArea(
                 child: ListView.builder(
+                  key: ValueKey(_tab),
                   controller: _scroll,
                   itemCount: lines.length,
                   padding: const EdgeInsets.symmetric(
@@ -124,11 +149,12 @@ class _JournalPageState extends ConsumerState<JournalPage> {
               child: Wrap(
                 spacing: Tokens.s8,
                 children: [
-                  FilterChip(
-                    label: Text(context.l10n.nodeLogOnly_3a7130),
-                    selected: _onlyNode,
-                    onSelected: (v) => setState(() => _onlyNode = v),
-                  ),
+                  if (_tab == JournalTab.app)
+                    FilterChip(
+                      label: Text(context.l10n.nodeLogOnly_3a7130),
+                      selected: _onlyNode,
+                      onSelected: (v) => setState(() => _onlyNode = v),
+                    ),
                   FilterChip(
                     label: Text(context.l10n.monitor_a0b8fc),
                     selected: _follow,

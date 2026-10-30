@@ -9,6 +9,9 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get journalAir => 'Эфир';
+
+  @override
   String get language => 'Язык';
 
   @override
