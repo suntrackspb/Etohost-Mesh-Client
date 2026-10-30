@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -11,12 +10,17 @@ import '../../app/providers.dart';
 import '../../data/database.dart';
 import '../../data/map_points.dart';
 import '../../data/map_style.dart';
-import '../../data/node_position.dart';
 import '../../core/proto/mesh.dart';
 import '../../ui/kit/kit.dart';
 import '../nodes/open_node.dart';
 import '../nodes/node_filter_sheet.dart';
 import 'map_tiles.dart';
+import 'offline/offline_map_controller.dart';
+import 'offline/offline_map_widgets.dart';
+import 'mesh_map.dart';
+import 'flutter_mesh_layers.dart';
+import '../../data/map_scene.dart';
+import '../../data/node_position.dart';
 
 /// Карта нод (OSM). Фильтр общий со списком нод.
 class MapPage extends ConsumerStatefulWidget {
@@ -42,7 +46,7 @@ class _MapPageState extends ConsumerState<MapPage> {
   Timer? _foundTimer;
 
   /// Масштаб, с которого ноды не группируются; поиск приближает до него.
-  static const _focusZoom = 17.0;
+  static const _focusZoom = meshFocusZoom;
 
   @override
   void dispose() {
@@ -98,7 +102,7 @@ class _MapPageState extends ConsumerState<MapPage> {
     final here = overlappingPoints(points, p, (q) {
       final o = cam.latLngToScreenOffset(LatLng(q.lat, q.lon));
       return (x: o.dx, y: o.dy);
-    }, radius: _NodeMarker.size / 2);
+    }, radius: MeshNodeMarker.size / 2);
     if (here.length == 1) return _open(p.num);
     showModalBottomSheet<void>(
       context: context,
@@ -171,20 +175,13 @@ class _MapPageState extends ConsumerState<MapPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _fitAll(points));
     }
 
-    final markers = [
-      for (final p in points)
-        Marker(
-          key: ValueKey(p.num),
-          point: LatLng(p.lat, p.lon),
-          width: _NodeMarker.size,
-          height: _NodeMarker.size,
-          child: _NodeMarker(
-            p,
-            highlight: p.num == _found,
-            onTap: () => _tap(points, p),
-          ),
-        ),
-    ];
+    final scene = MeshMapScene(
+      points: points,
+      area: area,
+      cluster: cluster,
+      showPrecision: precision,
+      highlightedNode: _found,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -210,7 +207,7 @@ class _MapPageState extends ConsumerState<MapPage> {
       ),
       body: Stack(
         children: [
-          FlutterMap(
+          MeshMap(
             mapController: _map,
             options: MapOptions(
               initialCenter: defaultMapCenter,
@@ -233,67 +230,12 @@ class _MapPageState extends ConsumerState<MapPage> {
               },
             ),
             children: [
-              const OsmTiles(),
-              if (area != null)
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: [
-                        for (final p in circlePoints(
-                          area.center.lat,
-                          area.center.lon,
-                          area.km,
-                        ))
-                          LatLng(p.lat, p.lon),
-                      ],
-                      // Красный с белой обводкой — виден и на светлых, и на
-                      // зелёных/водных участках OSM.
-                      color: Colors.red.shade700,
-                      strokeWidth: 3,
-                      borderColor: Colors.white,
-                      borderStrokeWidth: 1.5,
-                      pattern: StrokePattern.dashed(segments: const [12, 8]),
-                    ),
-                  ],
-                ),
-              if (precision && _circles)
-                PolygonLayer(
-                  polygons: [
-                    for (final p in points)
-                      if (p.precisionMeters case final m?)
-                        Polygon(
-                          points: [
-                            for (final c in circlePoints(
-                              p.lat,
-                              p.lon,
-                              m / 1000,
-                              segments: 48,
-                            ))
-                              LatLng(c.lat, c.lon),
-                          ],
-                          color: Colors.blue.withValues(alpha: 0.12),
-                          borderColor: Colors.blue.withValues(alpha: 0.6),
-                          borderStrokeWidth: 1.5,
-                        ),
-                  ],
-                ),
-              if (cluster)
-                MarkerClusterLayerWidget(
-                  options: MarkerClusterLayerOptions(
-                    maxClusterRadius: 45,
-                    disableClusteringAtZoom: _focusZoom.toInt(),
-                    size: const Size(40, 40),
-                    markers: markers,
-                    builder: (context, markers) => CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      child: Text('${markers.length}'),
-                    ),
-                  ),
-                )
-              else
-                MarkerLayer(markers: markers),
-              const OsmAttribution(),
+              ...flutterMeshLayers(
+                context,
+                scene: scene,
+                zoom: _ready ? _map.camera.zoom : 9,
+                onNodeTap: (p) => _tap(points, p),
+              ),
             ],
           ),
           // Запасной способ масштаба: одной рукой, с мыши, в симуляторе.
@@ -392,87 +334,6 @@ class _MapPageState extends ConsumerState<MapPage> {
   }
 }
 
-/// Метка ноды: кружок в её цвет (как NodeAvatar в списке и чате). Своя —
-/// с кольцом акцентного цвета, избранная — с кольцом и звёздочкой.
-class _NodeMarker extends StatelessWidget {
-  const _NodeMarker(this.p, {required this.onTap, this.highlight = false});
-
-  static const size = 40.0;
-
-  final MapPoint p;
-  final VoidCallback onTap;
-
-  /// Найдена поиском: яркое кольцо и свечение.
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final ring = highlight
-        ? Colors.red.shade600
-        : p.isMe
-        ? scheme.tertiary
-        : p.isFavorite
-        ? _favoriteColor
-        : p.spoofed
-        ? _spoofedColor
-        : p.corrected
-        ? _correctedColor
-        : scheme.surface;
-    final thick =
-        highlight || p.isMe || p.isFavorite || p.corrected || p.spoofed;
-    return Tooltip(
-      message: [
-        p.title,
-        if (p.mirrorOnly) '(зеркало)',
-        if (p.corrected) '· скорректировано',
-        if (p.spoofed) '· вероятно, подменённая точка',
-      ].join(' '),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Opacity(
-          opacity: p.stale && !highlight ? 0.5 : 1,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: ring, width: thick ? 3 : 2),
-                  boxShadow: [
-                    const BoxShadow(blurRadius: 3, color: Color(0x55000000)),
-                    if (highlight)
-                      BoxShadow(
-                        blurRadius: 16,
-                        spreadRadius: 6,
-                        color: Colors.red.withValues(alpha: 0.6),
-                      ),
-                  ],
-                ),
-                child: NodeAvatar(
-                  nodeNum: p.num,
-                  shortName: p.label,
-                  size: size - (thick ? 6 : 4),
-                ),
-              ),
-              if (p.isFavorite)
-                Positioned(
-                  right: -4,
-                  top: -4,
-                  child: const Icon(
-                    Icons.star,
-                    size: 16,
-                    color: _favoriteColor,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Поиск ноды на карте; выбранная возвращается через Navigator.pop.
 class _SearchSheet extends StatefulWidget {
   const _SearchSheet(this.points);
@@ -533,16 +394,6 @@ class _SearchSheetState extends State<_SearchSheet> {
   }
 }
 
-/// Избранные — золотистым, как звёздочка в списке нод.
-const _favoriteColor = Colors.amber;
-
-/// Положение исправлено зеркалом по соседям — фиолетовая рамка, как на
-/// карте зеркала.
-const _correctedColor = Color(0xFF9C27B0);
-
-/// Точка в зоне глушилки и заменить нечем — оранжевая рамка.
-const _spoofedColor = Colors.deepOrange;
-
 /// «Слои»: подложка и группировка нод — то, что меняют редко.
 class _LayersMenu extends ConsumerWidget {
   const _LayersMenu({required this.cluster});
@@ -551,6 +402,7 @@ class _LayersMenu extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final style = ref.watch(mapStyleProvider).value ?? MapStyle.auto;
+    final offline = ref.watch(offlineMapEnabledProvider).value ?? false;
     final correction = ref.watch(positionCorrectionProvider).value ?? false;
     final precision = ref.watch(mapPrecisionProvider).value ?? false;
     final db = ref.read(databaseProvider);
@@ -559,6 +411,16 @@ class _LayersMenu extends ConsumerWidget {
       icon: const Icon(Icons.layers_outlined),
       onSelected: (v) => switch (v) {
         MapStyle s => db.setSetting(AppSettingKeys.mapStyle, s.name),
+        #offline => showModalBottomSheet<void>(
+          context: context,
+          showDragHandle: true,
+          builder: (_) => const SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 16),
+              child: OfflineMapSettings(),
+            ),
+          ),
+        ),
         #correction => db.setSetting(
           AppSettingKeys.mapCorrection,
           '${!correction}',
@@ -571,12 +433,20 @@ class _LayersMenu extends ConsumerWidget {
       },
       itemBuilder: (_) => [
         ...[
-          for (final s in availableMapStyles())
+          for (final s in offline ? <MapStyle>[] : availableMapStyles())
             CheckedPopupMenuItem<Object>(
               value: s,
               checked: s == style,
               child: Text(s.label),
             ),
+          PopupMenuItem<Object>(
+            value: #offline,
+            child: Text(
+              (ref.watch(offlineMapEnabledProvider).value ?? false)
+                  ? 'Офлайн-карта включена'
+                  : 'Офлайн-карта…',
+            ),
+          ),
           const PopupMenuDivider(),
         ],
         CheckedPopupMenuItem<Object>(

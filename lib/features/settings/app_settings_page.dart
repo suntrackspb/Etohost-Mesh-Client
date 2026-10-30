@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../data/tile_cache.dart';
 import '../map/map_tiles.dart';
+import '../map/offline/offline_map_widgets.dart';
 import '../../app/desktop_tray_provider.dart';
 import '../../app/notify_providers.dart';
 import '../../app/position_service.dart';
@@ -264,6 +265,7 @@ class AppSettingsPage extends ConsumerWidget {
                 onChanged: (v) => save(AppSettingKeys.mapRotate, '$v'),
               ),
               const _TileCacheTile(),
+              const OfflineMapSettings(),
             ],
           ),
           SectionCard(

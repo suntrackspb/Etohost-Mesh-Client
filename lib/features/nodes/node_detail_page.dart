@@ -20,7 +20,7 @@ import '../../data/node_actions.dart';
 import '../../data/node_position.dart';
 import '../../data/node_details.dart';
 import '../../data/node_row_info.dart';
-import '../map/map_tiles.dart';
+import '../map/mesh_map.dart';
 import '../../core/proto/mesh.dart';
 import '../../data/database.dart';
 import '../../data/message_sender.dart';
@@ -261,7 +261,8 @@ class _PositionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(Tokens.s8),
           child: SizedBox(
             height: 160,
-            child: FlutterMap(
+            child: MeshMap(
+              compactAttribution: true,
               options: MapOptions(
                 initialCenter: p,
                 initialZoom: 13,
@@ -270,7 +271,6 @@ class _PositionCard extends StatelessWidget {
                 ),
               ),
               children: [
-                const OsmTiles(),
                 MarkerLayer(
                   markers: [
                     Marker(
@@ -286,7 +286,6 @@ class _PositionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const OsmAttribution(compact: true),
               ],
             ),
           ),

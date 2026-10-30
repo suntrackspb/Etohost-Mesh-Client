@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../../../data/position_sharer.dart';
 import '../../../ui/kit/kit.dart';
 import '../../map/map_tiles.dart';
+import '../../map/mesh_map.dart';
 import '../../../app/link_badge.dart';
 
 /// «Установить вручную»: метку двигают пальцем, координаты и высоту
@@ -119,7 +120,7 @@ class _FixedPositionPickerState extends State<FixedPositionPicker> {
                     },
                     onPointerUp: (_) => setState(() => _dragging = false),
                     onPointerCancel: (_) => setState(() => _dragging = false),
-                    child: FlutterMap(
+                    child: MeshMap(
                       mapController: _map,
                       options: MapOptions(
                         initialCenter: _point,
@@ -131,7 +132,6 @@ class _FixedPositionPickerState extends State<FixedPositionPicker> {
                         ),
                       ),
                       children: [
-                        const OsmTiles(),
                         MarkerLayer(
                           markers: [
                             Marker(

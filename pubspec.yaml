@@ -25,6 +25,7 @@ dependencies:
   flutter_map: ^8.3.2
   flutter_map_cache: ^2.1.0
   flutter_map_marker_cluster: ^8.2.2
+  flutter_map_vector_tiles: ^2.10.1
   flutter_riverpod: ^3.4.3
   flutter_secure_storage: ^11.2.0
   flutter_svg: ^2.3.0

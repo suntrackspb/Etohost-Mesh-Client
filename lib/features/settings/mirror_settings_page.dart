@@ -108,8 +108,6 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                   autocorrect: false,
                   decoration: InputDecoration(
                     labelText: 'Адрес',
-                    // Только подсказка — не значение по умолчанию.
-                    hintText: 'm.etohost.ru',
                     errorText: _address.text.trim().isNotEmpty && draft == null
                         ? 'Неверный адрес'
                         : null,

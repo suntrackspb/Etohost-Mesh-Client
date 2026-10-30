@@ -8,6 +8,7 @@ import '../../app/providers.dart';
 import '../../core/geo/geo.dart';
 import '../../data/database.dart';
 import '../map/map_tiles.dart';
+import '../map/mesh_map.dart';
 import '../../app/link_badge.dart';
 
 /// Выбор центра области на карте: центр — под перекрестием.
@@ -56,7 +57,7 @@ class _AreaPickerPageState extends ConsumerState<AreaPickerPage> {
       body: Stack(
         alignment: Alignment.center,
         children: [
-          FlutterMap(
+          MeshMap(
             mapController: _map,
             options: MapOptions(
               initialCenter: center,
@@ -68,7 +69,6 @@ class _AreaPickerPageState extends ConsumerState<AreaPickerPage> {
                   setState(() => _center = cam.center),
             ),
             children: [
-              const OsmTiles(),
               CircleLayer(
                 circles: [
                   CircleMarker(
@@ -81,7 +81,6 @@ class _AreaPickerPageState extends ConsumerState<AreaPickerPage> {
                   ),
                 ],
               ),
-              const OsmAttribution(),
             ],
           ),
           IgnorePointer(

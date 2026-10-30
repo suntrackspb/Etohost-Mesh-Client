@@ -11,7 +11,7 @@ import '../../data/node_actions.dart';
 import '../../data/node_position.dart';
 import '../../data/traceroute_view.dart';
 import '../../ui/kit/kit.dart';
-import '../map/map_tiles.dart';
+import '../map/mesh_map.dart';
 import 'telemetry_ui.dart' show dateTimeText;
 
 /// Цвета путей: туда — зелёный, обратно — синий.
@@ -278,7 +278,8 @@ class _RouteMap extends StatelessWidget {
     }
     final lls = [for (final p in pts.values) LatLng(p.lat, p.lon)];
     final distinct = lls.toSet().length > 1;
-    return FlutterMap(
+    return MeshMap(
+      compactAttribution: true,
       options: MapOptions(
         initialCenter: lls.first,
         initialZoom: 12,
@@ -293,7 +294,6 @@ class _RouteMap extends StatelessWidget {
         ),
       ),
       children: [
-        const OsmTiles(),
         _LegsLayer(towards: towards, back: back),
         MarkerLayer(
           markers: [
@@ -320,7 +320,6 @@ class _RouteMap extends StatelessWidget {
                 ),
           ],
         ),
-        const OsmAttribution(compact: true),
       ],
     );
   }
