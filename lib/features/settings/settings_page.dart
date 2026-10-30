@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,7 +35,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final mirror = ref.watch(mirrorConfigProvider).value;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Настройки'),
+        title: Text(context.l10n.configuration_7f17c7),
         actions: const [LinkBadge()],
       ),
       body: ListView(
@@ -44,12 +45,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             padding: const EdgeInsets.only(bottom: Tokens.s16),
             child: SearchBar(
               controller: _search,
-              hintText: 'Поиск по настройкам',
+              hintText: context.l10n.searchSettings_69a03f,
               leading: const Icon(Icons.search),
               trailing: [
                 if (query.isNotEmpty)
                   IconButton(
-                    tooltip: 'Очистить',
+                    tooltip: context.l10n.clear_98b207,
                     icon: const Icon(Icons.close),
                     onPressed: () => setState(_search.clear),
                   ),
@@ -68,37 +69,37 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             SectionCard(
               children: [
                 MeshTile(
-                  title: 'Приложение',
+                  title: context.l10n.app_f9886c,
                   leading: const Icon(Icons.tune),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/app'),
                 ),
                 MeshTile(
-                  title: 'Данные',
+                  title: context.l10n.data_d8e5fd,
                   leading: const Icon(Icons.storage_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/data'),
                 ),
                 MeshTile(
-                  title: 'Фильтр сообщений',
+                  title: context.l10n.messageFilter_cf2a46,
                   leading: const Icon(Icons.filter_alt_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/message-filter'),
                 ),
                 MeshTile(
-                  title: 'Зеркало',
+                  title: context.l10n.mirror_66ace6,
                   leading: const Icon(Icons.public),
                   trailing: Text(
                     mirror?.enabled == true
                         ? (mirror!.baseUrl?.host ?? '')
-                        : 'выкл.',
+                        : context.l10n.off_147380,
                   ),
                   onTap: () => context.go('/settings/mirror'),
                 ),
               ],
             ),
             SectionCard(
-              title: 'Настройка радио',
+              title: context.l10n.radioConfiguration_dbf9ae,
               children: [
                 MeshTile(
                   title: 'LoRa',
@@ -107,13 +108,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   onTap: () => context.go('/settings/lora'),
                 ),
                 MeshTile(
-                  title: 'Каналы',
+                  title: context.l10n.channels_88a8ec,
                   leading: const Icon(Icons.swap_horiz),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/channels'),
                 ),
                 MeshTile(
-                  title: 'Безопасность',
+                  title: context.l10n.security_d4fab1,
                   leading: const Icon(Icons.shield_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/security'),
@@ -121,10 +122,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
             SectionCard(
-              title: 'Конфигурация устройства',
+              title: context.l10n.deviceConfiguration_ccb937,
               children: [
                 MeshTile(
-                  title: 'Пользователь',
+                  title: context.l10n.user_51aff1,
                   leading: const Icon(Icons.person_outline),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/user'),
@@ -136,31 +137,31 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   onTap: () => context.go('/settings/bluetooth'),
                 ),
                 MeshTile(
-                  title: 'Устройство',
+                  title: context.l10n.device_bc791d,
                   leading: const Icon(Icons.memory),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/device'),
                 ),
                 MeshTile(
-                  title: 'Позиция',
+                  title: context.l10n.position_c139a7,
                   leading: const Icon(Icons.location_on_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/position'),
                 ),
                 MeshTile(
-                  title: 'Питание',
+                  title: context.l10n.power_cea0d9,
                   leading: const Icon(Icons.battery_charging_full),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/power'),
                 ),
                 MeshTile(
-                  title: 'Сеть',
+                  title: context.l10n.network_b3c4b1,
                   leading: const Icon(Icons.wifi),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/network'),
                 ),
                 MeshTile(
-                  title: 'Экран',
+                  title: context.l10n.display_0cca12,
                   leading: const Icon(Icons.screenshot_monitor),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/display'),
@@ -168,7 +169,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
             SectionCard(
-              title: 'Конфигурация модуля',
+              title: context.l10n.moduleConfiguration_4b812e,
               children: [
                 MeshTile(
                   title: 'MQTT',
@@ -177,73 +178,73 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   onTap: () => context.go('/settings/mqtt'),
                 ),
                 MeshTile(
-                  title: 'Последовательный порт',
+                  title: context.l10n.serial_427dc5,
                   leading: const Icon(Icons.cable),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/serial'),
                 ),
                 MeshTile(
-                  title: 'Внешние уведомления',
+                  title: context.l10n.externalNotification_22860a,
                   leading: const Icon(Icons.notifications_active_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/external-notification'),
                 ),
                 MeshTile(
-                  title: 'Сохранить и переслать',
+                  title: context.l10n.storeForward_05111b,
                   leading: const Icon(Icons.move_to_inbox_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/store-forward'),
                 ),
                 MeshTile(
-                  title: 'Тест дальности',
+                  title: context.l10n.rangeTest_c0e745,
                   leading: const Icon(Icons.social_distance_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/range-test'),
                 ),
                 MeshTile(
-                  title: 'Телеметрия',
+                  title: context.l10n.telemetry_c2d0b0,
                   leading: const Icon(Icons.query_stats),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/telemetry'),
                 ),
                 MeshTile(
-                  title: 'Сохраненные сообщения',
+                  title: context.l10n.cannedMessages_f068fb,
                   leading: const Icon(Icons.quickreply_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/canned-messages'),
                 ),
                 MeshTile(
-                  title: 'Звук',
+                  title: context.l10n.audio_3bcc51,
                   leading: const Icon(Icons.graphic_eq),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/audio'),
                 ),
                 MeshTile(
-                  title: 'Удаленное оборудование',
+                  title: context.l10n.remoteHardware_9cd039,
                   leading: const Icon(Icons.settings_input_component_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/remote-hardware'),
                 ),
                 MeshTile(
-                  title: 'Информация о соседях',
+                  title: context.l10n.neighborInformation_2b7dad,
                   leading: const Icon(Icons.hub_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/neighbor-info'),
                 ),
                 MeshTile(
-                  title: 'Окружающее освещение',
+                  title: context.l10n.ambientLighting_d3a18a,
                   leading: const Icon(Icons.lightbulb_outline),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/ambient-lighting'),
                 ),
                 MeshTile(
-                  title: 'Датчик обнаружения',
+                  title: context.l10n.detectionSensor_ef8fca,
                   leading: const Icon(Icons.sensors),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/detection-sensor'),
                 ),
                 MeshTile(
-                  title: 'Счетчик прохожих',
+                  title: context.l10n.paxCounter_34f998,
                   leading: const Icon(Icons.directions_walk),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/pax-counter'),
@@ -255,7 +256,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   onTap: () => context.go('/settings/tak'),
                 ),
                 MeshTile(
-                  title: 'Управление движением',
+                  title: context.l10n.trafficManagement_c0dc15,
                   leading: const Icon(Icons.traffic_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/traffic-management'),
@@ -263,10 +264,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
             SectionCard(
-              title: 'Обслуживание',
+              title: context.l10n.maintenance_3c5bdd,
               children: [
                 MeshTile(
-                  title: 'Резервная копия и восстановление',
+                  title: context.l10n.backupRestore_e10c3e,
                   leading: const Icon(Icons.settings_backup_restore),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/settings/backup'),
@@ -274,19 +275,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
             SectionCard(
-              title: 'Поддержка',
+              title: context.l10n.support_6ae569,
               children: [
                 if (ref.watch(reportUploaderProvider) != null)
                   MeshTile(
-                    title: 'Отправить отчёт разработчику',
-                    subtitle: 'Журнал и сведения о приложении и ноде',
+                    title: context.l10n.sendReportToTheDeveloper_d46fe6,
+                    subtitle:
+                        context.l10n.applicationAndNodeLogsAndDetails_395cd3,
                     leading: const Icon(Icons.bug_report_outlined),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.go('/settings/report'),
                   ),
                 MeshTile(
-                  title: 'Аппаратные id ноды',
-                  subtitle: 'MAC и device_id подключённой ноды',
+                  title: context.l10n.nodeHardwareIds_a78041,
+                  subtitle: context.l10n.macAndDeviceIdOfThe_018be2,
                   leading: const Icon(Icons.memory),
                   onTap: () => showHardwareIds(context),
                 ),

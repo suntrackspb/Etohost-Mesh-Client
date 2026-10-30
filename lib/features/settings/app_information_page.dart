@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import '../../core/update/update_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -31,112 +32,62 @@ class AppInformationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: Text(privacy ? 'Политика конфиденциальности' : 'Поддержка'),
+      title: Text(
+        privacy
+            ? context.l10n.privacyPolicy_4041aa
+            : context.l10n.support_6ae569,
+      ),
     ),
     body: ListView(
       padding: pagePadding(context),
       children: [
         if (privacy) ...[
-          const _InformationSection(
-            'Данные на устройстве',
-            'Meshex — клиент для радионод Meshtastic. Приложение хранит '
-                'на устройстве сообщения, сведения о нодах и их позициях, '
-                'настройки, конфигурацию подключённых нод и диагностический '
-                'журнал. Очистка данных в настройках приложения действует '
-                'на локальные данные, а не на радиоэфир и сторонние серверы.',
+          _InformationSection(
+            context.l10n.dataOnThisDevice_2ff795,
+            context.l10n.meshexIsAClientForMeshtastic_b9497b,
           ),
-          const _InformationSection(
-            'Разрешения и позиция телефона',
-            'Bluetooth и локальная сеть используются для подключения к нодам, '
-                'камера — для сканирования QR-кодов. Уведомления сообщают '
-                'о событиях приложения. Геопозиция используется при выборе '
-                'позиции телефона и при включённой передаче позиции своей '
-                'ноде. Передача выключена по умолчанию. Прошивка ноды может '
-                'дальше распространять координаты по своим настройкам. '
-                'Разрешения можно изменить в настройках операционной системы.',
+          _InformationSection(
+            context.l10n.permissionsAndPhoneLocation_73702c,
+            context.l10n.bluetoothAndTheLocalNetworkConnect_2e6ed6,
           ),
-          const _InformationSection(
-            'Серверы сообществ',
-            'Подключение к зеркалу необязательно: адрес выбираете вы. '
-                'При проверке адреса и подключении сервер видит IP-адрес '
-                'соединения, время и параметры запросов, версию приложения '
-                'и платформу. Сервер может предложить дополнительные сервисы '
-                'изображений и отчётов на других адресах. Содержимым, журналами '
-                'и сроками хранения управляет оператор соответствующего '
-                'сервиса; клиент не управляет этим сервером. Условия обработки '
-                'и удаления серверных данных уточняйте у его оператора.',
+          _InformationSection(
+            context.l10n.communityServers_917685,
+            context.l10n.connectingToAMirrorIsOptional_975b0b,
           ),
-          const _InformationSection(
-            'Изображения и жалобы',
-            'При загрузке изображения выбранному сервису передаются файл '
-                'и ID ноды с подписью запроса. Получатели ссылки могут '
-                'просматривать изображение. При жалобе передаются ID ноды, '
-                'ID изображения и указанная причина. Удаление своей картинки '
-                'доступно, если его поддерживает сервис и в приложении '
-                'сохранён токен удаления. Оно не удаляет копии, которые '
-                'могли сохранить другие пользователи.',
+          _InformationSection(
+            context.l10n.imagesAndReports_a79f68,
+            context.l10n.uploadingAnImageSendsTheFile_5e9db2,
           ),
-          const _InformationSection(
-            'Диагностические отчёты',
-            'Отчёт отправляется по вашему действию сервису, объявленному '
-                'подключённым зеркалом. Перед отправкой можно посмотреть '
-                'состав отчёта и журнал. Отчёт включает сведения о приложении, '
-                'системе, ноде и соединении, а также ваш комментарий и контакт, '
-                'если вы их указали. Не включайте секреты и личные сведения '
-                'в комментарий. Для удаления отправленного отчёта обратитесь '
-                'к оператору сервиса и укажите номер отчёта.',
+          _InformationSection(
+            context.l10n.diagnosticReports_1eec79,
+            context.l10n.reportsAreSentAtYourRequest_7fcca2,
           ),
-          const _InformationSection(
-            'Карты и проверка обновлений',
-            'При загрузке карты сервер тайлов получает IP-адрес и запросы '
-                'участков карты. В зависимости '
-                'от подложки используются OpenStreetMap, OpenTopoMap или '
-                'CARTO либо настроенный прокси. Офлайн-карта скачивается с сайта Meshex. В сборках с собственной проверкой обновлений '
-                'приложение обращается к API GitHub; автоматическую проверку '
-                'можно выключить в разделе «О приложении».',
+          _InformationSection(
+            context.l10n.mapsAndUpdateChecks_f48d47,
+            context.l10n.loadingMapsSendsYourIpAddress_c7eb25,
           ),
-          const _InformationSection(
-            'Ключи и резервные копии',
-            'Конфигурация ноды может содержать приватные ключи и пароли. '
-                'Отдельные резервные копии ключей сохраняются в системном '
-                'защищённом хранилище; на iOS используется синхронизируемая '
-                'связка ключей iCloud. Экспортированный JSON содержит '
-                'незашифрованный приватный ключ. Файл настроек также может '
-                'содержать ключи и пароли. Выбранное вами место сохранения '
-                'может быть облачным. Удаляйте экспортированные файлы '
-                'и резервные копии отдельно, когда они больше не нужны.',
+          _InformationSection(
+            context.l10n.keysAndBackups_9b106e,
+            context.l10n.nodeConfigurationsMayContainPrivateKeys_b72311,
           ),
-          const _InformationSection(
-            'Хранение и удаление',
-            'Для очистки локальной базы используйте раздел «Данные», '
-                'для удаления сохранённой копии ключа — раздел '
-                '«Безопасность». Отдельно управляйте файлами экспорта '
-                'и резервными копиями операционной системы. Удаление '
-                'локальных данных не отзывает радиопакеты и не удаляет '
-                'данные у других участников сети. Вопросы о работе '
-                'приложения и обработке данных можно направить через '
-                'контакт ниже.',
+          _InformationSection(
+            context.l10n.storageAndDeletion_a10344,
+            context.l10n.useDataToClearTheLocal_2715b2,
           ),
         ] else
-          const _InformationSection(
-            'Связаться с разработчиком',
-            'Вопросы, сообщения об ошибках и обращения о конфиденциальности '
-                'можно оставить в Issues проекта Meshex. '
-                'Для создания обращения нужен аккаунт GitHub. Обращения '
-                'могут быть публичными: не публикуйте приватные ключи, '
-                'пароли, точные координаты и другие личные сведения. '
-                'По вопросам содержимого и удаления данных на сервере '
-                'сообщества обращайтесь к его оператору.',
+          _InformationSection(
+            context.l10n.contactTheDeveloper_ca5284,
+            context.l10n.questionsBugReportsAndPrivacyRequests_5ebcd5,
           ),
         SectionCard(
-          title: 'Контакт проекта',
+          title: context.l10n.projectContact_9535fa,
           children: [
             const Padding(
               padding: EdgeInsets.all(Tokens.s16),
               child: SelectableText(_supportUrl),
             ),
             MeshTile(
-              title: 'Открыть поддержку на GitHub',
+              title: context.l10n.openGithubSupport_603c75,
               leading: const Icon(Icons.open_in_new),
               onTap: _openSupport,
             ),

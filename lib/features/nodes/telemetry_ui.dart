@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
@@ -32,20 +33,20 @@ class TelemetrySection extends ConsumerWidget {
     };
     final a = ref.read(nodeActionsProvider);
     return SectionCard(
-      title: 'Телеметрия',
+      title: context.l10n.telemetry_c2d0b0,
       children: [
         for (final MapEntry(key: k, value: s) in last.entries)
           MeshTile(
-            title: k.title,
-            subtitle: lastHeardText(s.time),
+            title: context.builtIn(k.title),
+            subtitle: context.builtIn(lastHeardText(s.time)),
             trailing: const Icon(Icons.show_chart),
             onTap: () => context.push(TelemetryPage.location(n.num, k)),
           ),
         MeshTile(
-          title: 'Запросить телеметрию',
+          title: context.l10n.requestTelemetry_c5374e,
           subtitle: last.isEmpty
-              ? 'Замеров по радио пока нет'
-              : 'Нода ответит текущими значениями',
+              ? context.l10n.noRadioMeasurementsYet_45e333
+              : context.l10n.theNodeWillRespondWithIts_ab01ac,
           // Не тип телеметрии — «Локальная статистика» (LocalStats).
           trailing: PopupMenuButton<Object>(
             enabled: canSend,
@@ -55,14 +56,14 @@ class TelemetrySection extends ConsumerWidget {
               () => k is TelemetryKind
                   ? a.requestTelemetry(n.num, k)
                   : a.requestLocalStats(n.num),
-              'Запрос отправлен — ждём ответ',
+              context.l10n.requestSentWaitingForAResponse_8172e2,
             ),
             itemBuilder: (_) => [
               for (final k in TelemetryKind.values)
-                PopupMenuItem(value: k, child: Text(k.title)),
-              const PopupMenuItem(
+                PopupMenuItem(value: k, child: Text(context.builtIn(k.title))),
+              PopupMenuItem(
                 value: 'localStats',
-                child: Text('Локальная статистика'),
+                child: Text(context.l10n.localStats_f21f8a),
               ),
             ],
           ),
@@ -131,16 +132,16 @@ class _TelemetryPageState extends ConsumerState<TelemetryPage> {
     final a = ref.read(nodeActionsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.kind.title),
+        title: Text(context.builtIn(widget.kind.title)),
         actions: [
           IconButton(
-            tooltip: 'Запросить',
+            tooltip: context.l10n.request_ebdfd9,
             icon: const Icon(Icons.refresh),
             onPressed: canSend
                 ? () => runNodeAction(
                     context,
                     () => a.requestTelemetry(widget.num, widget.kind),
-                    'Запрос отправлен — ждём ответ',
+                    context.l10n.requestSentWaitingForAResponse_8172e2,
                   )
                 : null,
           ),
@@ -161,21 +162,21 @@ class _TelemetryPageState extends ConsumerState<TelemetryPage> {
             showSelectedIcon: false,
             segments: [
               for (final (t, d) in _periods)
-                ButtonSegment(value: d, label: Text(t)),
+                ButtonSegment(value: d, label: Text(context.builtIn(t))),
             ],
             selected: {_period},
             onSelectionChanged: (s) => setState(() => _period = s.first),
           ),
           const SizedBox(height: Tokens.s8),
           if (samples.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(Tokens.s16),
-              child: Text('Нет замеров за этот период'),
+              child: Text(context.l10n.noMeasurementsForThisPeriod_c02810),
             ),
           for (final e in groups.entries)
             _ChartCard(
               key: ValueKey(e.key),
-              title: e.key,
+              title: context.builtIn(e.key),
               metrics: e.value,
               samples: samples,
               from: from,
@@ -247,7 +248,9 @@ class _ChartCardState extends State<_ChartCard> {
     final total = [for (final m in shown) ...raw[m.key]!];
     final t = Theme.of(context);
     return SectionCard(
-      title: unit.isEmpty ? widget.title : '${widget.title}, $unit',
+      title: unit.isEmpty
+          ? context.builtIn(widget.title)
+          : '${context.builtIn(widget.title)}, ${context.builtIn(unit)}',
       children: [
         if (metrics.length > 1)
           Padding(
@@ -277,7 +280,10 @@ class _ChartCardState extends State<_ChartCard> {
                             ),
                           ),
                           const SizedBox(width: Tokens.s4),
-                          Text(m.label, style: t.textTheme.bodySmall),
+                          Text(
+                            context.builtIn(m.label),
+                            style: t.textTheme.bodySmall,
+                          ),
                         ],
                       ),
                     ),
@@ -290,7 +296,7 @@ class _ChartCardState extends State<_ChartCard> {
           Padding(
             padding: const EdgeInsets.all(Tokens.s8),
             child: Text(
-              '${valueText(shown.first, total.first.value)} · '
+              '${context.builtIn(valueText(shown.first, total.first.value))} · '
               '${dateTimeText(total.first.time)}',
               style: t.textTheme.titleMedium,
             ),
@@ -479,13 +485,15 @@ class _JournalState extends State<_Journal> {
     Widget cell(String s, {TextStyle? style, bool right = true}) => Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       child: Text(
-        s,
+        context.builtIn(s),
         style: style ?? body,
         textAlign: right ? TextAlign.right : TextAlign.left,
       ),
     );
     String value(Metric m, TelemetrySample s) {
-      if (m.key == batteryKey && s.externalPower) return 'сеть';
+      if (m.key == batteryKey && s.externalPower) {
+        return context.l10n.network_2f481e;
+      }
       if (s.values[m.key] case final v?) return v.toStringAsFixed(m.digits);
       if (s.suspect[m.key] case final v?) {
         return '${v.toStringAsFixed(m.digits)}?';
@@ -494,7 +502,7 @@ class _JournalState extends State<_Journal> {
     }
 
     return SectionCard(
-      title: 'Журнал · ${widget.samples.length}',
+      title: context.l10n.log_b9a4c8((widget.samples.length).toString()),
       children: [
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -503,7 +511,7 @@ class _JournalState extends State<_Journal> {
             children: [
               TableRow(
                 children: [
-                  cell('Время', style: head, right: false),
+                  cell(context.l10n.time_c80d7e, style: head, right: false),
                   for (final m in cols)
                     cell(
                       m.unit.isEmpty ? m.short : '${m.short}, ${m.unit}',
@@ -530,7 +538,7 @@ class _JournalState extends State<_Journal> {
         if (widget.samples.length > _shown)
           TextButton(
             onPressed: () => setState(() => _shown += _page),
-            child: const Text('Показать ещё'),
+            child: Text(context.l10n.showMore_b53ec8),
           ),
       ],
     );

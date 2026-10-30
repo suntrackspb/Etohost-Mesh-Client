@@ -16,6 +16,25 @@ class DesktopTray with WindowListener, TrayListener {
   /// null — передумали. Сам решает, спрашивать ли (только первый раз).
   final Future<bool?> Function()? onFirstClose;
 
+  String _showLabel = 'Показать';
+  String _quitLabel = 'Выход';
+
+  Future<void> setLabels(String show, String quit) async {
+    _showLabel = show;
+    _quitLabel = quit;
+    if (_shown) await _setMenu();
+  }
+
+  Future<void> _setMenu() => trayManager.setContextMenu(
+    Menu(
+      items: [
+        MenuItem(key: 'show', label: _showLabel),
+        MenuItem.separator(),
+        MenuItem(key: 'exit', label: _quitLabel),
+      ],
+    ),
+  );
+
   bool _ready = false;
   bool _wanted = false;
   bool _shown = false;
@@ -42,15 +61,7 @@ class DesktopTray with WindowListener, TrayListener {
         );
         // На Linux (AppIndicator) подсказки нет — вызов бросает исключение.
         if (Platform.isWindows) await trayManager.setToolTip('Meshex');
-        await trayManager.setContextMenu(
-          Menu(
-            items: [
-              MenuItem(key: 'show', label: 'Показать'),
-              MenuItem.separator(),
-              MenuItem(key: 'exit', label: 'Выход'),
-            ],
-          ),
-        );
+        await _setMenu();
         _shown = true;
       } catch (e) {
         // Нет трея (например, GNOME без AppIndicator) — закрываем как обычно.

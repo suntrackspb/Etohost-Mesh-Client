@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
@@ -62,21 +63,21 @@ class _RelayMapState extends State<_RelayMap> {
       Row(
         children: [
           IconButton(
-            tooltip: 'Открыть в браузере',
+            tooltip: context.l10n.openInBrowser_a1f2ae,
             icon: const Icon(Icons.open_in_browser),
             onPressed: () =>
                 launchUrl(widget.url, mode: LaunchMode.externalApplication),
           ),
           Expanded(
             child: Text(
-              'Ретрансляции',
+              context.l10n.retransmissions_4ec216,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Готово'),
+            child: Text(context.l10n.done_398c7d),
           ),
         ],
       ),

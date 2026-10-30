@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -58,6 +59,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
   }
 
   Future<void> _toggleScan() async {
+    final strings = context.l10n;
     if (_scanning) {
       await UniversalBle.stopScan();
       setState(() => _scanning = false);
@@ -80,11 +82,12 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
       );
       setState(() => _scanning = true);
     } catch (e) {
-      setState(() => _error = 'Сканирование: $e');
+      setState(() => _error = strings.scan_603ff2((e).toString()));
     }
   }
 
   Future<void> _toggleNet() async {
+    final strings = context.l10n;
     if (_net.running) {
       await _net.stop();
       setState(() {});
@@ -101,7 +104,11 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
       if (mounted) setState(() {});
     } catch (e) {
       await _net.stop();
-      if (mounted) setState(() => _netError = 'Поиск в сети: $e');
+      if (mounted) {
+        setState(
+          () => _netError = strings.networkSearch_a3c1c6((e).toString()),
+        );
+      }
     }
   }
 
@@ -132,7 +139,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Подключение'),
+        title: Text(context.l10n.connecting_79e350),
         actions: const [LinkBadge()],
       ),
       body: ListView(
@@ -141,11 +148,11 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
           _StatusCard(radio: radio),
           if (radio.pairingHint != null)
             SectionCard(
-              title: 'Сопряжение Bluetooth в Linux',
+              title: context.l10n.bluetoothPairingOnLinux_5f59c4,
               children: [
                 Padding(
                   padding: const EdgeInsets.all(Tokens.s16),
-                  child: SelectableText(radio.pairingHint!),
+                  child: SelectableText(context.builtIn(radio.pairingHint!)),
                 ),
               ],
             ),
@@ -156,8 +163,8 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
               if (netDiscoverySupported) ...[
                 MeshTile(
                   title: _net.running
-                      ? 'Идёт поиск в сети…'
-                      : 'Найти ноды в локальной сети',
+                      ? context.l10n.searchingTheNetwork_bdab2d
+                      : context.l10n.findNodesOnTheLocalNetwork_9f4117,
                   leading: _net.running
                       ? const SizedBox(
                           width: 20,
@@ -167,7 +174,11 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
                       : const Icon(Icons.wifi_find),
                   trailing: TextButton(
                     onPressed: _toggleNet,
-                    child: Text(_net.running ? 'Стоп' : 'Искать'),
+                    child: Text(
+                      _net.running
+                          ? context.l10n.stop_6d714e
+                          : context.l10n.search_58212e,
+                    ),
                   ),
                 ),
                 if (_netError != null)
@@ -201,8 +212,8 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
                     Expanded(
                       child: TextField(
                         controller: _host,
-                        decoration: const InputDecoration(
-                          labelText: 'IP или хост ноды',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.nodeIpOrHostname_4e0881,
                           hintText: '192.168.1.100',
                         ),
                         onSubmitted: (_) => _connectTcp(),
@@ -211,7 +222,7 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
                     const SizedBox(width: Tokens.s12),
                     FilledButton(
                       onPressed: _connectTcp,
-                      child: const Text('Подключить'),
+                      child: Text(context.l10n.connect_124298),
                     ),
                   ],
                 ),
@@ -222,7 +233,9 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
             title: 'Bluetooth',
             children: [
               MeshTile(
-                title: _scanning ? 'Идёт поиск нод…' : 'Найти ноды поблизости',
+                title: _scanning
+                    ? context.l10n.searchingForNodes_ba19cf
+                    : context.l10n.findNearbyNodes_37deaa,
                 leading: _scanning
                     ? const SizedBox(
                         width: 20,
@@ -232,7 +245,11 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
                     : const Icon(Icons.bluetooth_searching),
                 trailing: TextButton(
                   onPressed: _toggleScan,
-                  child: Text(_scanning ? 'Стоп' : 'Искать'),
+                  child: Text(
+                    _scanning
+                        ? context.l10n.stop_6d714e
+                        : context.l10n.search_58212e,
+                  ),
                 ),
               ),
               if (_error != null)
@@ -269,8 +286,8 @@ class _ConnectionPageState extends ConsumerState<ConnectionPage> {
           SectionCard(
             children: [
               MeshTile(
-                title: 'Журнал',
-                subtitle: 'События соединения, пакеты и лог ноды',
+                title: context.l10n.journal_67ade7,
+                subtitle: context.l10n.connectionEventsPacketsAndNodeLog_745e44,
                 leading: const Icon(Icons.receipt_long),
                 onTap: () => context.go('/connection/journal'),
               ),
@@ -297,7 +314,7 @@ class _StatusCard extends ConsumerWidget {
       color: theme.colorScheme.onSurfaceVariant,
     );
     return SectionCard(
-      title: 'Нода',
+      title: context.l10n.node_2409cc,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(
@@ -344,12 +361,12 @@ class _StatusCard extends ConsumerWidget {
                   if (target != null && radio.state == RadioState.idle)
                     FilledButton(
                       onPressed: radio.reconnect,
-                      child: const Text('Подключить'),
+                      child: Text(context.l10n.connect_124298),
                     )
                   else if (target != null)
                     OutlinedButton(
                       onPressed: radio.disconnect,
-                      child: const Text('Отключить'),
+                      child: Text(context.l10n.disconnect_94d07a),
                     ),
                 ],
               ),
@@ -364,24 +381,24 @@ class _StatusCard extends ConsumerWidget {
                     radio.connectedSince == null
                         ? '—'
                         : formatDuration(now.difference(radio.connectedSince!)),
-                    'Соединение держится',
+                    context.l10n.connectionDuration_c69bbf,
                   ),
                   _Metric(
                     Icons.south_west,
                     radio.lastRx == null
                         ? '—'
                         : formatDuration(now.difference(radio.lastRx!)),
-                    'Последний пакет от ноды — столько назад',
+                    context.l10n.timeSinceTheLastPacketFrom_b027b2,
                   ),
                   _Metric(
                     Icons.swap_vert,
                     target == null ? '—' : '${radio.packetCount}',
-                    'Пакетов получено',
+                    context.l10n.packetsReceived_83d955,
                   ),
                   _Metric(
                     Icons.link_off,
                     target == null ? '—' : '${radio.disconnects}',
-                    'Разрывов соединения',
+                    context.l10n.connectionDrops_1da695,
                   ),
                 ],
               ),
@@ -392,7 +409,7 @@ class _StatusCard extends ConsumerWidget {
         ),
         // Строка остаётся на месте при обрыве, как и статистика выше.
         ListTile(
-          title: const Text('Администрирование'),
+          title: Text(context.l10n.administration_d838aa),
           leading: const Icon(Icons.admin_panel_settings_outlined),
           trailing: const Icon(Icons.chevron_right),
           enabled: radio.state == RadioState.ready && radio.myNodeNum != null,
@@ -406,8 +423,8 @@ class _StatusCard extends ConsumerWidget {
         ),
         SwitchListTile.adaptive(
           dense: true,
-          title: const Text('Переподключение'),
-          subtitle: const Text('при обрыве связи'),
+          title: Text(context.l10n.reconnect_a8e2cf),
+          subtitle: Text(context.l10n.onConnectionLoss_24be13),
           value: radio.autoReconnect,
           onChanged: (v) => setAutoReconnect(ref, v),
         ),
@@ -465,6 +482,7 @@ class _SerialCardState extends State<_SerialCard> {
   }
 
   Future<void> _refresh() async {
+    final strings = context.l10n;
     try {
       final ports = await listSerialPorts();
       if (mounted) {
@@ -474,7 +492,9 @@ class _SerialCardState extends State<_SerialCard> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _error = 'Порты: $e');
+      if (mounted) {
+        setState(() => _error = strings.ports_1b477b((e).toString()));
+      }
     }
   }
 
@@ -487,15 +507,15 @@ class _SerialCardState extends State<_SerialCard> {
       children: [
         MeshTile(
           title: _ports == null
-              ? 'Поиск портов…'
+              ? context.l10n.searchingForPorts_eea068
               : ports.isEmpty
-              ? 'Портов не найдено'
-              : 'Портов: ${ports.length}',
-          subtitle: 'Подключите ноду кабелем USB',
+              ? context.l10n.noPortsFound_cc35ea
+              : context.l10n.ports_50f8c3((ports.length).toString()),
+          subtitle: context.l10n.connectTheNodeUsingAUsb_c6b502,
           leading: const Icon(Icons.usb),
           trailing: TextButton(
             onPressed: _refresh,
-            child: const Text('Обновить'),
+            child: Text(context.l10n.refresh_c2f668),
           ),
         ),
         if (_error != null)
@@ -539,17 +559,17 @@ class _RecentCard extends ConsumerWidget {
     final db = ref.read(databaseProvider);
     final radio = ref.watch(radioProvider);
     return SectionCard(
-      title: 'Недавние',
+      title: context.l10n.recent_1328d8,
       children: [
         SwitchListTile.adaptive(
-          title: const Text('Подключаться к последней ноде при запуске'),
+          title: Text(context.l10n.connectToTheLastNodeOn_98c221),
           value: auto,
           onChanged: (v) => db.setSetting(AppSettingKeys.autoConnect, '$v'),
         ),
         if (recent.isEmpty)
-          const MeshTile(
-            title: 'Пока пусто',
-            subtitle: 'Здесь появятся ноды, к которым вы подключались',
+          MeshTile(
+            title: context.l10n.nothingHereYet_ea91cf,
+            subtitle: context.l10n.nodesYouHaveConnectedToWill_436ad0,
           ),
         for (final r in recent)
           MeshTile(
@@ -573,7 +593,7 @@ class _RecentCard extends ConsumerWidget {
               },
             ),
             trailing: IconButton(
-              tooltip: 'Забыть',
+              tooltip: context.l10n.forget_90bc7d,
               icon: const Icon(Icons.close),
               onPressed: () => db.forgetRecent(r.kind, r.address),
             ),
@@ -616,16 +636,26 @@ class _StatsGrid extends StatelessWidget {
     final b = s?.battery;
     String n(int? v) => v == null ? '—' : '$v';
     final tiles = [
-      (Icons.cell_tower, Colors.lightBlue, n(s?.onRadio), 'Нод в эфире'),
-      (Icons.circle, Colors.green, n(s?.online), 'Онлайн'),
-      (Icons.tag, Colors.blue, n(s?.channels), 'Каналов'),
+      (
+        Icons.cell_tower,
+        Colors.lightBlue,
+        n(s?.onRadio),
+        context.l10n.nodesOnRadio_f76516,
+      ),
+      (Icons.circle, Colors.green, n(s?.online), context.l10n.online_76e9fb),
+      (Icons.tag, Colors.blue, n(s?.channels), context.l10n.channels_5488bf),
       s?.onPower ?? false
-          ? (Icons.power, Colors.green, 'Сеть', 'Батарея')
+          ? (
+              Icons.power,
+              Colors.green,
+              context.l10n.network_b3c4b1,
+              context.l10n.battery_96a4c3,
+            )
           : (
               Icons.battery_std,
               Colors.orange,
               b == null ? '—' : '$b%',
-              'Батарея',
+              context.l10n.battery_96a4c3,
             ),
       (
         Icons.monitor_heart_outlined,

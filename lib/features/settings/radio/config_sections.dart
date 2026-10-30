@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/providers.dart';
@@ -62,8 +63,10 @@ final deviceSpec = ConfigSectionSpec<Config>(
     SectionCard(
       children: [
         MeshTile(
-          title: 'Использовать часовой пояс телефона',
-          subtitle: 'Часовой пояс дат на экране и журнале устройства.',
+          title: context.builtIn('Использовать часовой пояс телефона'),
+          subtitle: context.builtIn(
+            'Часовой пояс дат на экране и журнале устройства.',
+          ),
           leading: const Icon(Icons.schedule),
           onTap: form.saving
               ? null
@@ -342,7 +345,7 @@ final ambientLightingSpec = ConfigSectionSpec<ModuleConfig>(
     ListenableBuilder(
       listenable: form,
       builder: (_, _) => SectionCard(
-        title: 'Образец цвета',
+        title: context.builtIn('Образец цвета'),
         children: [
           Padding(
             padding: const EdgeInsets.all(Tokens.s16),

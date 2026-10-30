@@ -100,6 +100,8 @@ abstract final class MessageAlerts {
     required String sender,
     String channel = '',
     String target = '',
+    String Function(String)? replyTitle,
+    String Function(String, String)? reactionBody,
   }) {
     final where = channel.isEmpty ? sender : '$sender · #$channel';
     return switch (k) {
@@ -107,9 +109,14 @@ abstract final class MessageAlerts {
       // Android: notification_reaction_to «%1$s к %2$s”».
       AlertKind.reaction => (
         title: where,
-        body: '${m.body} к «${snippet(target)}»',
+        body:
+            reactionBody?.call(m.body, snippet(target)) ??
+            '${m.body} к «${snippet(target)}»',
       ),
-      AlertKind.reply => (title: '$where · ответ', body: m.body),
+      AlertKind.reply => (
+        title: replyTitle?.call(where) ?? '$where · ответ',
+        body: m.body,
+      ),
       AlertKind.mention => (title: where, body: m.body),
     };
   }

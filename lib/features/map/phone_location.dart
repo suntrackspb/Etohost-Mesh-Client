@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -24,6 +25,7 @@ class _PhoneLocationButtonState extends State<PhoneLocationButton> {
   bool _busy = false;
 
   Future<void> _locate() async {
+    final strings = context.l10n;
     setState(() => _busy = true);
     try {
       final fix = await widget.locate();
@@ -32,7 +34,11 @@ class _PhoneLocationButtonState extends State<PhoneLocationButton> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Не удалось определить местоположение: $e')),
+        SnackBar(
+          content: Text(
+            strings.couldNotDetermineLocation_e5f6db((e).toString()),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -42,7 +48,7 @@ class _PhoneLocationButtonState extends State<PhoneLocationButton> {
   @override
   Widget build(BuildContext context) => FloatingActionButton.small(
     heroTag: 'phoneLocation',
-    tooltip: 'Моё местоположение (обновить)',
+    tooltip: context.l10n.myLocationRefresh_d26be2,
     onPressed: _busy ? null : _locate,
     child: _busy
         ? const SizedBox.square(
@@ -68,7 +74,7 @@ class PhoneLocationLayer extends StatelessWidget {
           width: 32,
           height: 32,
           child: Semantics(
-            label: 'Моё местоположение',
+            label: context.l10n.myLocation_e77573,
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,

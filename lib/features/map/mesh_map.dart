@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 
@@ -50,7 +51,7 @@ class MeshMap extends ConsumerWidget {
         if (waiting)
           Center(
             child: choice.hasError
-                ? const Text('Не удалось прочитать настройки карты')
+                ? Text(context.l10n.couldNotReadMapSettings_9d3bfa)
                 : const CircularProgressIndicator(),
           ),
         attribution ??

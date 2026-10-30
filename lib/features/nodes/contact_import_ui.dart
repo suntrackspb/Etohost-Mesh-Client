@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ final canScanQr = Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
 /// «Добавить контакт»: сканировать QR или вставить ссылку.
 Future<void> showAddContact(BuildContext context, WidgetRef ref) async {
+  final strings = context.l10n;
   final how = await showModalBottomSheet<String>(
     context: context,
     builder: (c) => SafeArea(
@@ -29,12 +31,12 @@ Future<void> showAddContact(BuildContext context, WidgetRef ref) async {
           if (canScanQr)
             ListTile(
               leading: const Icon(Icons.qr_code_scanner),
-              title: const Text('Сканировать QR'),
+              title: Text(strings.scanQr_ba92dd),
               onTap: () => Navigator.pop(c, 'scan'),
             ),
           ListTile(
             leading: const Icon(Icons.link),
-            title: const Text('Вставить ссылку'),
+            title: Text(strings.insertLink_ab6720),
             onTap: () => Navigator.pop(c, 'paste'),
           ),
         ],
@@ -46,7 +48,7 @@ Future<void> showAddContact(BuildContext context, WidgetRef ref) async {
       ? await Navigator.of(context).push<String>(
           MaterialPageRoute(
             builder: (_) => QrScanPage(
-              title: 'Сканировать контакт',
+              title: strings.scanContact_be9772,
               accept: (t) => parseContactUrl(t) != null,
             ),
           ),
@@ -55,13 +57,14 @@ Future<void> showAddContact(BuildContext context, WidgetRef ref) async {
   if (text == null || !context.mounted) return;
   final c = parseContactUrl(text);
   if (c == null) {
-    toasts.show('Это не ссылка контакта');
+    toasts.show(strings.thisIsNotAContactLink_e1159c);
     return;
   }
   await showContactImport(context, ref, c);
 }
 
 Future<String?> _askLink(BuildContext context) async {
+  final strings = context.l10n;
   final clip = (await Clipboard.getData(Clipboard.kTextPlain))?.text ?? '';
   final ctl = TextEditingController(
     text: parseContactUrl(clip) != null ? clip.trim() : '',
@@ -70,7 +73,7 @@ Future<String?> _askLink(BuildContext context) async {
   return showDialog<String>(
     context: context,
     builder: (c) => AlertDialog(
-      title: const Text('Ссылка контакта'),
+      title: Text(strings.contactLink_3b3d44),
       content: TextField(
         controller: ctl,
         autofocus: true,
@@ -83,11 +86,11 @@ Future<String?> _askLink(BuildContext context) async {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(c),
-          child: const Text('Отмена'),
+          child: Text(strings.cancel_0ec753),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(c, ctl.text),
-          child: const Text('Далее'),
+          child: Text(strings.next_9c714c),
         ),
       ],
     ),
@@ -100,6 +103,7 @@ Future<void> showContactImport(
   WidgetRef ref,
   SharedContact c,
 ) async {
+  final strings = context.l10n;
   final db = ref.read(databaseProvider);
   final existing = await (db.select(
     db.nodes,
@@ -114,38 +118,28 @@ Future<void> showContactImport(
         final ready = ref.watch(canSendProvider);
         final error = TextStyle(color: Theme.of(d).colorScheme.error);
         return AlertDialog(
-          title: const Text('Импортировать контакт?'),
+          title: Text(strings.importSharedContact_5e5c66),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (check.blocked) ...[
-                  Text(
-                    'У этого контакта нет публичного ключа, поэтому его '
-                    'нельзя импортировать. Контакт без ключа стирает любой '
-                    'ключ, который твоя радиостанция уже хранит для этой '
-                    'ноды. Попроси отправителя снова поделиться им, когда '
-                    'его нода обменяется ключами.',
-                    style: error,
-                  ),
+                  Text(strings.thisContactHasNoPublicKey_1b1efe, style: error),
                   const Divider(),
                 ],
                 if (check.known) ...[
-                  const Text(
-                    'Внимание: Данный контакт уже существует, импорт '
-                    'перезапишет ранее известную информацию о нём.',
-                  ),
+                  Text(strings.warningThisContactIsKnownImporting_555efb),
                   if (check.keyChanged)
-                    Text('Публичный ключ изменён', style: error),
+                    Text(strings.publicKeyChanged_999a04, style: error),
                   const Divider(),
                 ],
                 for (final (k, v) in [
-                  ('Имя', u.longName),
-                  ('Короткое имя', u.shortName),
+                  (strings.name_aee78f, u.longName),
+                  (strings.shortName_58073d, u.shortName),
                   ('ID', nodeIdOf(c.nodeNum)),
-                  ('Модель', hardwareName(u.hwModel.value)),
-                  ('Роль', roleName(u.role.value)),
+                  (strings.model_f1f1ee, hardwareName(u.hwModel.value)),
+                  (strings.role_ab51a3, roleName(u.role.value)),
                 ])
                   if (v.isNotEmpty)
                     Padding(
@@ -154,10 +148,7 @@ Future<void> showContactImport(
                     ),
                 if (!ready && !check.blocked) ...[
                   const SizedBox(height: Tokens.s12),
-                  Text(
-                    'Подключитесь к ноде, чтобы импортировать',
-                    style: error,
-                  ),
+                  Text(strings.connectToANodeToImport_c0f2ca, style: error),
                 ],
               ],
             ),
@@ -165,12 +156,14 @@ Future<void> showContactImport(
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(d, false),
-              child: Text(check.blocked ? 'Закрыть' : 'Отмена'),
+              child: Text(
+                check.blocked ? strings.close_4ae50d : strings.cancel_0ec753,
+              ),
             ),
             if (!check.blocked)
               FilledButton(
                 onPressed: ready ? () => Navigator.pop(d, true) : null,
-                child: const Text('Импортировать'),
+                child: Text(strings.import_55fd5f),
               ),
           ],
         );
@@ -181,7 +174,7 @@ Future<void> showContactImport(
   await runNodeAction(
     context,
     () => ref.read(nodeActionsProvider).importContact(c),
-    'Контакт импортирован',
+    strings.contactImported_0f4d2f,
   );
 }
 
@@ -227,7 +220,9 @@ class _QrScanPageState extends State<QrScanPage> {
       onDetect: _onDetect,
       errorBuilder: (context, error) => EmptyState(
         icon: Icons.no_photography_outlined,
-        text: 'Камера недоступна: ${error.errorCode.name}',
+        text: context.l10n.cameraUnavailable_6012f0(
+          (error.errorCode.name).toString(),
+        ),
       ),
     ),
   );

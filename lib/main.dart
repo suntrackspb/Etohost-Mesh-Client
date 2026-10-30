@@ -8,6 +8,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app/notice_providers.dart';
+import 'app/locale_provider.dart';
+import 'l10n/l10n.dart';
 import 'app/toasts.dart';
 import 'app/desktop_tray_provider.dart';
 import 'app/keep_alive_provider.dart';
@@ -133,6 +135,10 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     return toastsHost(
       MaterialApp.router(
         title: 'Meshex',
+        locale: ref.watch(appLocaleProvider).value,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localeListResolutionCallback: resolveAppLocale,
         theme: buildTheme(Brightness.light, seed: accent.color),
         darkTheme: buildTheme(
           Brightness.dark,

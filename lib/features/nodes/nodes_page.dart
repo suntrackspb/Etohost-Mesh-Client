@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -55,15 +56,21 @@ class _NodesPageState extends ConsumerState<NodesPage> {
       appBar: AppBar(
         automaticallyImplyLeading: !wide,
         title: Text(
-          'Ноды${!nodes.hasValue
-              ? ''
-              : nodes.value!.length == total
-              ? ' ($total)'
-              : ' (${nodes.value!.length} из $total)'}',
+          context.l10n.nodes_3af8d3(
+            (!nodes.hasValue
+                    ? ''
+                    : nodes.value!.length == total
+                    ? ' ($total)'
+                    : context.l10n.of_b319e7(
+                        nodes.value!.length.toString(),
+                        total.toString(),
+                      ))
+                .toString(),
+          ),
         ),
         actions: [
           IconButton(
-            tooltip: 'Фильтры и сортировка',
+            tooltip: context.l10n.filtersAndSorting_7551fe,
             icon: Badge(
               isLabelVisible: filter.active,
               smallSize: 8,
@@ -72,12 +79,12 @@ class _NodesPageState extends ConsumerState<NodesPage> {
             onPressed: () => NodeFilterSheet.show(context),
           ),
           IconButton(
-            tooltip: 'Добавить контакт',
+            tooltip: context.l10n.addContact_155d11,
             icon: const Icon(Icons.person_add_alt),
             onPressed: () => showAddContact(context, ref),
           ),
           IconButton(
-            tooltip: 'Вид строки ноды',
+            tooltip: context.l10n.nodeRowLayout_12026b,
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => NodeLayoutSheet.show(context),
           ),
@@ -96,11 +103,11 @@ class _NodesPageState extends ConsumerState<NodesPage> {
               controller: _search,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
-                hintText: 'Имя или !id',
+                hintText: context.l10n.nameOrId_ffe28b,
                 suffixIcon: filter.query.isEmpty
                     ? null
                     : IconButton(
-                        tooltip: 'Очистить',
+                        tooltip: context.l10n.clear_98b207,
                         icon: const Icon(Icons.close),
                         onPressed: () =>
                             ref.read(nodeFilterProvider.notifier).state = ref
@@ -119,15 +126,15 @@ class _NodesPageState extends ConsumerState<NodesPage> {
         error: (e, _) => EmptyState(icon: Icons.error_outline, text: '$e'),
         data: (items) {
           if (total == 0) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.hub_outlined,
-              text: 'Нод пока нет.\nПодключитесь к своей ноде.',
+              text: context.l10n.noNodesYetConnectToYour_c2e63b,
             );
           }
           if (items.isEmpty) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.filter_list_off,
-              text: 'Под фильтр ничего не подходит',
+              text: context.l10n.nothingMatchesTheFilter_42d5b4,
             );
           }
           return ListView.builder(
@@ -150,9 +157,9 @@ class _NodesPageState extends ConsumerState<NodesPage> {
       detail: widget.selected == null
           ? null
           : NodeDetailPage(num: widget.selected!),
-      placeholder: const EmptyState(
+      placeholder: EmptyState(
         icon: Icons.touch_app_outlined,
-        text: 'Выберите ноду',
+        text: context.l10n.selectANode_674ed0,
       ),
     );
   }
@@ -201,7 +208,7 @@ class NodeTile extends ConsumerWidget {
     final line3 = [
       if (on(NodeRowField.lastHeard) && node.lastHeard != null)
         Text(
-          lastHeardText(node.lastHeard!),
+          context.builtIn(lastHeardText(node.lastHeard!)),
           style: heardRecently(node.lastHeard)
               ? style?.copyWith(color: Colors.green)
               : style,
@@ -214,12 +221,12 @@ class NodeTile extends ConsumerWidget {
       if (on(NodeRowField.position) &&
           nodePosition(node, correction: false) != null)
         Tooltip(
-          message: 'Есть координаты',
+          message: context.l10n.hasCoordinates_4d4419,
           child: Icon(Icons.location_on, size: 14, color: muted),
         ),
       if (node.isUnmessagable)
         Tooltip(
-          message: 'Неконтролируемый',
+          message: context.l10n.unmonitored_0eff12,
           child: Icon(Icons.mobile_off, size: 14, color: muted),
         ),
       if (on(NodeRowField.signal) && node.snr != null)
@@ -252,12 +259,14 @@ class NodeTile extends ConsumerWidget {
       titleExtra: !on(NodeRowField.publicKey)
           ? null
           : node.newPublicKey != null
-          ? const Tooltip(
-              message: 'Несоответствие открытого ключа',
+          ? Tooltip(
+              message: context.l10n.publicKeyMismatch_a6a194,
               child: Icon(Icons.key_off, size: 14, color: Colors.red),
             )
           : Tooltip(
-              message: hasKey ? 'Есть публичный ключ' : 'Нет публичного ключа',
+              message: hasKey
+                  ? context.l10n.hasPublicKey_dd027c
+                  : context.l10n.noPublicKey_fc72da,
               child: Icon(
                 Icons.key,
                 size: 14,
@@ -284,13 +293,13 @@ class NodeTile extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (!node.onRadio)
-            const Tooltip(
-              message: 'Только из зеркала',
+            Tooltip(
+              message: context.l10n.mirrorOnly_543934,
               child: Icon(Icons.cloud_outlined, size: 18),
             ),
           if (node.isIgnored)
-            const Tooltip(
-              message: 'Игнорируется',
+            Tooltip(
+              message: context.l10n.ignored_4561a6,
               child: Icon(Icons.block, size: 18),
             ),
           if (node.isFavorite)

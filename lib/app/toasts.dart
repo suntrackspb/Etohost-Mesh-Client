@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import 'package:toastification/toastification.dart';
 
 enum ToastKind { info, success, error }
@@ -33,7 +34,9 @@ class Toasts {
         ToastKind.error => ToastificationType.error,
       },
       style: ToastificationStyle.flatColored,
-      title: Text(text, maxLines: 4),
+      title: Builder(
+        builder: (context) => Text(context.builtIn(text), maxLines: 4),
+      ),
       alignment: _desktop ? Alignment.topRight : Alignment.topCenter,
       autoCloseDuration: toastDuration(text),
       showProgressBar: false,

@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,17 +20,16 @@ class DataSettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final dbs = ref.watch(nodeDbListProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Данные'), actions: const [LinkBadge()]),
+      appBar: AppBar(
+        title: Text(context.l10n.data_d8e5fd),
+        actions: const [LinkBadge()],
+      ),
       body: ListView(
         padding: pagePadding(context),
         children: [
           SectionCard(
-            title: 'Базы нод',
-            footer:
-                'У каждой ноды своя база: ноды, каналы, сообщения и копия '
-                'зеркала. Сверх заданного числа самая давно не '
-                'использованная база удаляется вместе с перепиской; 0 — '
-                'хранить все. Открытую базу удалить нельзя.',
+            title: context.l10n.nodeDatabases_1e2d9d,
+            footer: context.l10n.eachNodeHasItsOwnDatabase_534196,
             children: [
               const _DbLimitTile(),
               ...switch (dbs) {
@@ -38,8 +38,10 @@ class DataSettingsPage extends ConsumerWidget {
                     MeshTile(
                       title: db.name,
                       subtitle: db.active
-                          ? 'Открыта · ${_size(db.bytes)}'
-                          : _size(db.bytes),
+                          ? context.l10n.open_0cdbe8(
+                              (context.builtIn(_size(db.bytes))).toString(),
+                            )
+                          : context.builtIn(_size(db.bytes)),
                       leading: Icon(
                         db.active ? Icons.storage : Icons.storage_outlined,
                       ),
@@ -48,7 +50,9 @@ class DataSettingsPage extends ConsumerWidget {
                     ),
                 ],
                 AsyncError(:final error) => [
-                  MeshTile(title: 'Не удалось прочитать: $error'),
+                  MeshTile(
+                    title: context.l10n.couldNotRead_35e132((error).toString()),
+                  ),
                 ],
                 _ => [const LinearProgressIndicator()],
               },
@@ -57,7 +61,7 @@ class DataSettingsPage extends ConsumerWidget {
           SectionCard(
             children: [
               MeshTile(
-                title: 'Импорт базы ноды из файла',
+                title: context.l10n.importNodeDatabaseFromFile_7ff7a5,
                 leading: const Icon(Icons.file_open_outlined),
                 onTap: () => _import(context, ref),
               ),
@@ -66,19 +70,17 @@ class DataSettingsPage extends ConsumerWidget {
           const SizedBox(height: Tokens.s16),
           const _PurgeStaleCard(),
           SectionCard(
-            title: 'База приложения',
+            title: context.l10n.applicationDatabase_4d6431,
             footer:
-                'Настройки приложения и недавние подключения — например, '
-                'чтобы вернуть их после переустановки. В файле адреса '
-                'ваших нод и зеркала: никому его не передавайте.',
+                context.l10n.applicationSettingsAndRecentConnectionsFor_cab177,
             children: [
               MeshTile(
-                title: 'Экспорт в файл',
+                title: context.l10n.exportToFile_5ba2da,
                 leading: const Icon(Icons.save_alt),
                 onTap: () => _exportApp(context, ref),
               ),
               MeshTile(
-                title: 'Импорт из файла',
+                title: context.l10n.importFromFile_f190b3,
                 leading: const Icon(Icons.file_open_outlined),
                 onTap: () => _importApp(context, ref),
               ),
@@ -97,6 +99,7 @@ class DataSettingsPage extends ConsumerWidget {
   static void _snack(BuildContext context, String text) => toasts.show(text);
 
   Future<void> _menu(BuildContext context, WidgetRef ref, NodeDbInfo db) async {
+    final strings = context.l10n;
     final action = await showModalBottomSheet<String>(
       context: context,
       builder: (context) => SafeArea(
@@ -105,7 +108,7 @@ class DataSettingsPage extends ConsumerWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.save_alt),
-              title: const Text('Экспорт в файл'),
+              title: Text(strings.exportToFile_5ba2da),
               onTap: () => Navigator.pop(context, 'export'),
             ),
             if (!db.active &&
@@ -113,13 +116,13 @@ class DataSettingsPage extends ConsumerWidget {
                 ref.read(activeNodeDbProvider) != noNodeDb)
               ListTile(
                 leading: const Icon(Icons.move_down),
-                title: const Text('Перенести в открытую базу'),
+                title: Text(strings.transferToTheOpenDatabase_8042a9),
                 onTap: () => Navigator.pop(context, 'transfer'),
               ),
             if (!db.active)
               ListTile(
                 leading: const Icon(Icons.delete_outline),
-                title: const Text('Удалить'),
+                title: Text(strings.delete_86ea33),
                 onTap: () => Navigator.pop(context, 'delete'),
               ),
           ],
@@ -143,36 +146,45 @@ class DataSettingsPage extends ConsumerWidget {
     WidgetRef ref,
     NodeDbInfo db,
   ) async {
+    final strings = context.l10n;
     final actions = ref.read(nodeDbActionsProvider);
     final bool? same;
     try {
       same = await actions.sameOwnKey(db.num);
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось прочитать: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotRead_35e132((e).toString()));
+      }
       return;
     }
     if (!context.mounted) return;
     final ok = await _confirm(
       context,
-      'Перенести сообщения?',
-      'Сообщения из базы ${db.name} будут добавлены в открытую базу, '
-          'старый номер своей ноды заменится текущим. Старая база '
-          'останется — её можно удалить потом.'
-          '${switch (same) {
-            true => '',
-            false => '\n\nВнимание: ключ своей ноды в этих базах разный — '
+      strings.transferMessages_f1f159,
+      strings.messagesFromDatabaseWillBeAdded_47ae75(
+        (db.name).toString(),
+        (switch (same) {
+          true => '',
+          false =>
+            '\n\nВнимание: ключ своей ноды в этих базах разный — '
                 'похоже, это другая нода.',
-            null => '\n\nКлюч своей ноды неизвестен — проверить, что это '
+          null =>
+            '\n\nКлюч своей ноды неизвестен — проверить, что это '
                 'та же нода, нельзя.',
-          }}',
-      'Перенести',
+        }).toString(),
+      ),
+      strings.transfer_081b1d,
     );
     if (!ok || !context.mounted) return;
     try {
       final n = await actions.transfer(db.num);
-      if (context.mounted) _snack(context, 'Перенесено сообщений: $n');
+      if (context.mounted) {
+        _snack(context, strings.messagesTransferred_4a0c59((n).toString()));
+      }
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось перенести: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotTransfer_613ff4((e).toString()));
+      }
     }
   }
 
@@ -181,63 +193,76 @@ class DataSettingsPage extends ConsumerWidget {
     WidgetRef ref,
     NodeDbInfo db,
   ) async {
+    final strings = context.l10n;
     try {
       final bytes = await ref.read(nodeDbActionsProvider).export(db.num);
       final uri = await FilePicker.saveFile(
-        dialogTitle: 'Сохранить в файл',
+        dialogTitle: strings.saveToFile_cdda1c,
         fileName: nodeDbExportName(db.num, DateTime.now()),
         bytes: bytes,
       );
-      if (uri != null && context.mounted) _snack(context, 'База сохранена');
+      if (uri != null && context.mounted) {
+        _snack(context, strings.databaseSaved_190541);
+      }
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось сохранить: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotSave_6886a1((e).toString()));
+      }
     }
   }
 
   Future<void> _exportApp(BuildContext context, WidgetRef ref) async {
+    final strings = context.l10n;
     final ok = await _confirm(
       context,
-      'Экспорт настроек',
-      'В файле будут адреса ваших нод и зеркала. Храните его у себя и '
-          'никому не передавайте.',
-      'Сохранить',
+      strings.exportConfiguration_af2d98,
+      strings.theFileWillContainYourNode_2c8772,
+      strings.save_486405,
     );
     if (!ok || !context.mounted) return;
     try {
       final bytes = await ref.read(nodeDbActionsProvider).exportApp();
       final uri = await FilePicker.saveFile(
-        dialogTitle: 'Сохранить в файл',
+        dialogTitle: strings.saveToFile_cdda1c,
         fileName: nodeDbExportName(null, DateTime.now()),
         bytes: bytes,
       );
       if (uri != null && context.mounted) {
-        _snack(context, 'Настройки сохранены');
+        _snack(context, strings.settingsSaved_0c3942);
       }
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось сохранить: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotSave_6886a1((e).toString()));
+      }
     }
   }
 
   Future<void> _importApp(BuildContext context, WidgetRef ref) async {
+    final strings = context.l10n;
     final ok = await _confirm(
       context,
-      'Импорт настроек',
-      'Текущие настройки приложения и недавние подключения будут заменены '
-          'данными из файла. Базы нод не изменятся.',
-      'Выбрать файл',
+      strings.importConfiguration_c776ef,
+      strings.currentApplicationSettingsAndRecentConnections_ae2892,
+      strings.chooseFile_2e31da,
     );
     if (!ok || !context.mounted) return;
     try {
-      final files = await FilePicker.pickFiles(dialogTitle: 'Импорт из файла');
+      final files = await FilePicker.pickFiles(
+        dialogTitle: strings.importFromFile_f190b3,
+      );
       if (files.isEmpty || !context.mounted) return;
       final n = await ref
           .read(nodeDbActionsProvider)
           .importApp(await files.first.readAsBytes());
-      if (context.mounted) _snack(context, 'Настройки загружены ($n)');
+      if (context.mounted) {
+        _snack(context, strings.settingsLoaded_66f8ee((n).toString()));
+      }
     } on FormatException catch (e) {
       if (context.mounted) _snack(context, e.message);
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось загрузить: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotLoad_9d91fc((e).toString()));
+      }
     }
   }
 
@@ -255,7 +280,7 @@ class DataSettingsPage extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Отмена'),
+              child: Text(context.l10n.cancel_0ec753),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
@@ -271,22 +296,24 @@ class DataSettingsPage extends ConsumerWidget {
     WidgetRef ref,
     NodeDbInfo db,
   ) async {
+    final strings = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Удалить базу?'),
+        title: Text(strings.deleteDatabase_97a78b),
         content: Text(
-          '${db.name}: ноды, каналы и сообщения этой ноды будут удалены '
-          'с устройства. Сама нода не изменится.',
+          strings.thisNodeDatabaseChannelsAndMessages_6599da(
+            (db.name).toString(),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Удалить'),
+            child: Text(strings.delete_86ea33),
           ),
         ],
       ),
@@ -295,14 +322,17 @@ class DataSettingsPage extends ConsumerWidget {
     try {
       await ref.read(nodeDbActionsProvider).delete(db.num);
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось удалить: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotDelete_bacd63((e).toString()));
+      }
     }
   }
 
   Future<void> _import(BuildContext context, WidgetRef ref) async {
+    final strings = context.l10n;
     try {
       final files = await FilePicker.pickFiles(
-        dialogTitle: 'Импорт базы из файла',
+        dialogTitle: strings.importDatabaseFromFile_81e7f3,
       );
       if (files.isEmpty || !context.mounted) return;
       final num = await ref.read(nodeDbActionsProvider).import(
@@ -311,19 +341,20 @@ class DataSettingsPage extends ConsumerWidget {
           final ok = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('Заменить базу?'),
+              title: Text(strings.replaceDatabase_1a5ae6),
               content: Text(
-                'База ноды ${nodeIdString(num)} уже есть. Заменить её '
-                'данными из файла?',
+                strings.databaseForNodeAlreadyExistsReplace_d59789(
+                  (nodeIdString(num)).toString(),
+                ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Отмена'),
+                  child: Text(strings.cancel_0ec753),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Заменить'),
+                  child: Text(strings.replace_d772cc),
                 ),
               ],
             ),
@@ -334,14 +365,17 @@ class DataSettingsPage extends ConsumerWidget {
       if (num != null && context.mounted) {
         _snack(
           context,
-          'База ноды ${nodeIdString(num)} загружена — откроется при '
-          'подключении к этой ноде',
+          strings.databaseForNodeLoadedItWill_8f5c23(
+            (nodeIdString(num)).toString(),
+          ),
         );
       }
     } on FormatException catch (e) {
       if (context.mounted) _snack(context, e.message);
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось загрузить: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotLoad_9d91fc((e).toString()));
+      }
     }
   }
 }
@@ -369,20 +403,17 @@ class _PurgeStaleCardState extends ConsumerState<_PurgeStaleCard> {
     final days = ref.watch(purgeStaleNodeDaysProvider).value ?? 0;
     final shown = (_drag ?? days.toDouble()).clamp(1, 180).toDouble();
     return SectionCard(
-      footer:
-          'Избранные и игнорируемые ноды всегда сохраняются. Другие ноды '
-          'удаляются из базы данных приложения через заданное число дней. '
-          '(Ноды с ключами PKC всегда сохраняются не менее 7 дней.) '
-          'Удаляются только ноды, которых нет в базе нод устройства; '
-          'своя нода и ноды с заметкой тоже сохраняются.',
+      footer: context.l10n.favoriteAndIgnoredNodesAreAlways_f2c698,
       children: [
         SwitchListTile(
-          title: const Text('Очистить устаревшие ноды'),
+          title: Text(context.l10n.clearStaleNodes_968b4f),
           value: days > 0,
           onChanged: (on) => _save(on ? 7 : 0),
         ),
         if (days > 0) ...[
-          MeshTile(title: 'Через ${shown.round()} дн.'),
+          MeshTile(
+            title: context.l10n.afterDays_00b005((shown.round()).toString()),
+          ),
           Slider(
             value: shown,
             min: 1,
@@ -410,7 +441,7 @@ class _DbLimitTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final limit = ref.watch(nodeDbLimitProvider).value ?? nodeDbLimit;
     return MeshTile(
-      title: 'Сколько баз хранить',
+      title: context.l10n.numberOfDatabasesToKeep_dd8856,
       trailing: NumberField(
         value: limit,
         onSave: (n) => _save(context, ref, n),
@@ -419,6 +450,7 @@ class _DbLimitTile extends ConsumerWidget {
   }
 
   Future<void> _save(BuildContext context, WidgetRef ref, int? n) async {
+    final strings = context.l10n;
     if (n == null) return;
     final count = ref.read(nodeDbListProvider).value?.length ?? 0;
     final extra = n == 0 ? 0 : count - n;
@@ -428,22 +460,24 @@ class _DbLimitTile extends ConsumerWidget {
       final yes = await showDialog<bool>(
         context: context,
         builder: (c) => AlertDialog(
-          title: const Text('Удалить лишние базы?'),
+          title: Text(strings.deleteExtraDatabases_ff4d99),
           content: Text(
-            'Сейчас баз: $count. Самые давно не использованные ($extra) '
-            'удалятся вместе с перепиской.',
+            strings.currentDatabasesTheLeastRecentlyUsed_0fb1b8(
+              (count).toString(),
+              (extra).toString(),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(c, false),
-              child: const Text('Отмена'),
+              child: Text(strings.cancel_0ec753),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(c).colorScheme.error,
               ),
               onPressed: () => Navigator.pop(c, true),
-              child: const Text('Удалить'),
+              child: Text(strings.delete_86ea33),
             ),
           ],
         ),

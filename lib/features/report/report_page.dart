@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,7 +38,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
     if (flow.stage == ReportStage.sent) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Отчёт отправлен'),
+          title: Text(context.l10n.reportSent_4eb02c),
           actions: const [LinkBadge()],
         ),
         body: _SentView(id: flow.reportId!),
@@ -46,50 +47,43 @@ class _ReportPageState extends ConsumerState<ReportPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Отправить отчёт'),
+        title: Text(context.l10n.sendReport_63b6fb),
         actions: const [LinkBadge()],
       ),
       body: ListView(
         padding: pagePadding(context),
         children: [
-          const SectionCard(
-            title: 'Что будет отправлено',
+          SectionCard(
+            title: context.l10n.whatWillBeSent_e8db1a,
             children: [
               _Bullets([
                 _Bullet(
-                  'Версия приложения, модель телефона, версия ОС, язык '
-                  'и часовой пояс',
+                  context.l10n.applicationVersionPhoneModelOsVersion_3c056a,
                 ),
+                _Bullet(context.l10n.ownNodeIdModelFirmwareRole_2fdfaf),
+                _Bullet(context.l10n.connectionStatusTransportBleNameOr_ccaddd),
                 _Bullet(
-                  'Своя нода: ID, модель, прошивка, роль, регион, '
-                  'пресет, число нод и каналов',
+                  context
+                      .l10n
+                      .applicationLogFromRecentLaunchesConnection_a484f1,
                 ),
-                _Bullet(
-                  'Состояние соединения: способ подключения (имя BLE '
-                  'или адрес ноды), попытки и разрывы',
-                ),
-                _Bullet(
-                  'Журнал приложения за последние запуски: события '
-                  'соединения, служебные пакеты, лог прошивки ноды, '
-                  'ошибки. В журнале есть ID и имена нод из эфира',
-                ),
-                _Bullet('Ваш комментарий и контакт, если укажете'),
-              ]),
-            ],
-          ),
-          const SectionCard(
-            title: 'Что НЕ отправляется',
-            children: [
-              _Bullets([
-                _Bullet('Текст сообщений (в журнале — только размер)'),
-                _Bullet('Координаты — ни телефона, ни нод'),
-                _Bullet('Ключи шифрования, PSK и названия каналов'),
-                _Bullet('Адрес и данные зеркала'),
+                _Bullet(context.l10n.yourCommentAndContactDetailsIf_7eb17d),
               ]),
             ],
           ),
           SectionCard(
-            title: 'Предпросмотр',
+            title: context.l10n.whatIsNotSent_7dd3f5,
+            children: [
+              _Bullets([
+                _Bullet(context.l10n.messageTextTheLogContainsOnly_d95f22),
+                _Bullet(context.l10n.coordinatesOfEitherThePhoneOr_6668dd),
+                _Bullet(context.l10n.encryptionKeysPsksAndChannelNames_cfa888),
+                _Bullet(context.l10n.mirrorAddressAndData_e46280),
+              ]),
+            ],
+          ),
+          SectionCard(
+            title: context.l10n.preview_5d092c,
             children: [
               if (report == null)
                 const Padding(
@@ -107,10 +101,11 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                   ),
                 ),
                 MeshTile(
-                  title: 'Журнал',
-                  subtitle:
-                      '${report.logLines} строк, '
-                      '${(report.log.length / 1024).toStringAsFixed(0)} КБ',
+                  title: context.l10n.journal_67ade7,
+                  subtitle: context.l10n.linesKb_94885c(
+                    (report.logLines).toString(),
+                    ((report.log.length / 1024).toStringAsFixed(0)).toString(),
+                  ),
                   leading: const Icon(Icons.description_outlined),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
@@ -128,9 +123,9 @@ class _ReportPageState extends ConsumerState<ReportPage> {
             minLines: 3,
             maxLines: 8,
             maxLength: 2000,
-            decoration: const InputDecoration(
-              labelText: 'Что случилось',
-              hintText: 'Что делали, что ожидали, что получилось',
+            decoration: InputDecoration(
+              labelText: context.l10n.whatHappened_81dc9f,
+              hintText: context.l10n.whatYouDidWhatYouExpected_81e7ad,
               border: OutlineInputBorder(),
             ),
           ),
@@ -138,24 +133,23 @@ class _ReportPageState extends ConsumerState<ReportPage> {
           TextField(
             controller: _contact,
             maxLength: 200,
-            decoration: const InputDecoration(
-              labelText: 'Контакт (необязательно)',
-              hintText: 'Telegram, почта — если нужен ответ',
+            decoration: InputDecoration(
+              labelText: context.l10n.contactOptional_309ca4,
+              hintText: context.l10n.telegramOrEmailIfYouWould_8f673d,
               border: OutlineInputBorder(),
             ),
           ),
           if (flow.error != null) ...[
             const SizedBox(height: Tokens.s8),
             Text(
-              'Ошибка: ${flow.error}',
+              context.l10n.error_8f7267((flow.error).toString()),
               style: TextStyle(color: theme.colorScheme.error),
             ),
           ],
           if (!configured) ...[
             const SizedBox(height: Tokens.s8),
             Text(
-              'Отчёты отправляются через подключённый сервер, а он их не '
-              'принимает или не подключён.',
+              context.l10n.reportsAreSentThroughTheConnected_ceda96,
               style: TextStyle(color: theme.colorScheme.error),
             ),
           ],
@@ -171,7 +165,7 @@ class _ReportPageState extends ConsumerState<ReportPage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.send),
-            label: const Text('Отправить'),
+            label: Text(context.l10n.send_76dcf7),
           ),
         ],
       ),
@@ -229,7 +223,7 @@ class _SentView extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: Tokens.s16),
-            const Text('Номер отчёта'),
+            Text(context.l10n.reportNumber_a2f60b),
             const SizedBox(height: Tokens.s8),
             SelectableText(
               id,
@@ -239,19 +233,18 @@ class _SentView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: Tokens.s16),
-            const Text(
-              'Сообщите этот номер разработчику — по нему он найдёт ваш '
-              'отчёт.',
+            Text(
+              context.l10n.giveThisNumberToTheDeveloper_53370d,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: Tokens.s16),
             FilledButton.icon(
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: id));
-                toasts.success('Номер скопирован');
+                toasts.success(context.l10n.numberCopied_875e81);
               },
               icon: const Icon(Icons.copy),
-              label: const Text('Скопировать номер'),
+              label: Text(context.l10n.copyNumber_82ae50),
             ),
           ],
         ),
@@ -273,7 +266,7 @@ class _LogView extends StatelessWidget {
     ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace');
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Журнал для отчёта'),
+        title: Text(context.l10n.reportLog_c75086),
         actions: const [LinkBadge()],
       ),
       body: ListView.builder(

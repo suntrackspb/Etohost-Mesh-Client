@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -39,7 +40,7 @@ class NodeLayoutSheet extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: Tokens.s16),
               child: Text(
-                'Вид строки ноды',
+                context.l10n.nodeRowLayout_12026b,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
@@ -50,7 +51,7 @@ class NodeLayoutSheet extends ConsumerWidget {
               ),
             for (final f in NodeRowField.values)
               SwitchListTile(
-                title: Text(f.label),
+                title: Text(context.builtIn(f.label)),
                 value: layout.shows(f),
                 onChanged: (v) => set(layout.toggle(f, v)),
               ),

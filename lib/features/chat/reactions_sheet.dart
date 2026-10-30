@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'dart:math' show max;
 
 import 'package:flutter/material.dart';
@@ -41,7 +42,10 @@ class ReactionChips extends StatelessWidget {
           for (final g in groups)
             Semantics(
               button: true,
-              label: '${g.emoji}: ${g.count}. Показать, кто поставил',
+              label: context.l10n.showWhoReacted_154369(
+                (g.emoji).toString(),
+                (g.count).toString(),
+              ),
               child: InkWell(
                 customBorder: const StadiumBorder(),
                 onTap: () => onOpen(g.emoji),
@@ -89,7 +93,7 @@ Future<void> showReactionsSheet(
   ValueChanged<Message>? onOpenRelays,
 }) {
   final tabs = <(String, List<Message>)>[
-    if (groups.length > 1) ('Все', allReactions(groups)),
+    if (groups.length > 1) (context.l10n.all_fd08da, allReactions(groups)),
     for (final g in groups) (g.emoji, g.items),
   ];
   final start = initial == null || groups.length < 2

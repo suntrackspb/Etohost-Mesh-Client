@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -122,7 +123,9 @@ class _MapPageState extends ConsumerState<MapPage> {
                 Tokens.s8,
               ),
               child: Text(
-                'Ноды в этом месте: ${here.length}',
+                context.l10n.nodesAtThisLocation_39f71d(
+                  (here.length).toString(),
+                ),
                 style: Theme.of(c).textTheme.titleMedium,
               ),
             ),
@@ -188,15 +191,19 @@ class _MapPageState extends ConsumerState<MapPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Карта${points.isEmpty ? '' : ' (${points.length})'}'),
+        title: Text(
+          context.l10n.map_d56e1b(
+            (points.isEmpty ? '' : ' (${points.length})').toString(),
+          ),
+        ),
         actions: [
           IconButton(
-            tooltip: 'Найти ноду',
+            tooltip: context.l10n.findANode_861918,
             icon: const Icon(Icons.search),
             onPressed: points.isEmpty ? null : () => _search(points),
           ),
           IconButton(
-            tooltip: 'Фильтры',
+            tooltip: context.l10n.filters_67e16d,
             icon: Badge(
               isLabelVisible: filtered,
               smallSize: 8,
@@ -263,7 +270,7 @@ class _MapPageState extends ConsumerState<MapPage> {
                 if (me != null) ...[
                   FloatingActionButton.small(
                     heroTag: 'myNode',
-                    tooltip: 'Моя нода',
+                    tooltip: context.l10n.myNode_933f3d,
                     onPressed: () => _map.move(LatLng(me.lat, me.lon), 14),
                     child: const Icon(Icons.my_location),
                   ),
@@ -271,21 +278,21 @@ class _MapPageState extends ConsumerState<MapPage> {
                 ],
                 FloatingActionButton.small(
                   heroTag: 'fitAll',
-                  tooltip: 'Показать все',
+                  tooltip: context.l10n.showAll_9d04f0,
                   onPressed: points.isEmpty ? null : () => _fitAll(points),
                   child: const Icon(Icons.zoom_out_map),
                 ),
                 const SizedBox(height: Tokens.s16),
                 FloatingActionButton.small(
                   heroTag: 'zoomIn',
-                  tooltip: 'Приблизить',
+                  tooltip: context.l10n.zoomIn_0c937d,
                   onPressed: () => _zoomBy(1),
                   child: const Icon(Icons.add),
                 ),
                 const SizedBox(height: Tokens.s8),
                 FloatingActionButton.small(
                   heroTag: 'zoomOut',
-                  tooltip: 'Отдалить',
+                  tooltip: context.l10n.zoomOut_fea897,
                   onPressed: () => _zoomBy(-1),
                   child: const Icon(Icons.remove),
                 ),
@@ -298,7 +305,7 @@ class _MapPageState extends ConsumerState<MapPage> {
               top: Tokens.s16,
               child: FloatingActionButton.small(
                 heroTag: 'north',
-                tooltip: 'Север сверху',
+                tooltip: context.l10n.northUp_be8de1,
                 onPressed: () => _map.rotate(0),
                 child: Transform.rotate(
                   angle: _rotation * 3.141592653589793 / 180,
@@ -312,9 +319,9 @@ class _MapPageState extends ConsumerState<MapPage> {
               top: Tokens.s16,
               child: InputChip(
                 avatar: const Icon(Icons.search, size: 18),
-                label: Text('Поиск: $query'),
-                tooltip: 'Поиск из списка нод',
-                deleteButtonTooltipMessage: 'Показать все ноды',
+                label: Text(context.l10n.search_b34b80((query).toString())),
+                tooltip: context.l10n.searchFromTheNodeList_a208a5,
+                deleteButtonTooltipMessage: context.l10n.showAllNodes_174d10,
                 onDeleted: () => ref.read(nodeFilterProvider.notifier).state =
                     filter.copyWith(query: ''),
               ),
@@ -334,10 +341,8 @@ class _MapPageState extends ConsumerState<MapPage> {
                   padding: const EdgeInsets.all(Tokens.s16),
                   child: Text(
                     filtered
-                        ? 'Под фильтр не подходит ни одна нода с координатами.'
-                        : 'Нет нод с координатами.\n'
-                              'Это нормально: начиная с прошивки 2.8 отправка '
-                              'позиции по умолчанию выключена.',
+                        ? context.l10n.noNodesWithCoordinatesMatchThe_70925b
+                        : context.l10n.noNodesWithCoordinatesThisIs_34558f,
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -375,9 +380,9 @@ class _SearchSheetState extends State<_SearchSheet> {
               padding: const EdgeInsets.symmetric(horizontal: Tokens.s16),
               child: TextField(
                 autofocus: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search),
-                  hintText: 'Имя или id ноды',
+                  hintText: context.l10n.nodeNameOrId_ee4d66,
                 ),
                 onChanged: (v) => setState(() => _query = v),
               ),
@@ -386,7 +391,9 @@ class _SearchSheetState extends State<_SearchSheet> {
               child: _query.trim().isEmpty
                   ? const SizedBox.shrink()
                   : found.isEmpty
-                  ? const Center(child: Text('Не найдено среди нод на карте'))
+                  ? Center(
+                      child: Text(context.l10n.notFoundAmongNodesOnThe_ec3654),
+                    )
                   : ListView(
                       children: [
                         for (final q in found)
@@ -422,7 +429,7 @@ class _LayersMenu extends ConsumerWidget {
     final precision = ref.watch(mapPrecisionProvider).value ?? false;
     final db = ref.read(databaseProvider);
     return PopupMenuButton<Object>(
-      tooltip: 'Слои',
+      tooltip: context.l10n.layers_16876c,
       icon: const Icon(Icons.layers_outlined),
       onSelected: (v) => switch (v) {
         MapStyle s => db.setSetting(AppSettingKeys.mapStyle, s.name),
@@ -458,8 +465,8 @@ class _LayersMenu extends ConsumerWidget {
             value: #offline,
             child: Text(
               (ref.watch(offlineMapEnabledProvider).value ?? false)
-                  ? 'Офлайн-карта включена'
-                  : 'Офлайн-карта…',
+                  ? context.l10n.offlineMapEnabled_4908b7
+                  : context.l10n.offlineMap_7c2718,
             ),
           ),
           const PopupMenuDivider(),
@@ -467,17 +474,17 @@ class _LayersMenu extends ConsumerWidget {
         CheckedPopupMenuItem<Object>(
           value: #cluster,
           checked: cluster,
-          child: const Text('Группировать ноды'),
+          child: Text(context.l10n.clusterNodes_d1274e),
         ),
         CheckedPopupMenuItem<Object>(
           value: #correction,
           checked: correction,
-          child: const Text('Корректировка позиций'),
+          child: Text(context.l10n.positionCorrection_e7d3bd),
         ),
         CheckedPopupMenuItem<Object>(
           value: #precision,
           checked: precision,
-          child: const Text('Точность позиций'),
+          child: Text(context.l10n.positionPrecision_01dd31),
         ),
       ],
     );

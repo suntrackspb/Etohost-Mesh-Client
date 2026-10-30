@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -83,7 +84,9 @@ class _FixedPositionPickerState extends State<FixedPositionPicker> {
   void _save() {
     final f = manualFix(_lat.text, _lon.text, _alt.text, DateTime.now());
     if (f == null) {
-      setState(() => _error = 'Проверьте широту, долготу и высоту');
+      setState(
+        () => _error = context.l10n.checkLatitudeLongitudeAndAltitude_3d4bed,
+      );
       return;
     }
     Navigator.pop(context, f);
@@ -94,9 +97,9 @@ class _FixedPositionPickerState extends State<FixedPositionPicker> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Установить вручную'),
+        title: Text(context.l10n.setManually_8f0d8a),
         actions: [
-          TextButton(onPressed: _save, child: const Text('Сохранить')),
+          TextButton(onPressed: _save, child: Text(context.l10n.save_486405)),
           const LinkBadge(),
         ],
       ),
@@ -163,14 +166,14 @@ class _FixedPositionPickerState extends State<FixedPositionPicker> {
                     children: [
                       FloatingActionButton.small(
                         heroTag: 'pickerZoomIn',
-                        tooltip: 'Приблизить',
+                        tooltip: context.l10n.zoomIn_0c937d,
                         onPressed: () => _zoomBy(1),
                         child: const Icon(Icons.add),
                       ),
                       const SizedBox(height: Tokens.s8),
                       FloatingActionButton.small(
                         heroTag: 'pickerZoomOut',
-                        tooltip: 'Отдалить',
+                        tooltip: context.l10n.zoomOut_fea897,
                         onPressed: () => _zoomBy(-1),
                         child: const Icon(Icons.remove),
                       ),
@@ -189,19 +192,35 @@ class _FixedPositionPickerState extends State<FixedPositionPicker> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Перетащите метку или введите координаты',
+                    context.l10n.dragTheMarkerOrEnterCoordinates_1127fb,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: Tokens.s8),
                   Row(
                     children: [
-                      Expanded(child: _field(_lat, 'Широта', _typed)),
+                      Expanded(
+                        child: _field(
+                          _lat,
+                          context.l10n.latitude_e4f731,
+                          _typed,
+                        ),
+                      ),
                       const SizedBox(width: Tokens.s8),
-                      Expanded(child: _field(_lon, 'Долгота', _typed)),
+                      Expanded(
+                        child: _field(
+                          _lon,
+                          context.l10n.longitude_f22a3e,
+                          _typed,
+                        ),
+                      ),
                       const SizedBox(width: Tokens.s8),
                       SizedBox(
                         width: 96,
-                        child: _field(_alt, 'Высота, м', null),
+                        child: _field(
+                          _alt,
+                          context.l10n.altitudeM_4e463b,
+                          null,
+                        ),
                       ),
                     ],
                   ),

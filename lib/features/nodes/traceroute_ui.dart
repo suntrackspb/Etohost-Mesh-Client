@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,11 +65,11 @@ class TracerouteCard extends ConsumerWidget {
     final last = list.first;
     final failed = traceStatus(last, now) == TraceStatus.noAnswer;
     return SectionCard(
-      title: 'Трассировка маршрута',
+      title: context.l10n.traceRoute_c2e3ed,
       children: [
         MeshTile(
           title: dateTimeText(last.time),
-          subtitle: traceSummary(last, now),
+          subtitle: context.builtIn(traceSummary(last, now)),
           trailing: Icon(
             failed ? Icons.portable_wifi_off : Icons.route,
             color: failed ? Theme.of(context).disabledColor : null,
@@ -79,7 +80,7 @@ class TracerouteCard extends ConsumerWidget {
         ),
         if (list.length > 1)
           MeshTile(
-            title: 'Журнал трассировки маршрута',
+            title: context.l10n.traceRouteLog_eaa487,
             subtitle: '${list.length}',
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push(TracerouteLogPage.location(num)),
@@ -104,9 +105,12 @@ class TracerouteLogPage extends ConsumerWidget {
     var now = DateTime.now();
     if (_needsClock(list, now)) now = ref.watch(clockProvider).value ?? now;
     return Scaffold(
-      appBar: AppBar(title: const Text('Журнал трассировки маршрута')),
+      appBar: AppBar(title: Text(context.l10n.traceRouteLog_eaa487)),
       body: list.isEmpty
-          ? const EmptyState(icon: Icons.route, text: 'Трассировок нет')
+          ? EmptyState(
+              icon: Icons.route,
+              text: context.l10n.noTraceroutes_921f96,
+            )
           : ListView.separated(
               itemCount: list.length,
               separatorBuilder: (_, _) => const Divider(height: 1),
@@ -116,7 +120,7 @@ class TracerouteLogPage extends ConsumerWidget {
                   title: Text(
                     '${dateTimeText(r.time)} · ${_longName(nodes, r.target)}',
                   ),
-                  subtitle: Text(traceSummary(r, now)),
+                  subtitle: Text(context.builtIn(traceSummary(r, now))),
                   trailing: r.answered ? const Icon(Icons.chevron_right) : null,
                   onTap: r.answered
                       ? () => context.push(TraceroutePage.location(r.id))
@@ -143,9 +147,9 @@ class TraceroutePage extends ConsumerWidget {
     if (r == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const EmptyState(
+        body: EmptyState(
           icon: Icons.route,
-          text: 'Трассировка не найдена',
+          text: context.l10n.tracerouteNotFound_b165bf,
         ),
       );
     }
@@ -163,21 +167,30 @@ class TraceroutePage extends ConsumerWidget {
               padding: pagePadding(context),
               children: [
                 Text(
-                  '${dateTimeText(r.time)} · ${traceSummary(r, now)}',
+                  '${dateTimeText(r.time)} · ${context.builtIn(traceSummary(r, now))}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (!r.answered)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: Tokens.s8),
-                    child: Text(
-                      'Был отправлен запрос трассировки маршрута, '
-                      'ответа получено не было.',
-                    ),
+                    child: Text(context.l10n.aTraceRouteWasSentNo_831209),
                   ),
                 if (r.towards.isNotEmpty)
-                  _PathBlock('Маршрут', _towardsColor, r.towards, nodes, c),
+                  _PathBlock(
+                    context.l10n.route_b765f3,
+                    _towardsColor,
+                    r.towards,
+                    nodes,
+                    c,
+                  ),
                 if (r.back.isNotEmpty)
-                  _PathBlock('Маршрут обратно', _backColor, r.back, nodes, c),
+                  _PathBlock(
+                    context.l10n.returnRoute_9e78e2,
+                    _backColor,
+                    r.back,
+                    nodes,
+                    c,
+                  ),
               ],
             ),
           ),
@@ -217,7 +230,10 @@ class _PathBlock extends StatelessWidget {
             children: [
               Container(width: 16, height: 4, color: color),
               const SizedBox(width: Tokens.s8),
-              Text('$title · ${hopsText(path)}', style: t.titleSmall),
+              Text(
+                '$title · ${context.builtIn(hopsText(path))}',
+                style: t.titleSmall,
+              ),
             ],
           ),
           const SizedBox(height: Tokens.s4),
@@ -241,7 +257,9 @@ class _PathBlock extends StatelessWidget {
                     ),
                   if (hop.snr != null)
                     Text(
-                      '${hop.snr!.toStringAsFixed(1)} дБ',
+                      context.l10n.db_112739(
+                        (hop.snr!.toStringAsFixed(1)).toString(),
+                      ),
                       style: t.bodySmall,
                     ),
                 ],
@@ -271,9 +289,9 @@ class _RouteMap extends StatelessWidget {
       for (final h in [...r.towards, ...r.back]) h.num: ?pos(h.num),
     };
     if (pts.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.location_off,
-        text: 'Ни у одной ноды маршрута нет координат',
+        text: context.l10n.noneOfTheNodesOnThis_79590a,
       );
     }
     final lls = [for (final p in pts.values) LatLng(p.lat, p.lon)];
@@ -417,7 +435,10 @@ class _SkippedChip extends StatelessWidget {
           color: cs.surfaceContainerHighest.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(6),
         ),
-        child: Text('пропущено $n', style: const TextStyle(fontSize: 10)),
+        child: Text(
+          context.l10n.skipped_5dec4c((n).toString()),
+          style: const TextStyle(fontSize: 10),
+        ),
       ),
     );
   }

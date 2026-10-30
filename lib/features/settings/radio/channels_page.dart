@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -29,7 +30,7 @@ class ChannelsPage extends ConsumerWidget {
     final free = ChannelEdit.nextFreeIndex(rows);
     return Scaffold(
       appBar: AppBar(
-        title: const Text(ChannelEdit.title),
+        title: Text(context.builtIn(ChannelEdit.title)),
         actions: const [LinkBadge()],
       ),
       body: ListView(
@@ -41,7 +42,7 @@ class ChannelsPage extends ConsumerWidget {
               if (free != null)
                 MeshTile(
                   leading: const Icon(Icons.add_box_outlined),
-                  title: 'Добавить канал',
+                  title: context.l10n.addChannel_af2785,
                   onTap: () => context.go('/settings/channels/$free?new=1'),
                 ),
             ],
@@ -50,12 +51,12 @@ class ChannelsPage extends ConsumerWidget {
             children: [
               MeshTile(
                 leading: const Icon(Icons.qr_code),
-                title: 'Поделиться QR-кодом',
+                title: context.l10n.shareQrCode_6584cb,
                 onTap: () => context.go('/settings/channels/share'),
               ),
               MeshTile(
                 leading: const Icon(Icons.download_outlined),
-                title: 'Импортировать',
+                title: context.l10n.import_55fd5f,
                 onTap: () => context.go('/settings/channels/import'),
               ),
             ],
@@ -91,23 +92,33 @@ class _ChannelTile extends ConsumerWidget {
     return MeshTile(
       leading: CircleAvatar(child: Text('${c.index}')),
       title: name,
-      subtitle: primary ? 'Первичный' : 'Второй',
+      subtitle: primary
+          ? context.l10n.primary_781ece
+          : context.l10n.second_a0f62f,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (s.moduleSettings.positionPrecision > 0)
-            icon(Icons.location_on, 'Поделиться местоположением'),
+            icon(Icons.location_on, context.l10n.locationSharing_26e070),
           if (s.uplinkEnabled)
-            icon(Icons.cloud_upload_outlined, 'MQTT Uplink включён'),
+            icon(
+              Icons.cloud_upload_outlined,
+              context.l10n.mqttUplinkEnabled_9d43a7,
+            ),
           if (s.downlinkEnabled)
-            icon(Icons.cloud_download_outlined, 'MQTT Downlink включён'),
+            icon(
+              Icons.cloud_download_outlined,
+              context.l10n.mqttDownlinkEnabled_990d36,
+            ),
           icon(
             (c.psk?.length ?? 0) > 1 ? Icons.lock : Icons.lock_open,
-            (c.psk?.length ?? 0) > 1 ? 'Зашифрован' : 'Без шифрования',
+            (c.psk?.length ?? 0) > 1
+                ? context.l10n.encrypted_9cdd75
+                : context.l10n.unencrypted_74bae3,
           ),
           if (!primary)
             IconButton(
-              tooltip: 'Удалить',
+              tooltip: context.l10n.delete_86ea33,
               icon: const Icon(Icons.close),
               onPressed: canSend ? () => _delete(context, ref, name) : null,
             ),
@@ -118,22 +129,23 @@ class _ChannelTile extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref, String name) async {
+    final strings = context.l10n;
     final yes = await showDialog<bool>(
       context: context,
       builder: (d) => AlertDialog(
-        title: Text('Удалить канал «$name»?'),
-        content: const Text('Канал будет отключен на ноде.'),
+        title: Text(strings.deleteChannel_8f1495((name).toString())),
+        content: Text(strings.theChannelWillBeDisabledOn_3cb75d),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(d, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(d).colorScheme.error,
             ),
             onPressed: () => Navigator.pop(d, true),
-            child: const Text('Удалить'),
+            child: Text(strings.delete_86ea33),
           ),
         ],
       ),
@@ -144,7 +156,7 @@ class _ChannelTile extends ConsumerWidget {
       ref.read(databaseProvider),
       c,
     );
-    if (!ok) toasts.error('Нода не подтвердила');
+    if (!ok) toasts.error(strings.notAcknowledgedByTheNode_90929d);
   }
 }
 
@@ -195,7 +207,7 @@ class _ChannelEditPageState extends ConsumerState<ChannelEditPage> {
     final form = _form ??= _make(row);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Канал ${widget.index}'),
+        title: Text(context.l10n.channel_024ea4((widget.index).toString())),
         actions: const [LinkBadge()],
       ),
       body: ListView(
@@ -236,7 +248,7 @@ class _ChannelEditPageState extends ConsumerState<ChannelEditPage> {
           ),
           SaveBar(
             form: form,
-            confirm: 'Сохранить канал?',
+            confirm: context.l10n.saveChannel_cc1444,
             onSave: () async {
               final admin = ref.read(adminSettingsProvider);
               final db = ref.read(databaseProvider);

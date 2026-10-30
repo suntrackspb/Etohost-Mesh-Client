@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -82,7 +83,7 @@ class _Thumb extends StatelessWidget {
                 ),
           errorBuilder: (_, _, _) => box(
             Text(
-              'Картинка недоступна\n(удалена или истёк срок)',
+              context.l10n.imageUnavailableDeletedOrExpired_82b7c1,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.labelSmall,
             ),
@@ -144,21 +145,20 @@ class _FullImageState extends ConsumerState<_FullImage> {
   }
 
   Future<void> _delete(ImageUploads images, UploadedImage img) async {
+    final strings = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Удалить картинку?'),
-        content: const Text(
-          'Ссылка в отправленных сообщениях перестанет открываться.',
-        ),
+        title: Text(strings.deleteImage_8faab6),
+        content: Text(strings.linksInSentMessagesWillStop_a4253e),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Удалить'),
+            child: Text(strings.delete_86ea33),
           ),
         ],
       ),
@@ -172,35 +172,36 @@ class _FullImageState extends ConsumerState<_FullImage> {
       NetworkImage(u).evict();
       ResizeImage(NetworkImage(u), width: MessageImages.cacheWidth).evict();
       nav.pop();
-    }, 'Картинка удалена');
+    }, strings.imageDeleted_e4b164);
   }
 
   Future<void> _report(ImageUploads images, String id) async {
+    final strings = context.l10n;
     final reason = TextEditingController();
     final contact = ref.read(mirrorCapabilitiesProvider).value?.contact;
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Пожаловаться на картинку?'),
+        title: Text(strings.reportThisImage_07a666),
         content: TextField(
           controller: reason,
           maxLength: 200,
           decoration: InputDecoration(
-            hintText: 'Что не так (необязательно)',
+            hintText: strings.whatIsWrongOptional_5f4ae1,
             helperText: contact == null
-                ? 'Жалоба уйдёт оператору сервера'
-                : 'Жалоба уйдёт оператору сервера ($contact)',
+                ? strings.theReportWillBeSentTo_5e4e2b
+                : strings.theReportWillBeSentTo_360707((contact).toString()),
             helperMaxLines: 2,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Пожаловаться'),
+            child: Text(strings.report_5405a3),
           ),
         ],
       ),
@@ -208,7 +209,7 @@ class _FullImageState extends ConsumerState<_FullImage> {
     final text = reason.text.trim();
     reason.dispose();
     if (ok != true || !mounted) return;
-    await _run(() => images.report(id, text), 'Жалоба отправлена');
+    await _run(() => images.report(id, text), strings.reportSent_050a2d);
   }
 
   List<Widget> _actions() {
@@ -231,13 +232,13 @@ class _FullImageState extends ConsumerState<_FullImage> {
     return [
       if (own != null && cap.delete)
         IconButton(
-          tooltip: 'Удалить',
+          tooltip: context.l10n.delete_86ea33,
           icon: const Icon(Icons.delete_outline),
           onPressed: () => _delete(images, own),
         )
       else if (own == null && cap.report)
         IconButton(
-          tooltip: 'Пожаловаться',
+          tooltip: context.l10n.report_5405a3,
           icon: const Icon(Icons.flag_outlined),
           onPressed: () => _report(images, id),
         ),
@@ -274,7 +275,7 @@ class _FullImageState extends ConsumerState<_FullImage> {
         actions: [
           ..._actions(),
           IconButton(
-            tooltip: 'Открыть в браузере',
+            tooltip: context.l10n.openInBrowser_a1f2ae,
             icon: const Icon(Icons.open_in_browser),
             onPressed: () =>
                 launchUrl(widget.url, mode: LaunchMode.externalApplication),

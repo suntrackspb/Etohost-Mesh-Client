@@ -16,6 +16,8 @@ import '../features/chat/chat_page.dart';
 import 'desktop_tray_provider.dart';
 import 'providers.dart';
 import 'router.dart';
+import 'locale_provider.dart';
+import '../l10n/l10n.dart';
 
 final openChatsProvider = Provider<OpenChats>((ref) => OpenChats());
 
@@ -40,7 +42,16 @@ final notifyTracerouteProvider = StreamProvider<bool>(
       .map((s) => s[AppSettingKeys.notifyTraceroute] != 'false'),
 );
 
-final localNotifierProvider = Provider<LocalNotifier>((ref) => LocalNotifier());
+final localNotifierProvider = Provider<LocalNotifier>((ref) {
+  final notifier = LocalNotifier(
+    translate: (text) =>
+        localizeBuiltInText(ref.read(appStringsProvider), text),
+  );
+  ref.listen(appStringsProvider, (_, _) {
+    notifier.refreshChannelLabels().catchError((Object _) {});
+  });
+  return notifier;
+});
 
 /// Уведомления о сообщениях. Держится живым из корня приложения.
 final messageAlertsProvider = Provider<AlertWatcher>((ref) {
@@ -69,6 +80,10 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
 
   final watcher = AlertWatcher(
     db,
+    replyTitle: (where) =>
+        ref.read(appStringsProvider).notificationReplyTitle(where),
+    reactionBody: (reaction, target) =>
+        ref.read(appStringsProvider).notificationReactionBody(reaction, target),
     me: () => ref.read(radioProvider).myNodeNum,
     settings: () => settings,
     isChatVisible: (chat) =>
@@ -97,6 +112,10 @@ final messageAlertsProvider = Provider<AlertWatcher>((ref) {
   );
   final traces = TraceAlertWatcher(
     db,
+    formatTitle: (name) =>
+        ref.read(appStringsProvider).notificationTraceTitle(name),
+    formatBody: (text) =>
+        localizeBuiltInText(ref.read(appStringsProvider), text),
     me: () => ref.read(radioProvider).myNodeNum,
     enabled: () => traceOn,
     // id не пересекаются с сообщениями (там id строки messages).

@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -37,7 +38,7 @@ class ChatPage extends ConsumerWidget {
     final list = Scaffold(
       // На широком экране список — левая панель, «назад» ему не нужен.
       appBar: AppBar(
-        title: const Text('Чат'),
+        title: Text(context.l10n.chat_8c77e4),
         automaticallyImplyLeading: !wide,
         actions: const [LinkBadge()],
       ),
@@ -51,22 +52,23 @@ class ChatPage extends ConsumerWidget {
                   EmptyState(icon: Icons.error_outline, text: '$e'),
               data: (all) {
                 if (all.isEmpty && dms.isEmpty) {
-                  return const EmptyState(
+                  return EmptyState(
                     icon: Icons.forum_outlined,
-                    text: 'Каналы появятся после подключения к ноде.',
+                    text:
+                        context.l10n.channelsWillAppearAfterConnectingTo_e7a062,
                   );
                 }
                 return ListView(
                   children: [
-                    if (all.isNotEmpty) const _Header('Каналы'),
+                    if (all.isNotEmpty) _Header(context.l10n.channels_88a8ec),
                     for (final c in all)
                       MeshTile(
                         title: c.title,
                         subtitle: c.index == null
-                            ? 'только из зеркала'
+                            ? context.l10n.mirrorOnly_cb09e9
                             : c.primary
-                            ? 'основной'
-                            : 'канал ${c.index}',
+                            ? context.l10n.primary_8a174a
+                            : context.l10n.channel_6a801e((c.index).toString()),
                         leading: CircleAvatar(
                           child: c.index == null
                               ? const Icon(Icons.cloud_outlined, size: 18)
@@ -80,7 +82,8 @@ class ChatPage extends ConsumerWidget {
                             ? () => _hide(context, ref, c)
                             : null,
                       ),
-                    if (dms.isNotEmpty) const _Header('Личные'),
+                    if (dms.isNotEmpty)
+                      _Header(context.l10n.directMessages_96a4a7),
                     for (final d in dms)
                       _DirectTile(d, nodes[d.peer], wide, selected),
                   ],
@@ -95,9 +98,9 @@ class ChatPage extends ConsumerWidget {
     return SplitView(
       list: list,
       detail: selected == null ? null : ChatFeed(id: selected!),
-      placeholder: const EmptyState(
+      placeholder: EmptyState(
         icon: Icons.forum_outlined,
-        text: 'Выберите канал или диалог',
+        text: context.l10n.selectAChannelOrConversation_3b7ddb,
       ),
     );
   }
@@ -121,13 +124,15 @@ class _DirectTile extends ConsumerWidget {
     final last = conv.last;
     return MeshTile(
       title: name,
-      subtitle: '${last.isOutgoing ? 'Вы: ' : ''}${last.body}',
+      subtitle: '${last.isOutgoing ? context.l10n.youPrefix : ''}${last.body}',
       leading: NodeAvatar(nodeNum: conv.peer, shortName: node?.shortName),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Tooltip(
-            message: encrypted ? 'Зашифровано' : 'Нет ключа — не зашифровано',
+            message: encrypted
+                ? context.l10n.encrypted_347a1a
+                : context.l10n.noKeyNotEncrypted_1c5fa9,
             child: Icon(
               encrypted ? Icons.lock : Icons.lock_open,
               size: 16,
@@ -181,23 +186,21 @@ class _UnreadBadge extends ConsumerWidget {
 }
 
 Future<void> _hide(BuildContext context, WidgetRef ref, ChatChannel c) async {
+  final strings = context.l10n;
   final db = ref.read(databaseProvider);
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: Text('Скрыть канал «${c.title}»?'),
-      content: const Text(
-        'Его сообщения из зеркала удалятся и больше не будут загружаться. '
-        'Вернуть канал можно в настройках зеркала.',
-      ),
+      title: Text(strings.hideChannel_3f4e20((c.title).toString())),
+      content: Text(strings.itsMirrorMessagesWillBeDeleted_d9e39c),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Отмена'),
+          child: Text(strings.cancel_0ec753),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('Скрыть'),
+          child: Text(strings.hide_107291),
         ),
       ],
     ),
@@ -211,25 +214,23 @@ Future<void> _deleteDirect(
   int peer,
   String name,
 ) async {
+  final strings = context.l10n;
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: Text('Удалить переписку с «$name»?'),
-      content: const Text(
-        'Все сообщения этого чата удалятся с этого устройства. '
-        'У собеседника они останутся.',
-      ),
+      title: Text(strings.deleteConversationWith_7b6ba5((name).toString())),
+      content: Text(strings.allMessagesInThisChatWill_6baa0a),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Отмена'),
+          child: Text(strings.cancel_0ec753),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: Theme.of(ctx).colorScheme.error,
           ),
           onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('Удалить'),
+          child: Text(strings.delete_86ea33),
         ),
       ],
     ),

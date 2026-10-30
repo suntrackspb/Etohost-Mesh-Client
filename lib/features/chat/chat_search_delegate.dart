@@ -1,13 +1,16 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/proto/mesh.dart';
-import '../../data/chat_days.dart';
 import '../../data/database.dart';
 
 /// Поиск по ленте чата. Возвращает выбранное сообщение.
 class ChatSearchDelegate extends SearchDelegate<Message?> {
-  ChatSearchDelegate({required this.search, required this.nodes})
-    : super(searchFieldLabel: 'Поиск по сообщениям');
+  ChatSearchDelegate({
+    required this.search,
+    required this.nodes,
+    String? searchLabel,
+  }) : super(searchFieldLabel: searchLabel);
 
   final Future<List<Message>> Function(String query) search;
   final Map<int, Node> nodes;
@@ -16,7 +19,7 @@ class ChatSearchDelegate extends SearchDelegate<Message?> {
   List<Widget> buildActions(BuildContext context) => [
     if (query.isNotEmpty)
       IconButton(
-        tooltip: 'Очистить',
+        tooltip: context.l10n.clear_98b207,
         icon: const Icon(Icons.clear),
         onPressed: () => query = '',
       ),
@@ -35,7 +38,7 @@ class ChatSearchDelegate extends SearchDelegate<Message?> {
   Widget _results(BuildContext context) {
     final q = query.trim();
     if (q.length < 2) {
-      return const Center(child: Text('Введите хотя бы 2 символа'));
+      return Center(child: Text(context.l10n.enterAtLeastCharacters_ffcd3a));
     }
     return FutureBuilder<List<Message>>(
       // Ключ — запрос: новый ввод — новый поиск.
@@ -46,7 +49,9 @@ class ChatSearchDelegate extends SearchDelegate<Message?> {
           return const Center(child: CircularProgressIndicator());
         }
         final list = snap.data!;
-        if (list.isEmpty) return const Center(child: Text('Ничего не найдено'));
+        if (list.isEmpty) {
+          return Center(child: Text(context.l10n.noResultsFound_1e1b70));
+        }
         final now = DateTime.now();
         final muted = Theme.of(context).colorScheme.onSurfaceVariant;
         return ListView.separated(
@@ -56,13 +61,13 @@ class ChatSearchDelegate extends SearchDelegate<Message?> {
             final m = list[i];
             final n = nodes[m.fromNum];
             final author = m.isOutgoing
-                ? 'Вы'
+                ? context.l10n.you_adb403
                 : n?.longName.isNotEmpty == true
                 ? n!.longName
                 : nodeIdString(m.fromNum);
             final t = m.rxTime;
             final time =
-                '${dayLabel(t, now)}, ${t.hour.toString().padLeft(2, '0')}:'
+                '${context.dayLabel(t, now)}, ${t.hour.toString().padLeft(2, '0')}:'
                 '${t.minute.toString().padLeft(2, '0')}';
             return ListTile(
               title: Text(m.body, maxLines: 3, overflow: TextOverflow.ellipsis),

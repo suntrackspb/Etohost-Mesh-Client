@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -80,6 +81,7 @@ const OwnDevice _anyDevice = (
 
 /// Поля экрана «Приложение» — он собран вручную, не из ConfigSectionSpec.
 const _appFields = [
+  ('Язык', null, 'Как в системе, русский или английский'),
   ('Тема', 'Оформление', 'Система, светлая, тёмная или чёрная (OLED)'),
   ('Цвет акцента', 'Оформление', null),
   ('Обращения ко мне', 'Оформление', 'Цвет упоминаний и ответов на ваше'),
@@ -117,11 +119,20 @@ class SettingsSearchResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final found = searchSettings(settingsIndex(), query);
+    final localized = [
+      for (final entry in settingsIndex())
+        SettingsEntry(
+          title: context.builtIn(entry.title),
+          route: entry.route,
+          section: context.builtInOrNull(entry.section),
+          help: context.builtInOrNull(entry.help),
+        ),
+    ];
+    final found = searchSettings(localized, query);
     if (found.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.all(Tokens.s16),
-        child: Center(child: Text('Ничего не найдено')),
+        child: Center(child: Text(context.l10n.noResultsFound_1e1b70)),
       );
     }
     return SectionCard(

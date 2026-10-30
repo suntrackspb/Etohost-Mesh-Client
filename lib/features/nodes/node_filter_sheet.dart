@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -50,15 +51,15 @@ class NodeFilterSheet extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            label('Сортировка'),
+            label(context.l10n.sort_ed0301),
             Wrap(
               spacing: Tokens.s8,
               children: [
-                for (final (s, t) in const [
-                  (NodeSort.lastHeard, 'по времени'),
-                  (NodeSort.name, 'по имени'),
-                  (NodeSort.snr, 'по SNR'),
-                  (NodeSort.hops, 'по хопам'),
+                for (final (s, t) in [
+                  (NodeSort.lastHeard, context.l10n.byTime_5bad62),
+                  (NodeSort.name, context.l10n.byName_21b8bf),
+                  (NodeSort.snr, context.l10n.bySnr_f87a18),
+                  (NodeSort.hops, context.l10n.byHops_90b84d),
                 ])
                   ChoiceChip(
                     label: Text(t),
@@ -67,16 +68,16 @@ class NodeFilterSheet extends ConsumerWidget {
                   ),
               ],
             ),
-            label('Слышали'),
+            label(context.l10n.lastHeard_07e526),
             Wrap(
               spacing: Tokens.s8,
               children: [
-                for (final (h, t) in const [
-                  (1, 'за час'),
-                  (2, 'за 2 ч'),
-                  (24, 'за сутки'),
-                  (168, 'за 7 дней'),
-                  (null, 'за всё время'),
+                for (final (h, t) in [
+                  (1, context.l10n.lastHour_5702d4),
+                  (2, context.l10n.lastHours_154ae5),
+                  (24, context.l10n.lastHours_fee233),
+                  (168, context.l10n.lastDays_3f4fcc),
+                  (null, context.l10n.allTime_9790a7),
                 ])
                   ChoiceChip(
                     label: Text(t),
@@ -85,7 +86,7 @@ class NodeFilterSheet extends ConsumerWidget {
                   ),
               ],
             ),
-            label('Хопов не больше'),
+            label(context.l10n.maximumHops_a86743),
             Wrap(
               spacing: Tokens.s8,
               children: [
@@ -93,9 +94,9 @@ class NodeFilterSheet extends ConsumerWidget {
                   ChoiceChip(
                     label: Text(
                       h == null
-                          ? 'любое'
+                          ? context.l10n.any_3290bc
                           : h == 0
-                          ? 'напрямую'
+                          ? context.l10n.direct_95dc0c
                           : '$h',
                     ),
                     selected: f.maxHops == h,
@@ -103,13 +104,13 @@ class NodeFilterSheet extends ConsumerWidget {
                   ),
               ],
             ),
-            label('Роли'),
+            label(context.l10n.roles_265068),
             Wrap(
               spacing: Tokens.s8,
               runSpacing: Tokens.s4,
               children: [
                 ChoiceChip(
-                  label: const Text('все'),
+                  label: Text(context.l10n.all_ef8ff2),
                   selected: f.roles.isEmpty,
                   onSelected: (_) => set(f.copyWith(roles: const {})),
                 ),
@@ -126,14 +127,14 @@ class NodeFilterSheet extends ConsumerWidget {
               ],
             ),
             if (mirror) ...[
-              label('Источник'),
+              label(context.l10n.source_8290a3),
               Wrap(
                 spacing: Tokens.s8,
                 children: [
-                  for (final (s, t) in const [
-                    (NodeSource.all, 'все'),
-                    (NodeSource.radio, 'радио'),
-                    (NodeSource.mirror, 'зеркало'),
+                  for (final (s, t) in [
+                    (NodeSource.all, context.l10n.all_ef8ff2),
+                    (NodeSource.radio, context.l10n.radio_c9a417),
+                    (NodeSource.mirror, context.l10n.mirror_53fbab),
                   ])
                     ChoiceChip(
                       label: Text(t),
@@ -146,33 +147,33 @@ class NodeFilterSheet extends ConsumerWidget {
             const SizedBox(height: Tokens.s8),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Только избранные'),
+              title: Text(context.l10n.favoritesOnly_f1d6dc),
               value: f.favoritesOnly,
               onChanged: (v) => set(f.copyWith(favoritesOnly: v)),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Только зашифрованные'),
-              subtitle: const Text('Есть публичный ключ (PKI)'),
+              title: Text(context.l10n.encryptedOnly_5943ed),
+              subtitle: Text(context.l10n.hasPublicKeyPki_b08915),
               value: f.encryptedOnly,
               onChanged: (v) => set(f.copyWith(encryptedOnly: v)),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Только подписанные'),
-              subtitle: const Text('Подписывают пакеты (прошивка 2.8)'),
+              title: Text(context.l10n.signedOnly_a90195),
+              subtitle: Text(context.l10n.signPacketsFirmware_c59ca8),
               value: f.signedOnly,
               onChanged: (v) => set(f.copyWith(signedOnly: v)),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Скрыть ноды через MQTT'),
+              title: Text(context.l10n.hideNodesViaMqtt_a06257),
               value: f.hideMqtt,
               onChanged: (v) => set(f.copyWith(hideMqtt: v)),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Показывать игнорируемые'),
+              title: Text(context.l10n.showIgnoredNodes_48f862),
               value: f.showIgnored,
               onChanged: (v) => set(f.copyWith(showIgnored: v)),
             ),
@@ -183,12 +184,12 @@ class NodeFilterSheet extends ConsumerWidget {
                   TextButton(
                     onPressed: () =>
                         set(NodeFilter(query: f.query, sort: f.sort)),
-                    child: const Text('Сбросить фильтры'),
+                    child: Text(context.l10n.resetFilters_03ead0),
                   ),
                 const Spacer(),
                 FilledButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Готово'),
+                  child: Text(context.l10n.done_398c7d),
                 ),
               ],
             ),

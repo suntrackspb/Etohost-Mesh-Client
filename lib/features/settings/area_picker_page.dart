@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,7 +39,7 @@ class _AreaPickerPageState extends ConsumerState<AreaPickerPage> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Центр области'),
+        title: Text(context.l10n.areaCenter_63f063),
         actions: [
           TextButton(
             onPressed: () async {
@@ -49,7 +50,7 @@ class _AreaPickerPageState extends ConsumerState<AreaPickerPage> {
               );
               if (context.mounted) context.pop();
             },
-            child: const Text('Готово'),
+            child: Text(context.l10n.done_398c7d),
           ),
           const LinkBadge(),
         ],
@@ -95,8 +96,13 @@ class _AreaPickerPageState extends ConsumerState<AreaPickerPage> {
                   vertical: 8,
                 ),
                 child: Text(
-                  '${formatLatLon((lat: center.latitude, lon: center.longitude))}'
-                  ' · радиус ${distanceText(km)}',
+                  context.l10n.radius_02211c(
+                    (formatLatLon((
+                      lat: center.latitude,
+                      lon: center.longitude,
+                    ))).toString(),
+                    (context.builtIn(distanceText(km))).toString(),
+                  ),
                 ),
               ),
             ),

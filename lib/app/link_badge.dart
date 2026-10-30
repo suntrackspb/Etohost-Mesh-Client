@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -65,14 +66,14 @@ class LinkBadge extends ConsumerWidget {
     final name = node?.shortName ?? '';
     if (name.isEmpty && mirror == null) return const SizedBox.shrink();
     final status = switch (level) {
-      LinkLevel.connecting => 'подключение',
-      LinkLevel.connected => 'подключена',
-      LinkLevel.disconnected => 'не подключена',
+      LinkLevel.connecting => context.l10n.connecting_794e89,
+      LinkLevel.connected => context.l10n.connected_f006c9,
+      LinkLevel.disconnected => context.l10n.disconnected_0cf65d,
     };
     final mirrorStatus = switch (mirror) {
-      LinkLevel.connecting => 'подключение',
-      LinkLevel.connected => 'на связи',
-      _ => 'нет связи',
+      LinkLevel.connecting => context.l10n.connecting_794e89,
+      LinkLevel.connected => context.l10n.connected_abb335,
+      _ => context.l10n.noConnection_75a42a,
     };
     const pad = EdgeInsets.symmetric(
       horizontal: Tokens.s4,
@@ -85,7 +86,7 @@ class LinkBadge extends ConsumerWidget {
         children: [
           if (mirror != null)
             Tooltip(
-              message: 'Зеркало: $mirrorStatus',
+              message: context.l10n.mirror_871d44((mirrorStatus).toString()),
               child: InkWell(
                 customBorder: const CircleBorder(),
                 onTap: () => context.go('/settings/mirror'),

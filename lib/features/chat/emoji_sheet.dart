@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 
@@ -39,7 +40,7 @@ Future<String?> pickEmoji(BuildContext context) {
           searchViewConfig: SearchViewConfig(
             backgroundColor: bg,
             buttonIconColor: scheme.onSurfaceVariant,
-            hintText: 'Поиск',
+            hintText: context.l10n.search_6433b5,
           ),
         ),
       ),

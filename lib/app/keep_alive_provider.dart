@@ -4,6 +4,8 @@ import '../core/background/keep_alive.dart';
 import '../mqtt/mqtt_proxy.dart';
 import 'mqtt_providers.dart';
 import 'providers.dart';
+import 'locale_provider.dart';
+import '../l10n/l10n.dart';
 
 /// Текст уведомления службы: состояние радио и (если работает) MQTT-прокси.
 final _keepAliveStatusProvider = Provider<KeepAliveStatus?>((ref) {
@@ -14,7 +16,13 @@ final _keepAliveStatusProvider = Provider<KeepAliveStatus?>((ref) {
       (p) => p.state == MqttProxyState.inactive ? null : p.statusText,
     ),
   );
-  return keepAliveStatus(state, target, mqtt: mqtt);
+  final strings = ref.watch(appStringsProvider);
+  return keepAliveStatus(
+    state,
+    target,
+    mqtt: mqtt,
+    translate: (text) => localizeBuiltInText(strings, text),
+  );
 });
 
 /// Служба удержания связи (Android). Держится живой из корня приложения.

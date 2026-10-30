@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,25 +32,25 @@ class _BackupPageState extends ConsumerState<BackupPage> {
     final enabled = me != null && !_busy;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Резервная копия и восстановление'),
+        title: Text(context.l10n.backupRestore_e10c3e),
         actions: const [LinkBadge()],
       ),
       body: ListView(
         padding: pagePadding(context),
         children: [
-          if (me == null) const WarningNote('Подключитесь к своей ноде'),
+          if (me == null) WarningNote(context.l10n.connectToYourOwnNode_d2f276),
           SectionCard(
             children: [
               MeshTile(
-                title: 'Экспорт настроек',
-                subtitle: 'Файл .cfg, как в официальных приложениях',
+                title: context.l10n.exportConfiguration_af2d98,
+                subtitle: context.l10n.aCfgFileAsUsedBy_8cf2f0,
                 leading: const Icon(Icons.upload_file),
                 trailing: const SizedBox.shrink(),
                 onTap: enabled ? _export : null,
               ),
               MeshTile(
-                title: 'Импорт настроек',
-                subtitle: 'Записать конфигурацию из файла в ноду',
+                title: context.l10n.importConfiguration_c776ef,
+                subtitle: context.l10n.writeConfigurationFromAFileTo_5b4b13,
                 leading: const Icon(Icons.download),
                 trailing: const SizedBox.shrink(),
                 onTap: enabled && canSend ? _import : null,
@@ -61,7 +62,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
             if (_progress != null)
               Padding(
                 padding: const EdgeInsets.only(top: Tokens.s8),
-                child: Text(_progress!),
+                child: Text(context.builtIn(_progress!)),
               ),
           ],
         ],
@@ -70,24 +71,22 @@ class _BackupPageState extends ConsumerState<BackupPage> {
   }
 
   Future<void> _export() async {
+    final strings = context.l10n;
     final me = ref.read(radioProvider).myNodeNum;
     if (me == null) return;
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Экспорт настроек'),
-        content: const Text(
-          'В файле будут ключи ноды, ключи каналов и пароли Wi-Fi/MQTT. '
-          'Не передавайте его посторонним.',
-        ),
+        title: Text(strings.exportConfiguration_af2d98),
+        content: Text(strings.theFileWillContainNodeKeys_7a17b9),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Сохранить'),
+            child: Text(strings.save_486405),
           ),
         ],
       ),
@@ -97,29 +96,32 @@ class _BackupPageState extends ConsumerState<BackupPage> {
       final src = await loadProfileSource(ref.read(databaseProvider), me);
       final bytes = buildProfile(src).writeToBuffer();
       final uri = await FilePicker.saveFile(
-        dialogTitle: 'Сохранить в файл',
+        dialogTitle: strings.saveToFile_cdda1c,
         fileName: profileFileName(src.shortName, DateTime.now()),
         bytes: bytes,
       );
-      if (uri != null) toasts.success('Настройки сохранены');
+      if (uri != null) toasts.success(strings.settingsSaved_0c3942);
     } catch (e) {
-      toasts.error('Не удалось сохранить: $e');
+      toasts.error(strings.couldNotSave_6886a1((e).toString()));
     }
   }
 
   Future<void> _import() async {
+    final strings = context.l10n;
     final me = ref.read(radioProvider).myNodeNum;
     if (me == null) return;
     final DeviceProfile profile;
     try {
-      final files = await FilePicker.pickFiles(dialogTitle: 'Импорт настроек');
+      final files = await FilePicker.pickFiles(
+        dialogTitle: strings.importConfiguration_c776ef,
+      );
       if (files.isEmpty) return;
       profile = parseProfile(await files.first.readAsBytes());
     } on FormatException catch (e) {
       toasts.error(e.message);
       return;
     } catch (e) {
-      toasts.error('Не удалось открыть файл: $e');
+      toasts.error(strings.couldNotOpenFile_7fa8ac((e).toString()));
       return;
     }
     final src = await loadProfileSource(ref.read(databaseProvider), me);
@@ -135,7 +137,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
       currentModules: src.modules,
     );
     if (plan.items.isEmpty) {
-      toasts.error('В файле нет настроек');
+      toasts.error(strings.theFileContainsNoSettings_6865dd);
       return;
     }
     if (!mounted) return;
@@ -159,14 +161,18 @@ class _BackupPageState extends ConsumerState<BackupPage> {
       _progress = null;
     });
     if (r.ok) {
-      toasts.success('Настройки записаны, нода перезагрузится');
+      toasts.success(strings.settingsWrittenTheNodeWillRestart_ce3279);
     } else {
       toasts.error(
         r.failed == null
-            ? 'Основное записано. Не записано (нода перезагрузилась): '
-                  '${r.pending.join(', ')} — задайте вручную'
-            : 'Остановлено на «${r.failed}»'
-                  '${r.committed ? ' (основное сохранено)' : ''}',
+            ? strings.mainSettingsWrittenNotWrittenNode_5d2582(
+                (r.pending.join(', ')).toString(),
+              )
+            : strings.stoppedAt_546fe2(
+                (r.failed).toString(),
+                (r.committed ? context.l10n.mainSettingsSaved_00e02d : '')
+                    .toString(),
+              ),
       );
     }
   }
@@ -192,7 +198,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
     final plan = widget.plan;
     final muted = Theme.of(context).textTheme.bodySmall;
     return AlertDialog(
-      title: const Text('Импорт настроек'),
+      title: Text(context.l10n.importConfiguration_c776ef),
       content: SizedBox(
         width: 420,
         child: ListView(
@@ -205,7 +211,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
                   value: _on.contains(s),
                   onChanged: (v) =>
                       setState(() => v == true ? _on.add(s) : _on.remove(s)),
-                  title: Text(s.title),
+                  title: Text(context.builtIn(s.title)),
                   subtitle: Text(
                     [
                       for (final i in plan.items)
@@ -216,28 +222,34 @@ class _ReviewDialogState extends State<_ReviewDialog> {
                 ),
             if (plan.sections.contains(ProfileSection.security))
               Text(
-                'Безопасность меняет ключи и админ-доступ ноды — '
-                'включайте, только если это копия этой же ноды.',
+                context.l10n.securityChangesNodeKeysAndAdmin_a52c58,
                 style: muted,
               ),
             if (plan.items.any((i) => i.afterCommit && _on.contains(i.section)))
               Padding(
                 padding: const EdgeInsets.only(top: Tokens.s8),
                 child: Text(
-                  'Последними записываются: '
-                  '${[for (final i in plan.items)
-                    if (i.afterCommit) i.label].join(', ')}. '
-                  'После них нода перезагрузится, связь ненадолго прервётся.',
+                  context.l10n.writtenLastTheNodeWillThen_35a22d(
+                    ([
+                      for (final i in plan.items)
+                        if (i.afterCommit) i.label,
+                    ].join(', ')).toString(),
+                  ),
                   style: muted,
                 ),
               ),
             if (plan.unsupported.isNotEmpty) ...[
               const SizedBox(height: Tokens.s8),
-              Text('Пропущено: ${plan.unsupported.join('; ')}', style: muted),
+              Text(
+                context.l10n.skipped_29ab80(
+                  (plan.unsupported.join('; ')).toString(),
+                ),
+                style: muted,
+              ),
             ],
             const SizedBox(height: Tokens.s8),
             Text(
-              'После записи нода перезагрузится и подключение прервётся.',
+              context.l10n.theNodeWillRestartAfterWriting_a91c98,
               style: muted,
             ),
           ],
@@ -246,11 +258,11 @@ class _ReviewDialogState extends State<_ReviewDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Отмена'),
+          child: Text(context.l10n.cancel_0ec753),
         ),
         FilledButton(
           onPressed: _on.isEmpty ? null : () => Navigator.pop(context, _on),
-          child: const Text('Записать'),
+          child: Text(context.l10n.write_4be730),
         ),
       ],
     );

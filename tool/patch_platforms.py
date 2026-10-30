@@ -18,7 +18,7 @@ ORG = "ru.meshex"
 BT_TEXT = "Bluetooth нужен для подключения к ноде Meshtastic."
 NET_TEXT = "Локальная сеть нужна для подключения к ноде Meshtastic по Wi-Fi."
 CAM_TEXT = "Камера нужна, чтобы сканировать QR-код каналов Meshtastic."
-LOC_TEXT = "Позиция телефона передаётся вашей ноде, если это включено в настройках приложения."
+LOC_TEXT = "Позиция телефона используется на карте и в компасе. Передача своей ноде — только если включена в настройках приложения."
 
 
 def patch_android():
@@ -202,6 +202,7 @@ def patch_apple():
         "NSBluetoothAlwaysUsageDescription": BT_TEXT,
         "NSLocalNetworkUsageDescription": NET_TEXT,
         "NSLocationWhenInUseUsageDescription": LOC_TEXT,
+        "NSMotionUsageDescription": "Датчики движения помогают определять направление к ноде.",
         "NSCameraUsageDescription": CAM_TEXT,
     })
     # Поиск нод в локальной сети: iOS показывает только объявленные типы Bonjour.

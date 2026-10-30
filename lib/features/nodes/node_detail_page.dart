@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -27,18 +28,15 @@ import '../../data/message_sender.dart';
 import '../chat/chat_page.dart';
 import '../../ui/kit/kit.dart';
 import 'node_actions_ui.dart';
+import 'node_provider.dart';
+import 'compass/compass_controller.dart';
+import 'compass/compass_sheet.dart';
 import 'telemetry_ui.dart';
 import 'traceroute_ui.dart';
 import 'nodes_page.dart';
 import '../../app/link_badge.dart';
 
-/// Одна нода по номеру.
-final nodeProvider = StreamProvider.family<Node?, int>((ref, id) {
-  final db = ref.watch(databaseProvider);
-  return (db.select(
-    db.nodes,
-  )..where((n) => n.num.equals(id))).watchSingleOrNull();
-});
+export 'node_provider.dart';
 
 /// Карточка ноды: шапка, действия, сведения, позиция, трассировки, удаление.
 class NodeDetailPage extends ConsumerWidget {
@@ -69,9 +67,9 @@ class NodeDetailPage extends ConsumerWidget {
         error: (e, _) => EmptyState(icon: Icons.error_outline, text: '$e'),
         data: (n) {
           if (n == null) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.help_outline,
-              text: 'Нода не найдена',
+              text: context.l10n.nodeNotFound_9951e4,
             );
           }
           final isMe = n.num == me;
@@ -104,14 +102,14 @@ class NodeDetailPage extends ConsumerWidget {
                       : null,
                 ),
               if (keyLoad?.isLoading == true && block == DirectBlock.noKey)
-                const MeshTile(title: 'Получение ключа из зеркала…'),
+                MeshTile(title: context.l10n.retrievingKeyFromMirror_8c97ce),
               if (keyLoad?.hasError == true && block == DirectBlock.noKey)
                 MeshTile(
-                  title: 'Не удалось получить ключ из зеркала',
+                  title: context.l10n.couldNotRetrieveTheKeyFrom_693021,
                   trailing: TextButton(
                     onPressed: () =>
                         ref.invalidate(mirrorNodeKeyProvider(n.num)),
-                    child: const Text('Повторить'),
+                    child: Text(context.l10n.retry_9e506a),
                   ),
                 ),
               _BoardCard(n.hwModel),
@@ -138,9 +136,11 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final heard = [
-      if (n.lastHeard != null) lastHeardText(n.lastHeard!),
+      if (n.lastHeard != null) context.builtIn(lastHeardText(n.lastHeard!)),
       if (n.hopsAway != null)
-        n.hopsAway == 0 ? 'напрямую' : 'хопов: ${n.hopsAway}',
+        n.hopsAway == 0
+            ? context.l10n.direct_95dc0c
+            : context.l10n.hops_d23d4f((n.hopsAway).toString()),
       if (n.viaMqtt) 'MQTT',
     ].join(' · ');
     return Row(
@@ -178,54 +178,79 @@ class _DetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <(String, String)>[
-      ('Роль', roleTitle(n.role)),
-      ('Модель', hardwareName(n.hwModel)),
-      ('Номер', '${n.num}'),
-      if (n.firmwareVersion != null) ('Прошивка', n.firmwareVersion!),
+      (context.l10n.role_ab51a3, roleTitle(n.role)),
+      (context.l10n.model_f1f1ee, hardwareName(n.hwModel)),
+      (context.l10n.number_1bb3d1, '${n.num}'),
+      if (n.firmwareVersion != null)
+        (context.l10n.firmware_df1881, n.firmwareVersion!),
       if (n.firstHeard != null)
-        ('Первое обнаружение', lastHeardText(n.firstHeard!)),
-      if (n.lastHeard != null) ('Слышали', lastHeardText(n.lastHeard!)),
-      if (n.hopsAway != null) ('Хопов', '${n.hopsAway}'),
+        (
+          context.l10n.firstHeard_fb9dde,
+          context.builtIn(lastHeardText(n.firstHeard!)),
+        ),
+      if (n.lastHeard != null)
+        (
+          context.l10n.lastHeard_07e526,
+          context.builtIn(lastHeardText(n.lastHeard!)),
+        ),
+      if (n.hopsAway != null) (context.l10n.hops_859d39, '${n.hopsAway}'),
       if (n.snr != null)
         (
           'SNR',
-          '${n.snr!.toStringAsFixed(1)} дБ, ${qualityText(snrQuality(n.snr!, n.modemPreset))}',
+          context.l10n.db_660739(
+            (n.snr!.toStringAsFixed(1)).toString(),
+            (context.builtIn(
+              qualityText(snrQuality(n.snr!, n.modemPreset)),
+            )).toString(),
+          ),
         ),
-      if (n.rssi != null) ('RSSI', '${n.rssi} дБм'),
-      if (n.uptimeSeconds != null) ('Аптайм', uptimeText(n.uptimeSeconds!)),
+      if (n.rssi != null)
+        ('RSSI', context.l10n.dbm_aadd53((n.rssi).toString())),
+      if (n.uptimeSeconds != null)
+        (
+          context.l10n.uptime_d0d899,
+          context.builtIn(uptimeText(n.uptimeSeconds!)),
+        ),
       if (n.batteryLevel != null)
         (
-          'Батарея',
+          context.l10n.battery_96a4c3,
           [
-            n.batteryLevel! > 100 ? 'от сети' : '${n.batteryLevel}%',
-            if (n.voltage != null) '${n.voltage!.toStringAsFixed(2)} В',
+            n.batteryLevel! > 100
+                ? context.l10n.externalPower_963740
+                : '${n.batteryLevel}%',
+            if (n.voltage != null)
+              context.l10n.v_7e1412((n.voltage!.toStringAsFixed(2)).toString()),
           ].join(', '),
         ),
       if (n.channelUtilization != null)
         ('ChUtil', '${n.channelUtilization!.toStringAsFixed(1)}%'),
       if (n.airUtilTx != null)
         ('AirUtil', '${n.airUtilTx!.toStringAsFixed(1)}%'),
-      if (n.modemPreset != null) ('Пресет', n.modemPreset!),
-      ('Источник', nodeSourceText(n)),
-      ('Шифрование', n.publicKey?.isNotEmpty == true ? 'PKI' : 'нет ключа'),
-      if (n.hasXeddsaSigned) ('Подпись', 'XEdDSA'),
-      if (n.isUnmessagable) ('Сообщения', 'Неконтролируемый'),
+      if (n.modemPreset != null) (context.l10n.preset_a6549e, n.modemPreset!),
+      (context.l10n.source_8290a3, context.builtIn(nodeSourceText(n))),
+      (
+        context.l10n.encryption_72622e,
+        n.publicKey?.isNotEmpty == true ? 'PKI' : context.l10n.noKey_edc637,
+      ),
+      if (n.hasXeddsaSigned) (context.l10n.signature_a5dcf3, 'XEdDSA'),
+      if (n.isUnmessagable)
+        (context.l10n.messages_019803, context.l10n.unmonitored_0eff12),
     ];
     final key = n.publicKey;
     return SectionCard(
-      title: 'Сведения',
+      title: context.l10n.details_99bf04,
       children: [
         InfoGrid([for (final (k, v) in items) (k, v, null)]),
         if (key != null && key.isNotEmpty)
           MeshTile(
-            title: 'Публичный ключ',
+            title: context.l10n.publicKey_225a9f,
             subtitle: base64Encode(key),
             trailing: IconButton(
-              tooltip: 'Скопировать',
+              tooltip: context.l10n.copy_ed4950,
               icon: const Icon(Icons.copy),
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: base64Encode(key)));
-                toasts.show('Ключ скопирован');
+                toasts.show(context.l10n.keyCopied_c184c1);
               },
             ),
           ),
@@ -255,7 +280,7 @@ class _PositionCard extends StatelessWidget {
         : null;
     final to = (lat: pos.lat, lon: pos.lon);
     return SectionCard(
-      title: 'Позиция',
+      title: context.l10n.position_c139a7,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(Tokens.s8),
@@ -293,17 +318,17 @@ class _PositionCard extends StatelessWidget {
         MeshTile(
           title: coords,
           subtitle: [
-            positionNote(pos, lastHeardText) ??
+            context.builtInOrNull(positionNote(pos, lastHeardText)) ??
                 (!pos.mirror && pos.at == null && n.altitude != null
-                    ? 'высота ${n.altitude} м'
+                    ? context.l10n.altitudeM_dd3a3e((n.altitude).toString())
                     : null),
-            precisionText(pos.precisionBits),
+            context.builtInOrNull(precisionText(pos.precisionBits)),
           ].nonNulls.join(' · ').ifEmptyNull,
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                tooltip: 'Открыть в Картах',
+                tooltip: context.l10n.openInMaps_6bb0f2,
                 icon: const Icon(Icons.map_outlined),
                 onPressed: () => launchUrl(
                   mapsUri(p.latitude, p.longitude, defaultTargetPlatform),
@@ -311,22 +336,29 @@ class _PositionCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Скопировать',
+                tooltip: context.l10n.copy_ed4950,
                 icon: const Icon(Icons.copy),
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: coords));
-                  toasts.show('Координаты скопированы');
+                  toasts.show(context.l10n.coordinatesCopied_082ae9);
                 },
               ),
             ],
           ),
         ),
+        if (supportsNodeCompass)
+          MeshTile(
+            title: context.l10n.compassTitle,
+            leading: const Icon(Icons.explore_outlined),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => showNodeCompass(context, n.num),
+          ),
         if (from != null)
           MeshTile(
-            title: 'От своей ноды',
+            title: context.l10n.fromMyNode_336438,
             trailing: Text(
-              '${distanceText(distanceKm(from, to))}, '
-              '${bearingText(bearingDeg(from, to))}',
+              '${context.builtIn(distanceText(distanceKm(from, to)))}, '
+              '${context.bearingLabel(bearingDeg(from, to))}',
             ),
           ),
       ],
@@ -344,18 +376,18 @@ class _NoteCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final note = ref.watch(nodeNoteProvider(num)).value ?? '';
     return SectionCard(
-      title: 'Заметка',
+      title: context.l10n.note_917b58,
       children: [
         MeshTile(
-          title: note.isEmpty ? 'Добавить заметку' : note,
-          subtitle: note.isEmpty ? 'Видна только вам' : null,
+          title: note.isEmpty ? context.l10n.addNote_57d0f4 : note,
+          subtitle: note.isEmpty ? context.l10n.visibleOnlyToYou_e71a47 : null,
           trailing: const Icon(Icons.edit_outlined),
           onTap: () async {
             final c = TextEditingController(text: note);
             final v = await showDialog<String>(
               context: context,
               builder: (d) => AlertDialog(
-                title: const Text('Заметка'),
+                title: Text(context.l10n.note_917b58),
                 content: TextField(
                   controller: c,
                   autofocus: true,
@@ -366,11 +398,11 @@ class _NoteCard extends ConsumerWidget {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(d),
-                    child: const Text('Отмена'),
+                    child: Text(context.l10n.cancel_0ec753),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(d, c.text),
-                    child: const Text('Сохранить'),
+                    child: Text(context.l10n.save_486405),
                   ),
                 ],
               ),
@@ -403,7 +435,7 @@ class _BoardCard extends StatelessWidget {
     final assets = hardwareImageAssets(hwModel);
     final t = Theme.of(context).textTheme;
     return SectionCard(
-      title: hardwareSectionTitle(hwModel, info),
+      title: context.builtIn(hardwareSectionTitle(hwModel, info)),
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -437,7 +469,7 @@ class _BoardCard extends StatelessWidget {
                     Text(info.name, style: t.titleMedium),
                     const SizedBox(height: Tokens.s4),
                     Text(
-                      hardwareDescription(hwModel, info),
+                      context.builtIn(hardwareDescription(hwModel, info)),
                       style: t.bodySmall,
                     ),
                   ],
@@ -471,18 +503,12 @@ class _KeyMismatch extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Несоответствие открытого ключа',
+                  context.l10n.publicKeyMismatch_a6a194,
                   style: t.titleMedium?.copyWith(color: error),
                 ),
                 const SizedBox(height: Tokens.s4),
                 Text(
-                  'Проверьте, с кем вы общаетесь, сравнив открытые ключи при '
-                  'личной встрече или по телефону. Самый последний открытый '
-                  'ключ для этой ноды не совпадает с ранее записанным ключом. '
-                  'Вы можете удалить ноду и позволить ей снова обменяться '
-                  'ключами, если смена ключа произошла из-за сброса настроек '
-                  'или другого преднамеренного действия, но это также может '
-                  'указывать на более серьезную проблему безопасности.',
+                  context.l10n.verifyWhoYouAreMessagingWith_690825,
                   style: t.bodySmall,
                 ),
               ],

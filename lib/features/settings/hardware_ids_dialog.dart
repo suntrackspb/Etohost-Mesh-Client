@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,9 +30,9 @@ class _HardwareIdsDialog extends ConsumerWidget {
     );
     final style = Theme.of(context).textTheme;
     return AlertDialog(
-      title: const Text('Аппаратные id ноды'),
+      title: Text(context.l10n.nodeHardwareIds_a78041),
       content: r.myInfo == null
-          ? const Text('Подключитесь к ноде')
+          ? Text(context.l10n.connectToANode_6caeff)
           : SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +43,7 @@ class _HardwareIdsDialog extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(k, style: style.labelSmall),
+                          Text(context.builtIn(k), style: style.labelSmall),
                           SelectableText(
                             v,
                             style: style.bodyMedium?.copyWith(
@@ -60,13 +61,13 @@ class _HardwareIdsDialog extends ConsumerWidget {
           TextButton(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: ids.asText()));
-              toasts.success('Скопировано');
+              toasts.success(context.l10n.copied_892254);
             },
-            child: const Text('Копировать'),
+            child: Text(context.l10n.copy_4a05d8),
           ),
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Закрыть'),
+          child: Text(context.l10n.close_4ae50d),
         ),
       ],
     );

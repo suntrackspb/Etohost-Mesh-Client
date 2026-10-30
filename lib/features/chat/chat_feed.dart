@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
@@ -144,6 +145,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
     final m = await showSearch<Message?>(
       context: context,
       delegate: ChatSearchDelegate(
+        searchLabel: context.builtIn('Поиск по сообщениям'),
         search: (q) => actions.search(id, q),
         nodes: nodes,
       ),
@@ -169,6 +171,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
   }
 
   Future<void> _loadMore(int loaded) async {
+    final strings = context.l10n;
     if (_loadingMore) return;
     final limit = feedLimitProvider(widget.id);
     final current = ref.read(limit);
@@ -194,7 +197,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
       }
     } catch (e) {
       if (mounted) {
-        toasts.error('История не загружена: $e');
+        toasts.error(strings.historyNotLoaded_652fe3((e).toString()));
       }
     } finally {
       if (mounted) setState(() => _loadingMore = false);
@@ -222,7 +225,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
             .firstOrNull;
         title = channel?.title ?? key;
         blocked = channel?.index == null
-            ? 'Канал есть только в зеркале — писать в него нельзя.'
+            ? context.l10n.thisChannelExistsOnlyInThe_30433a
             : null;
       case DirectTarget(:final num):
         title = _authorName(nodes, num);
@@ -232,9 +235,10 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
         blocked = switch (directBlock(nodes[num])) {
           DirectBlock.noKey =>
             keyLoad?.isLoading == true
-                ? 'Получение публичного ключа из зеркала…'
-                : 'Нет публичного ключа ноды — дождитесь NodeInfo или повторите загрузку из зеркала в карточке ноды.',
-          DirectBlock.unmessagable => 'Нода не принимает личные сообщения.',
+                ? context.l10n.retrievingPublicKeyFromMirror_c82d52
+                : context.l10n.noNodePublicKeyWaitFor_f9fbc4,
+          DirectBlock.unmessagable =>
+            context.l10n.thisNodeDoesNotAcceptDirect_338e6e,
           null => null,
         };
     }
@@ -278,7 +282,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Поиск',
+            tooltip: context.l10n.search_6433b5,
             icon: const Icon(Icons.search),
             onPressed: () => _search(nodes),
           ),
@@ -375,6 +379,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
 
   /// Пинг в основном канале: предложить сервисный канал.
   Future<_PingChoice> _pingChoice(String text) async {
+    final strings = context.l10n;
     final target = ChatTarget.parse(widget.id);
     final primary =
         target is ChannelTarget && (_channel(target.key)?.primary ?? false);
@@ -383,25 +388,29 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
     final choice = await showDialog<_PingChoice>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Отправить пинг в Services?'),
+        title: Text(strings.sendAPingToServices_afe5a4),
         content: Text(
-          'Пинги принято отправлять в сервисный канал, там отвечают боты.'
-          '${services ? '' : '\n\nКанала Services на ноде нет — добавьте '
-                    'его в настройках каналов.'}',
+          strings.pingsAreUsuallySentToThe_159914(
+            (services
+                    ? ''
+                    : '\n\nКанала Services на ноде нет — добавьте '
+                          'его в настройках каналов.')
+                .toString(),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, _PingChoice.cancel),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, _PingChoice.send),
-            child: const Text('Всё равно отправить'),
+            child: Text(strings.sendAnyway_c6bcaa),
           ),
           if (services)
             FilledButton(
               onPressed: () => Navigator.pop(ctx, _PingChoice.services),
-              child: const Text('Отправить в Services'),
+              child: Text(strings.sendToServices_7ae0e3),
             ),
         ],
       ),
@@ -465,7 +474,7 @@ class _ChatFeedState extends ConsumerState<ChatFeed> {
 
   void _error(Object e) {
     if (!mounted) return;
-    toasts.error('Не отправлено: $e');
+    toasts.error(context.l10n.notSent_04b25a((e).toString()));
   }
 }
 
@@ -670,9 +679,9 @@ class _MessageListState extends ConsumerState<_MessageList> {
       }
     }
     if (visible.isEmpty && !canLoadMore) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.chat_bubble_outline,
-        text: 'Сообщений пока нет',
+        text: context.l10n.noMessagesYet_165664,
       );
     }
     final more = canLoadMore ? 1 : 0;
@@ -724,7 +733,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
                     )
                   : TextButton(
                       onPressed: onLoadMore,
-                      child: const Text('Загрузить ещё'),
+                      child: Text(context.l10n.loadMore_010963),
                     ),
             );
           }
@@ -772,7 +781,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (day) _DayChip(dayLabel(m.rxTime, DateTime.now())),
+              if (day) _DayChip(context.dayLabel(m.rxTime, DateTime.now())),
               if (i == firstNew) const _NewDivider(),
               bubble,
             ],
@@ -792,7 +801,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
               label: Text(w.unread > 999 ? '999+' : '${w.unread}'),
               child: FloatingActionButton.small(
                 heroTag: 'feedDown:$feedId',
-                tooltip: 'Вниз, всё прочитано',
+                tooltip: context.l10n.scrollDownAllMessagesRead_292955,
                 onPressed: _toBottom,
                 child: const Icon(Icons.keyboard_arrow_down),
               ),
@@ -855,7 +864,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
                             icon: Text(e, style: const TextStyle(fontSize: 24)),
                           ),
                         IconButton(
-                          tooltip: 'Другие эмодзи',
+                          tooltip: context.l10n.moreEmoji_2bfd6b,
                           onPressed: () async {
                             Navigator.pop(ctx);
                             final e = await pickEmoji(context);
@@ -881,7 +890,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
               if (canWrite)
                 ListTile(
                   leading: const Icon(Icons.reply),
-                  title: const Text('Ответить'),
+                  title: Text(context.l10n.reply_c6f466),
                   onTap: () {
                     Navigator.pop(ctx);
                     onReply(m);
@@ -889,11 +898,11 @@ class _MessageListState extends ConsumerState<_MessageList> {
                 ),
               ListTile(
                 leading: const Icon(Icons.copy),
-                title: const Text('Копировать текст'),
+                title: Text(context.l10n.copyText_667f44),
                 onTap: () {
                   Navigator.pop(ctx);
                   Clipboard.setData(ClipboardData(text: m.body));
-                  toasts.success('Скопировано');
+                  toasts.success(context.l10n.copied_892254);
                 },
               ),
               const Divider(height: 1),
@@ -901,7 +910,7 @@ class _MessageListState extends ConsumerState<_MessageList> {
                 ListTile(
                   dense: true,
                   leading: const Icon(Icons.tag),
-                  title: Text(label),
+                  title: Text(context.builtIn(label)),
                   subtitle: Text(
                     value,
                     style: const TextStyle(fontFamily: 'monospace'),
@@ -909,13 +918,13 @@ class _MessageListState extends ConsumerState<_MessageList> {
                   onTap: () {
                     Navigator.pop(ctx);
                     Clipboard.setData(ClipboardData(text: value));
-                    toasts.success('Скопировано');
+                    toasts.success(context.l10n.copied_892254);
                   },
                 ),
               if (failed && canSend)
                 ListTile(
                   leading: const Icon(Icons.refresh),
-                  title: const Text('Отправить ещё раз'),
+                  title: Text(context.l10n.sendAgain_625609),
                   onTap: () {
                     Navigator.pop(ctx);
                     ref.read(messageSenderProvider).retry(m);
@@ -1045,7 +1054,7 @@ class _Bubble extends StatelessWidget {
               ),
             if (filtered)
               Text(
-                'Отфильтрованные',
+                context.l10n.filtered_a13eeb,
                 style: text.labelSmall?.copyWith(
                   color: scheme.onSurfaceVariant,
                 ),
@@ -1074,8 +1083,8 @@ class _Bubble extends StatelessWidget {
                   const SizedBox(width: Tokens.s4),
                 ],
                 if (message.xeddsaSigned) ...[
-                  const Tooltip(
-                    message: 'Подпись отправителя проверена',
+                  Tooltip(
+                    message: context.l10n.senderSignatureVerified_96ee0d,
                     child: Icon(Icons.draw_outlined, size: 12),
                   ),
                   const SizedBox(width: Tokens.s4),
@@ -1162,7 +1171,7 @@ class _NewDivider extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Tokens.s8),
             child: Text(
-              'Новые сообщения',
+              context.l10n.newMessages_f8bbc3,
               style: Theme.of(
                 context,
               ).textTheme.labelMedium?.copyWith(color: scheme.primary),
@@ -1231,7 +1240,7 @@ class _Quote extends StatelessWidget {
       ),
       child: Text(
         quoted == null
-            ? 'Ответ на сообщение'
+            ? context.l10n.replyToMessage_4e6ac3
             : '${author ?? ''}: ${quoted!.body}',
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
@@ -1257,7 +1266,7 @@ class _AckIcon extends StatelessWidget {
       Delivery.failed => (Icons.error_outline, scheme.error),
     };
     return Tooltip(
-      message: deliveryHint(message),
+      message: context.builtIn(deliveryHint(message)),
       child: Icon(icon, size: 14, color: color),
     );
   }
@@ -1276,7 +1285,7 @@ class _SourceIcons extends StatelessWidget {
       context,
     ).textTheme.labelSmall?.copyWith(color: color);
     final hops = messageHops(message);
-    final signal = directSignal(message);
+    final signal = context.builtInOrNull(directSignal(message));
     Widget label(IconData icon, String text, String hint) => Tooltip(
       message: hint,
       child: Row(
@@ -1291,9 +1300,17 @@ class _SourceIcons extends StatelessWidget {
     // Как в iOS: RX и хопы для эфира, иначе зеркало.
     final items = [
       if (message.heardOnRadio && !message.isOutgoing) ...[
-        label(CupertinoIcons.dot_radiowaves_right, 'RX', 'Слышно в эфире'),
+        label(
+          CupertinoIcons.dot_radiowaves_right,
+          'RX',
+          context.l10n.heardOverTheAir_d31ee9,
+        ),
         if (hops != null)
-          label(CupertinoIcons.arrow_branch, '$hops', 'Хопов: $hops'),
+          label(
+            CupertinoIcons.arrow_branch,
+            '$hops',
+            context.l10n.hops_3baa0e((hops).toString()),
+          ),
         if (signal != null) Text(signal, style: style),
       ] else if (mirror && message.heardOnMirror)
         // Своё сообщение ушло через свою ноду: зеркало лишь услышало его
@@ -1302,9 +1319,13 @@ class _SourceIcons extends StatelessWidget {
             ? label(
                 CupertinoIcons.dot_radiowaves_right,
                 'TX',
-                'Отправлено в эфир',
+                context.l10n.sentOverTheAir_740ec0,
               )
-            : label(CupertinoIcons.globe, 'NET', 'Из зеркала'),
+            : label(
+                CupertinoIcons.globe,
+                'NET',
+                context.l10n.fromMirror_f5296f,
+              ),
     ];
     // Row, а не Wrap: Wrap не учитывает spacing в intrinsic-ширине,
     // и пузырь (IntrinsicWidth) получался уже футера.
@@ -1338,7 +1359,7 @@ class _FilterMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => PopupMenuButton<VoidCallback>(
-    tooltip: 'Фильтр сообщений',
+    tooltip: context.l10n.messageFilter_cf2a46,
     icon: Badge(
       isLabelVisible: count > 0 && !shown && !offHere,
       label: Text('$count'),
@@ -1353,13 +1374,17 @@ class _FilterMenu extends StatelessWidget {
           value: onToggleShown,
           child: Text(
             shown
-                ? 'Скрыть $count отфильтрованных'
-                : 'Показать $count отфильтрованных',
+                ? context.l10n.hideFilteredMessages_3a8226((count).toString())
+                : context.l10n.showFilteredMessages_0be3c1((count).toString()),
           ),
         ),
       PopupMenuItem(
         value: onToggleHere,
-        child: Text(offHere ? 'Включить фильтрацию' : 'Отключить фильтрацию'),
+        child: Text(
+          offHere
+              ? context.l10n.enableFilterHere_f6dfd3
+              : context.l10n.disableFilterHere_24f1d5,
+        ),
       ),
     ],
   );
@@ -1377,7 +1402,7 @@ class RelayChip extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final color = scheme.outline;
     return Tooltip(
-      message: 'Шлюзы: $count. Показать на карте',
+      message: context.l10n.gatewaysShowOnMap_6e8104((count).toString()),
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: onTap,
@@ -1433,13 +1458,13 @@ class _KeyMismatchBar extends StatelessWidget {
           const SizedBox(width: Tokens.s4),
           Flexible(
             child: Text(
-              'Возникла проблема с открытым ключом этого контакта.',
+              context.l10n.thereIsAnIssueWithThis_da58d6,
               style: t.bodySmall,
             ),
           ),
           TextButton(
             onPressed: () => openNode(context, num),
-            child: const Text('Подробности...'),
+            child: Text(context.l10n.details_abaf4c),
           ),
         ],
       ),
@@ -1547,6 +1572,7 @@ class _ComposerState extends ConsumerState<_Composer> {
   (int, int)? _progress;
 
   Future<void> _submit() async {
+    final strings = context.l10n;
     final zip = _zip;
     if (_progress != null || !_valid(zip) || !ref.read(canSendProvider)) {
       return;
@@ -1568,7 +1594,9 @@ class _ComposerState extends ConsumerState<_Composer> {
     if (sent == parts.length) {
       _text.clear();
     } else if (sent > 0) {
-      toasts.show('Отправлено $sent из ${parts.length}');
+      toasts.show(
+        strings.sentOf_167cc7((sent).toString(), (parts.length).toString()),
+      );
     }
     _focus.requestFocus();
   }
@@ -1577,6 +1605,7 @@ class _ComposerState extends ConsumerState<_Composer> {
 
   /// Выбрать картинку, загрузить и вставить ссылку в поле.
   Future<void> _attachImage(ImageUploads images) async {
+    final strings = context.l10n;
     // Поле в фокусе, пока открыт системный выбор фото: после возврата iOS
     // поднимает клавиатуру сама, а Flutter не получает её высоту — поле
     // ввода оказывается под клавиатурой. Снимаем фокус заранее и
@@ -1591,7 +1620,7 @@ class _ComposerState extends ConsumerState<_Composer> {
       final sep = t.isEmpty || t.endsWith(' ') || t.endsWith('\n') ? '' : ' ';
       _text.text = '$t$sep${img.url}';
       _text.selection = TextSelection.collapsed(offset: _text.text.length);
-      toasts.success('Картинка загружена, хранится 3 дня');
+      toasts.success(strings.imageUploadedStoredForDays_144c69);
     } catch (e) {
       toasts.error('$e');
     } finally {
@@ -1653,7 +1682,7 @@ class _ComposerState extends ConsumerState<_Composer> {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Отменить ответ',
+                      tooltip: context.l10n.cancelReply_d5465b,
                       icon: const Icon(Icons.close, size: 18),
                       onPressed: widget.onCancelReply,
                     ),
@@ -1673,8 +1702,13 @@ class _ComposerState extends ConsumerState<_Composer> {
                       parts <= 1
                           ? '$bytes / $maxMessageBytes'
                           : over
-                          ? 'Слишком длинно: больше ${MessageSplit.maxParts} сообщений'
-                          : '$bytes байт · уйдёт $parts сообщениями',
+                          ? context.l10n.tooLongMoreThanMessages_f438b3(
+                              (MessageSplit.maxParts).toString(),
+                            )
+                          : context.l10n.bytesWillSendAsMessages_e34c7b(
+                              (bytes).toString(),
+                              (parts).toString(),
+                            ),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: over ? scheme.error : scheme.onSurfaceVariant,
                       ),
@@ -1700,8 +1734,8 @@ class _ComposerState extends ConsumerState<_Composer> {
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                           hintText: canSend
-                              ? 'Сообщение'
-                              : 'Подключитесь к ноде, чтобы писать',
+                              ? context.l10n.message_dc7234
+                              : context.l10n.connectToANodeToSend_67b4d9,
                           border: InputBorder.none,
                           // Одна строка — ровно высота кнопок (48), текст
                           // по центру вровень с ними.
@@ -1728,7 +1762,7 @@ class _ComposerState extends ConsumerState<_Composer> {
                             ),
                           )
                         : IconButton(
-                            tooltip: 'Картинка',
+                            tooltip: context.l10n.image_690092,
                             icon: const Icon(Icons.image_outlined),
                             onPressed: canSend
                                 ? () => _attachImage(images)
@@ -1751,7 +1785,7 @@ class _ComposerState extends ConsumerState<_Composer> {
                     )
                   else
                     IconButton(
-                      tooltip: 'Отправить',
+                      tooltip: context.l10n.send_76dcf7,
                       icon: const Icon(Icons.send),
                       onPressed: canSend && _valid(zip) ? _submit : null,
                     ),
@@ -1823,7 +1857,9 @@ class _PkiIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Tooltip(
-    message: encrypted ? 'Зашифровано' : 'Не зашифровано',
+    message: encrypted
+        ? context.l10n.encrypted_347a1a
+        : context.l10n.notEncrypted_c40021,
     child: Icon(
       encrypted ? Icons.lock : Icons.lock_open,
       size: size,
@@ -1852,7 +1888,7 @@ class _HiddenBodyState extends State<_HiddenBody> {
     return InkWell(
       onTap: () => setState(() => _open = true),
       child: Text(
-        'Сообщение от игнорируемой ноды — показать',
+        context.l10n.messageFromAnIgnoredNodeTap_0685fd,
         style: t.textTheme.bodySmall?.copyWith(
           color: t.colorScheme.onSurfaceVariant,
           fontStyle: FontStyle.italic,

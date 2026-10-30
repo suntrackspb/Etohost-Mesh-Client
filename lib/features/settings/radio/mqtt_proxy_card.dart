@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -29,7 +30,7 @@ class MqttProxyCard extends ConsumerWidget {
     return SectionCard(
       children: [
         SwitchListTile(
-          title: const Text(MqttSection.proxyLocal),
+          title: Text(context.builtIn(MqttSection.proxyLocal)),
           secondary: const Icon(Icons.dns_outlined),
           subtitle: on
               ? Text(proxy.statusText, style: TextStyle(color: color))
@@ -40,10 +41,12 @@ class MqttProxyCard extends ConsumerWidget {
         ),
         if (on && proxy.state == MqttProxyState.connected)
           MeshTile(
-            title: 'Трафик',
-            subtitle:
-                'В брокер: ${proxy.published} · в ноду: ${proxy.forwarded} · '
-                'отброшено: ${proxy.dropped}',
+            title: context.l10n.traffic_6990f2,
+            subtitle: context.l10n.toBrokerToNodeDropped_856a68(
+              (proxy.published).toString(),
+              (proxy.forwarded).toString(),
+              (proxy.dropped).toString(),
+            ),
             leading: const Icon(Icons.swap_vert),
             trailing: const SizedBox.shrink(),
           ),

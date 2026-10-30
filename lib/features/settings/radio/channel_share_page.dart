@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,14 +51,14 @@ class _ChannelSharePageState extends ConsumerState<ChannelSharePage> {
         : ChannelLink.encode(set, add: !_replace);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Поделиться QR-кодом'),
+        title: Text(context.l10n.shareQrCode_6584cb),
         actions: const [LinkBadge()],
       ),
       body: ListView(
         padding: pagePadding(context),
         children: [
           SectionCard(
-            title: 'Включить',
+            title: context.l10n.include_66be7e,
             children: [
               for (final c in rows)
                 CheckboxListTile(
@@ -74,13 +75,11 @@ class _ChannelSharePageState extends ConsumerState<ChannelSharePage> {
           SectionCard(
             children: [
               SwitchListTile(
-                title: const Text('Заменить каналы'),
+                title: Text(context.l10n.replaceChannels_d0b4ac),
                 subtitle: Text(
                   _replace
-                      ? 'Этот QR-код содержит полную конфигурацию. Это заменит '
-                            'ваши существующие каналы и настройки радио.'
-                      : 'Каналы будут добавлены; существующие каналы и '
-                            'настройки LoRa сохранятся.',
+                      ? context.l10n.thisQrCodeContainsAFull_84c455
+                      : context.l10n.channelsWillBeAddedExistingChannels_dfb994,
                 ),
                 value: _replace,
                 onChanged: (v) => setState(() => _replace = v),
@@ -100,11 +99,11 @@ class _ChannelSharePageState extends ConsumerState<ChannelSharePage> {
             const SizedBox(height: Tokens.s8),
             OutlinedButton.icon(
               icon: const Icon(Icons.copy),
-              label: const Text('Копировать'),
+              label: Text(context.l10n.copy_4a05d8),
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: url));
                 if (context.mounted) {
-                  toasts.success('Скопировано');
+                  toasts.success(context.l10n.copied_892254);
                 }
               },
             ),
@@ -159,7 +158,7 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Импортировать'),
+        title: Text(context.l10n.import_55fd5f),
         actions: const [LinkBadge()],
       ),
       body: ListView(
@@ -168,12 +167,12 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
           if (canScanQr) ...[
             OutlinedButton.icon(
               icon: const Icon(Icons.qr_code_scanner),
-              label: const Text('Сканировать QR-код общих каналов'),
+              label: Text(context.l10n.scanSharedChannelsQrCode_e4128b),
               onPressed: () async {
                 final text = await Navigator.of(context).push<String>(
                   MaterialPageRoute(
                     builder: (_) => QrScanPage(
-                      title: 'Сканировать QR-код общих каналов',
+                      title: context.l10n.scanSharedChannelsQrCode_e4128b,
                       accept: _isChannelOrContact,
                     ),
                   ),
@@ -201,7 +200,7 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
             minLines: 1,
             maxLines: 4,
             decoration: InputDecoration(
-              labelText: 'URL канала',
+              labelText: context.l10n.channelUrl_8b64fd,
               hintText: 'https://meshtastic.org/e/#…',
               errorText: error,
               suffixIcon: IconButton(
@@ -225,12 +224,12 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
               segments: [
                 ButtonSegment(
                   value: false,
-                  label: const Text('Заменить каналы'),
+                  label: Text(context.l10n.replaceChannels_d0b4ac),
                   enabled: !link.add,
                 ),
-                const ButtonSegment(
+                ButtonSegment(
                   value: true,
-                  label: Text('Добавить каналы'),
+                  label: Text(context.l10n.addChannels_236dd4),
                 ),
               ],
               selected: {add},
@@ -239,17 +238,16 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
             const SizedBox(height: Tokens.s8),
             Text(
               add
-                  ? 'В QR-коде были найдены следующие каналы. Существующие '
-                        'каналы будут сохранены.'
-                  : 'Этот QR-код содержит полную конфигурацию. Это заменит '
-                        'ваши существующие каналы и настройки радио. Все '
-                        'существующие каналы будут удалены.',
+                  ? context.l10n.theFollowingChannelsWereFoundIn_c3f485
+                  : context.l10n.thisQrCodeContainsAComplete_8382f2,
             ),
             SectionCard(
               children: [
                 for (final s in link.set.settings)
                   MeshTile(
-                    title: s.name.isEmpty ? 'по умолчанию' : s.name,
+                    title: s.name.isEmpty
+                        ? context.l10n.default_0d558f
+                        : s.name,
                     trailing: Icon(
                       s.psk.length > 1 ? Icons.lock : Icons.lock_open,
                       size: 18,
@@ -273,7 +271,7 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
                       dimension: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Сохранить'),
+                  : Text(context.l10n.save_486405),
             ),
           ],
         ],
@@ -282,23 +280,26 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
   }
 
   Future<void> _import(ChannelImportPlan plan, bool add) async {
+    final strings = context.l10n;
     final yes = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: Text(add ? 'Добавить каналы' : 'Заменить каналы'),
+        title: Text(
+          add ? strings.addChannels_236dd4 : strings.replaceChannels_d0b4ac,
+        ),
         content: Text(
           add
-              ? 'Каналы будут добавлены на ноду.'
-              : 'Каналы и настройки LoRa на ноде будут заменены.',
+              ? strings.channelsWillBeAddedToThe_32e8d4
+              : strings.channelsAndLoraSettingsOnThe_31a15a,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Подтверждение'),
+            child: Text(strings.confirm_846aff),
           ),
         ],
       ),
@@ -313,7 +314,9 @@ class _ChannelImportPageState extends ConsumerState<ChannelImportPage> {
     if (!mounted) return;
     setState(() => _saving = false);
     toasts.show(
-      ok ? 'Каналы сохранены' : 'Нода не подтвердила',
+      ok
+          ? strings.channelsSaved_dbb2d3
+          : strings.notAcknowledgedByTheNode_90929d,
       kind: ok ? ToastKind.success : ToastKind.error,
     );
     if (ok) Navigator.of(context).pop();

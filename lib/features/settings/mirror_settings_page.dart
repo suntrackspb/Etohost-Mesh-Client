@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -35,9 +36,10 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
 
   /// Проверить адрес запросом к API и, если это зеркало, сохранить и включить.
   Future<void> _checkAndEnable() async {
+    final strings = context.l10n;
     final url = normalizeMirrorUrl(_address.text);
     if (url == null) {
-      setState(() => _error = 'Неверный адрес');
+      setState(() => _error = strings.invalidAddress_e5fb1c);
       return;
     }
     setState(() {
@@ -50,9 +52,15 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
       final count = await api.probe();
       await _db.setSetting(AppSettingKeys.mirrorAddress, _address.text.trim());
       await _db.setSetting(AppSettingKeys.mirrorEnabled, 'true');
-      if (mounted) setState(() => _ok = 'Зеркало отвечает, нод: $count');
+      if (mounted) {
+        setState(
+          () => _ok = strings.mirrorRespondingNodes_d2a09d((count).toString()),
+        );
+      }
     } on MirrorApiException catch (e) {
-      if (mounted) setState(() => _error = 'Не удалось: $e');
+      if (mounted) {
+        setState(() => _error = strings.failed_317897((e).toString()));
+      }
     } finally {
       api.close();
       if (mounted) setState(() => _checking = false);
@@ -78,22 +86,21 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Зеркало'),
+        title: Text(context.l10n.mirror_66ace6),
         actions: const [LinkBadge()],
       ),
       body: ListView(
         padding: pagePadding(context),
         children: [
           SectionCard(
-            footer:
-                'Адрес сервера зеркала: с него приходят чат и ноды из MQTT. '
-                'Пока зеркало выключено, приложение не подключается к нему. '
-                'Проверка адреса тоже отправляет запрос на указанный сервер.',
+            footer: context.l10n.mirrorServerAddressChatMessagesAnd_64453e,
             children: [
               SwitchListTile.adaptive(
                 secondary: const Icon(Icons.public),
-                title: const Text('Зеркало'),
-                subtitle: Text(enabled ? _stateText(rt) : 'Выключено'),
+                title: Text(context.l10n.mirror_66ace6),
+                subtitle: Text(
+                  enabled ? _stateText(rt) : context.l10n.disabled_d934ae,
+                ),
                 value: enabled,
                 // Включение — только через проверку адреса.
                 onChanged: _checking
@@ -107,13 +114,13 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                   keyboardType: TextInputType.url,
                   autocorrect: false,
                   decoration: InputDecoration(
-                    labelText: 'Адрес',
+                    labelText: context.l10n.address_8db46e,
                     errorText: _address.text.trim().isNotEmpty && draft == null
-                        ? 'Неверный адрес'
+                        ? context.l10n.invalidAddress_e5fb1c
                         : null,
                     helperText: draft == null
                         ? null
-                        : 'Будет использован: $draft',
+                        : context.l10n.willUse_0a9e87((draft).toString()),
                   ),
                   onChanged: (_) => setState(() {
                     _error = null;
@@ -150,8 +157,8 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                           : _checkAndEnable,
                       child: Text(
                         enabled && changed
-                            ? 'Проверить и применить'
-                            : 'Проверить и включить',
+                            ? context.l10n.checkAndApply_5b616e
+                            : context.l10n.checkAndEnable_38d621,
                       ),
                     ),
                     if (_checking)
@@ -165,7 +172,7 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                         rt.state != MirrorState.connected)
                       TextButton(
                         onPressed: rt.reconnectNow,
-                        child: const Text('Переподключить'),
+                        child: Text(context.l10n.reconnect_91c240),
                       ),
                   ],
                 ),
@@ -179,7 +186,7 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                     Tokens.s16,
                   ),
                   child: Text(
-                    _error ?? _ok!,
+                    context.builtIn(_error ?? _ok!),
                     style: TextStyle(
                       color: _error != null
                           ? theme.colorScheme.error
@@ -192,9 +199,7 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
           if (hidden.isNotEmpty) ...[
             const SizedBox(height: Tokens.s16),
             SectionCard(
-              footer:
-                  'Сообщения скрытых каналов не загружаются из зеркала. '
-                  'Вернёте канал — его лента подгрузится снова.',
+              footer: context.l10n.messagesFromHiddenChannelsAreNot_ae5ae7,
               children: [
                 for (final k in [...hidden]..sort())
                   ListTile(
@@ -202,7 +207,7 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
                     title: Text(k),
                     trailing: TextButton(
                       onPressed: () => _db.unhideChannel(k),
-                      child: const Text('Вернуть'),
+                      child: Text(context.l10n.restore_c7aaa9),
                     ),
                   ),
               ],
@@ -214,11 +219,14 @@ class _MirrorSettingsPageState extends ConsumerState<MirrorSettingsPage> {
   }
 
   String _stateText(MirrorRealtime? rt) => switch (rt?.state) {
-    null || MirrorState.idle => 'Ожидание',
-    MirrorState.connecting => 'Подключение…',
-    MirrorState.connected => 'На связи',
-    MirrorState.waiting => 'Нет связи, повтор через ${rt!.retryIn} с',
-    MirrorState.outdated => 'Версия приложения устарела — обновите его',
+    null || MirrorState.idle => context.l10n.waiting_5813a9,
+    MirrorState.connecting => context.l10n.connecting_40b27e,
+    MirrorState.connected => context.l10n.connected_1578f2,
+    MirrorState.waiting => context.l10n.disconnectedRetryingInS_c55f01(
+      (rt!.retryIn).toString(),
+    ),
+    MirrorState.outdated =>
+      context.l10n.yourApplicationVersionIsOutdatedPlease_d5ccc4,
   };
 }
 
@@ -239,33 +247,15 @@ class _ServerDisclosure extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Подключение к серверу сообщества',
+            context.l10n.connectingToACommunityServer_a8bcbd,
             style: theme.textTheme.titleSmall,
           ),
           const SizedBox(height: Tokens.s8),
-          const Text(
-            'Вы сами выбираете сервер. Его оператор управляет содержимым, '
-            'доступностью и хранением данных; клиент не управляет этим сервером. '
-            'Подключайтесь к операторам, которым доверяете.',
-          ),
+          Text(context.l10n.youChooseTheServerItsOperator_f140c4),
           const SizedBox(height: Tokens.s8),
-          const Text(
-            'При проверке адреса и подключении сервер получает:\n'
-            '• IP-адрес вашего соединения и время запросов;\n'
-            '• версию приложения и платформу;\n'
-            '• запрашиваемые данные — например, ID просматриваемой ноды '
-            'или диапазон истории сообщений.\n'
-            'Оператор может сохранять эти сведения в журнале сервера.',
-          ),
+          Text(context.l10n.whenCheckingAnAddressOrConnecting_ac269f),
           const SizedBox(height: Tokens.s8),
-          const Text(
-            'Сервер также может предлагать сервисы изображений и отчётов '
-            'на других адресах. При обращении к ним их операторы тоже видят '
-            'IP-адрес и запросы. При загрузке изображения передаются файл '
-            'и ID ноды; при жалобе — ID ноды, ID изображения '
-            'и причина жалобы. Состав диагностического отчёта '
-            'показан отдельно перед отправкой.',
-          ),
+          Text(context.l10n.theServerMayAlsoOfferImage_a319bd),
         ],
       ),
     );

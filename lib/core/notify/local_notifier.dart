@@ -11,10 +11,20 @@ export 'notify_channels.dart';
 /// пока приложение живо — на экране, в фоне (iOS — bluetooth-central,
 /// Android — foreground service) или свёрнуто на десктопе.
 class LocalNotifier {
-  LocalNotifier({FlutterLocalNotificationsPlugin? plugin})
-    : _p = plugin ?? FlutterLocalNotificationsPlugin();
+  LocalNotifier({
+    FlutterLocalNotificationsPlugin? plugin,
+    String Function(String)? translate,
+  }) : _p = plugin ?? FlutterLocalNotificationsPlugin(),
+       _translate = translate ?? _identity;
 
+  static String _identity(String text) => text;
+  final String Function(String) _translate;
   final FlutterLocalNotificationsPlugin _p;
+
+  Future<void> refreshChannelLabels() async {
+    if (_ready) await _androidChannels();
+  }
+
   final _taps = StreamController<String>.broadcast();
   bool _ready = false;
 
@@ -24,8 +34,8 @@ class LocalNotifier {
   NotificationDetails _details(NotifyChannel c) => NotificationDetails(
     android: AndroidNotificationDetails(
       c.id,
-      c.name,
-      channelDescription: c.description,
+      _translate(c.name),
+      channelDescription: _translate(c.description),
       importance: Importance.high,
       priority: Priority.high,
       category: AndroidNotificationCategory.message,
@@ -47,15 +57,15 @@ class LocalNotifier {
     if (a == null) return;
     for (final g in NotifyGroup.values) {
       await a.createNotificationChannelGroup(
-        AndroidNotificationChannelGroup(g.id, g.name),
+        AndroidNotificationChannelGroup(g.id, _translate(g.name)),
       );
     }
     for (final c in NotifyChannel.values) {
       await a.createNotificationChannel(
         AndroidNotificationChannel(
           c.id,
-          c.name,
-          description: c.description,
+          _translate(c.name),
+          description: _translate(c.description),
           groupId: c.group.id,
           importance: Importance.high,
         ),

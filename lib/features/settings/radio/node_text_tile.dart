@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -38,6 +39,7 @@ class _NodeTextTileState extends ConsumerState<NodeTextTile> {
   }
 
   Future<void> _save() async {
+    final strings = context.l10n;
     setState(() => _saving = true);
     try {
       final ok = await _spec.save(
@@ -46,11 +48,11 @@ class _NodeTextTileState extends ConsumerState<NodeTextTile> {
         _text.text,
       );
       toasts.show(
-        ok ? 'Сохранено' : 'Нода не подтвердила',
+        ok ? strings.saved_f0dff5 : strings.notAcknowledgedByTheNode_90929d,
         kind: ok ? ToastKind.success : ToastKind.error,
       );
     } catch (e) {
-      toasts.error('Ошибка: $e');
+      toasts.error(strings.error_8f7267((e).toString()));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -64,7 +66,7 @@ class _NodeTextTileState extends ConsumerState<NodeTextTile> {
       _text.text = stored;
     }
     return SectionCard(
-      title: _spec.label,
+      title: context.builtIn(_spec.label),
       children: [
         Padding(
           padding: const EdgeInsets.all(Tokens.s16),
@@ -78,10 +80,10 @@ class _NodeTextTileState extends ConsumerState<NodeTextTile> {
                   enabled: !_saving,
                   maxLines: null,
                   decoration: InputDecoration(
-                    labelText: _spec.label,
-                    helperText: _spec.help,
+                    labelText: context.builtIn(_spec.label),
+                    helperText: context.builtInOrNull(_spec.help),
                     helperMaxLines: 4,
-                    errorText: _spec.check(_text.text),
+                    errorText: context.builtInOrNull(_spec.check(_text.text)),
                     counterText: '${_spec.lengthOf(_text.text)}/${_spec.max}',
                   ),
                 ),
@@ -95,7 +97,7 @@ class _NodeTextTileState extends ConsumerState<NodeTextTile> {
                             _spec.check(_text.text) != null
                         ? null
                         : _save,
-                    child: const Text('Сохранить'),
+                    child: Text(context.l10n.save_486405),
                   ),
                 ),
               ],

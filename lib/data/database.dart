@@ -35,6 +35,9 @@ abstract final class AppSettingKeys {
 
   /// Тема: 'system' / 'light' / 'dark' (по умолчанию — как в системе).
   static const theme = 'app.theme';
+
+  /// 'system' / 'ru' / 'en'; отсутствующее значение — язык системы.
+  static const locale = 'app.locale';
   static const accent = 'app.accent';
   static const mentionColor = 'app.mentionColor';
   static const orientation = 'app.orientation';

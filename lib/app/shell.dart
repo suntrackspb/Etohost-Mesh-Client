@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -44,7 +45,7 @@ class AdaptiveShell extends ConsumerWidget {
               NavigationDestination(
                 icon: icon(i, t.icon),
                 selectedIcon: icon(i, t.selectedIcon),
-                label: t.label,
+                label: context.builtIn(t.label),
               ),
           ],
         ),
@@ -61,7 +62,7 @@ class AdaptiveShell extends ConsumerWidget {
             leading: Padding(
               padding: const EdgeInsets.symmetric(vertical: Tokens.s16),
               child: Tooltip(
-                message: radioStateLabel(radio.state),
+                message: context.builtIn(radioStateLabel(radio.state)),
                 child: Icon(
                   Icons.circle,
                   size: 12,
@@ -74,7 +75,7 @@ class AdaptiveShell extends ConsumerWidget {
                 NavigationRailDestination(
                   icon: icon(i, t.icon),
                   selectedIcon: icon(i, t.selectedIcon),
-                  label: Text(t.label),
+                  label: Text(context.builtIn(t.label)),
                 ),
             ],
           ),

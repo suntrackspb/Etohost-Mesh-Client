@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -36,8 +37,8 @@ class SecurityKeyTiles extends StatelessWidget {
                 _PublicKey(SecurityKey.encode(snap.data ?? const [])),
           ),
           MeshTile(
-            title: SecuritySection.regenerateLabel,
-            subtitle: SecuritySection.regenerateHelp,
+            title: context.builtIn(SecuritySection.regenerateLabel),
+            subtitle: context.builtIn(SecuritySection.regenerateHelp),
             leading: const Icon(Icons.autorenew),
             onTap: form.saving ? null : () => _regenerate(context),
           ),
@@ -47,19 +48,20 @@ class SecurityKeyTiles extends StatelessWidget {
   );
 
   Future<void> _regenerate(BuildContext context) async {
+    final strings = context.l10n;
     final yes = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Вы уверены?'),
-        content: const Text(SecuritySection.regenerateConfirm),
+        title: Text(strings.areYouSure_b0069b),
+        content: Text(context.builtIn(SecuritySection.regenerateConfirm)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Пересоздать'),
+            child: Text(strings.regenerate_9bf881),
           ),
         ],
       ),
@@ -90,15 +92,17 @@ class _PublicKey extends StatelessWidget {
             children: [
               const Icon(Icons.key, size: 18),
               const SizedBox(width: Tokens.s8),
-              const Expanded(child: Text(SecuritySection.publicKeyLabel)),
+              Expanded(
+                child: Text(context.builtIn(SecuritySection.publicKeyLabel)),
+              ),
               TextButton.icon(
                 icon: const Icon(Icons.copy, size: 16),
-                label: const Text('Копировать'),
+                label: Text(context.l10n.copy_4a05d8),
                 onPressed: text.isEmpty
                     ? null
                     : () {
                         Clipboard.setData(ClipboardData(text: text));
-                        toasts.success('Скопировано');
+                        toasts.success(context.l10n.copied_892254);
                       },
               ),
             ],
@@ -112,7 +116,7 @@ class _PublicKey extends StatelessWidget {
           ),
           const SizedBox(height: Tokens.s4),
           Text(
-            SecuritySection.publicKeyHelp,
+            context.builtIn(SecuritySection.publicKeyHelp),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.outline,
             ),
@@ -145,11 +149,11 @@ class KeyBackupCard extends ConsumerWidget {
         final key = form.value<String>('privateKey');
         final enabled = me != null && !form.saving;
         return SectionCard(
-          title: 'Резервная копия ключа',
+          title: context.l10n.keyBackup_30f9f7,
           children: [
             MeshTile(
-              title: 'Резервная копия',
-              subtitle: _help,
+              title: context.l10n.backup_72f931,
+              subtitle: context.builtIn(_help),
               leading: const Icon(Icons.backup_outlined),
               trailing: const SizedBox.shrink(),
               onTap: enabled && SecurityKey.decode(key) != null
@@ -157,13 +161,13 @@ class KeyBackupCard extends ConsumerWidget {
                   : null,
             ),
             MeshTile(
-              title: 'Восстановить',
+              title: context.l10n.restore_29f3b2,
               leading: const Icon(Icons.settings_backup_restore),
               trailing: const SizedBox.shrink(),
               onTap: enabled ? () => _restore(context, ref, me) : null,
             ),
             MeshTile(
-              title: 'Сохранить в файл',
+              title: context.l10n.saveToFile_cdda1c,
               leading: const Icon(Icons.file_download_outlined),
               trailing: const SizedBox.shrink(),
               onTap: enabled && SecurityKey.decode(key) != null
@@ -171,13 +175,13 @@ class KeyBackupCard extends ConsumerWidget {
                   : null,
             ),
             MeshTile(
-              title: 'Загрузить из файла',
+              title: context.l10n.loadFromFile_e47fd3,
               leading: const Icon(Icons.file_upload_outlined),
               trailing: const SizedBox.shrink(),
               onTap: enabled ? () => _fromFile(context, me) : null,
             ),
             MeshTile(
-              title: 'Удалить резервную копию ключа',
+              title: context.l10n.deleteKeyBackup_2b8633,
               leading: const Icon(Icons.delete_outline),
               trailing: const SizedBox.shrink(),
               onTap: enabled ? () => _delete(context, ref) : null,
@@ -196,12 +200,17 @@ class KeyBackupCard extends ConsumerWidget {
     int me,
     String key,
   ) async {
+    final strings = context.l10n;
     final name = ref.read(ownNodeProvider).value?.longName;
     try {
       await ref.read(keyBackupStoreProvider).save(me, key, longName: name);
-      if (context.mounted) _snack(context, 'Ключи надежно сохранены');
+      if (context.mounted) {
+        _snack(context, strings.keysBackedUpSecurely_249b39);
+      }
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось сохранить: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotSave_6886a1((e).toString()));
+      }
     }
   }
 
@@ -218,8 +227,12 @@ class KeyBackupCard extends ConsumerWidget {
           SimpleDialogOption(
             onPressed: () => Navigator.pop(c, b),
             child: Text(
-              '${b.label}, резервное копирование '
-              '${MaterialLocalizations.of(c).formatMediumDate(b.time)}',
+              context.l10n.backup_5f3ad8(
+                (b.label).toString(),
+                (MaterialLocalizations.of(
+                  c,
+                ).formatMediumDate(b.time)).toString(),
+              ),
             ),
           ),
       ],
@@ -227,36 +240,29 @@ class KeyBackupCard extends ConsumerWidget {
   );
 
   Future<void> _restore(BuildContext context, WidgetRef ref, int me) async {
+    final strings = context.l10n;
     final List<KeyBackup> all;
     try {
       all = await ref.read(keyBackupStoreProvider).all();
     } catch (e) {
       if (context.mounted) {
-        _snack(context, 'Не удалось восстановить ключи из резервной копии');
+        _snack(context, strings.failedToRestoreKeysFromBackup_89248f);
       }
       return;
     }
     if (!context.mounted) return;
     if (all.isEmpty) {
-      _snack(context, 'Для этой ноды не найдено резервной копии ключа');
+      _snack(context, strings.noKeyBackupFoundForThis_ce5803);
       return;
     }
     // Своя копия — сразу; иначе выбор (в 2.8 номер ноды меняется с ключом).
     final own = all.where((b) => b.nodeNum == me).firstOrNull;
     final b =
         own ??
-        await _pick(
-          context,
-          all,
-          'Выбери резервную копию для восстановления этой ноды. Сброс '
-          'настроек или новый ключ меняет ID узла, поэтому старые резервные '
-          'копии остаются под старым ID. Восстанавливай только резервную '
-          'копию, взятую с этого же устройства: другой ключ дает обеим '
-          'радиоустройствам одинаковый идентификатор.',
-        );
+        await _pick(context, all, strings.pickTheBackupToRestoreTo_92df2d);
     if (b == null || !context.mounted) return;
     form.set('privateKey', b.privateKey);
-    _snack(context, 'Ключ восстановлен — сохраните настройки');
+    _snack(context, strings.keyRestoredSaveTheSettings_92bb30);
   }
 
   Future<void> _toFile(
@@ -265,23 +271,20 @@ class KeyBackupCard extends ConsumerWidget {
     int me,
     String key,
   ) async {
+    final strings = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Экспорт приватного ключа'),
-        content: const Text(
-          'JSON-файл содержит незашифрованный приватный ключ ноды. '
-          'Любой, у кого есть этот файл, сможет использовать ключ вашей ноды. '
-          'Храните файл в защищённом месте и не передавайте посторонним.',
-        ),
+        title: Text(strings.exportPrivateKey_8cfcb4),
+        content: Text(strings.theJsonFileContainsTheUnencrypted_470e15),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Сохранить файл'),
+            child: Text(strings.saveFile_d10137),
           ),
         ],
       ),
@@ -292,7 +295,7 @@ class KeyBackupCard extends ConsumerWidget {
     if (b == null) return;
     try {
       final uri = await FilePicker.saveFile(
-        dialogTitle: 'Сохранить в файл',
+        dialogTitle: strings.saveToFile_cdda1c,
         fileName: KeyBackupFile.fileName(me),
         bytes: KeyBackupFile.encode([b]),
         mimeType: 'application/json',
@@ -300,18 +303,21 @@ class KeyBackupCard extends ConsumerWidget {
         allowedExtensions: const [KeyBackupFile.extension],
       );
       if (uri != null && context.mounted) {
-        _snack(context, 'Ключи сохранены в файл. Храните его в надёжном месте');
+        _snack(context, strings.keysSavedToAFileKeep_32f5b4);
       }
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось сохранить: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotSave_6886a1((e).toString()));
+      }
     }
   }
 
   Future<void> _fromFile(BuildContext context, int me) async {
+    final strings = context.l10n;
     final List<KeyBackup> keys;
     try {
       final files = await FilePicker.pickFiles(
-        dialogTitle: 'Загрузить из файла',
+        dialogTitle: strings.loadFromFile_e47fd3,
       );
       if (files.isEmpty) return;
       keys = KeyBackupFile.decode(await files.first.readAsBytes());
@@ -319,7 +325,9 @@ class KeyBackupCard extends ConsumerWidget {
       if (context.mounted) _snack(context, e.message);
       return;
     } catch (e) {
-      if (context.mounted) _snack(context, 'Не удалось прочитать файл: $e');
+      if (context.mounted) {
+        _snack(context, strings.couldNotReadFile_425230((e).toString()));
+      }
       return;
     }
     if (!context.mounted) return;
@@ -328,34 +336,33 @@ class KeyBackupCard extends ConsumerWidget {
         own ??
         (keys.length == 1
             ? keys.single
-            : await _pick(context, keys, 'Выбери ключ для восстановления'));
+            : await _pick(context, keys, strings.chooseAKeyToRestore_9fa859));
     if (b == null || !context.mounted) return;
     form.set('privateKey', b.privateKey);
     _snack(
       context,
       own == null
-          ? 'Ключ ${b.label} подставлен — сохраните настройки. Ставьте ключ '
-                'только на ту ноду, с которой он снят'
-          : 'Ключ восстановлен — сохраните настройки',
+          ? strings.keySelectedSaveTheSettingsOnly_f2a281((b.label).toString())
+          : strings.keyRestoredSaveTheSettings_92bb30,
     );
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final strings = context.l10n;
     final store = ref.read(keyBackupStoreProvider);
     final all = await store.all();
     if (!context.mounted) return;
     if (all.isEmpty) {
-      _snack(context, 'Для этой ноды не найдено резервной копии ключа');
+      _snack(context, strings.noKeyBackupFoundForThis_ce5803);
       return;
     }
     final b = await _pick(
       context,
       all,
-      'Выбери резервную копию зашифрованного ключа для удаления с этого '
-      'устройства. Это не может быть отменено.',
+      strings.pickTheEncryptedKeyBackupTo_5e150c,
     );
     if (b == null) return;
     await store.delete(b.nodeNum);
-    if (context.mounted) _snack(context, 'Резервная копия ключа удалена');
+    if (context.mounted) _snack(context, strings.keyBackupDeleted_2ed312);
   }
 }

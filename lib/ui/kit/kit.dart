@@ -1,6 +1,8 @@
 /// Дизайн-кит: экраны собираются только из этих компонентов и токенов.
 library;
 
+import 'package:meshex/l10n/l10n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -440,7 +442,7 @@ class _NumberFieldState extends State<NumberField> {
     children: [
       if (_changed != null)
         IconButton(
-          tooltip: 'Сохранить',
+          tooltip: context.l10n.save_486405,
           icon: const Icon(Icons.check),
           onPressed: () => _focus.hasFocus ? _focus.unfocus() : _save(),
         ),

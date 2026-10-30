@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/tile_cache.dart';
+import '../../app/locale_provider.dart';
 import '../map/map_tiles.dart';
 import '../map/offline/offline_map_widgets.dart';
 import '../../app/desktop_tray_provider.dart';
@@ -62,14 +64,42 @@ class AppSettingsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Приложение'),
+        title: Text(context.l10n.app_f9886c),
         actions: const [LinkBadge()],
       ),
       body: ListView(
         padding: pagePadding(context),
         children: [
           SectionCard(
-            title: 'Оформление',
+            title: context.l10n.language,
+            children: [
+              for (final (code, title) in [
+                ('system', context.l10n.systemLanguage),
+                for (final locale in AppLocalizations.supportedLocales)
+                  (
+                    locale.languageCode,
+                    appLanguageNames[locale.languageCode] ??
+                        locale.languageCode,
+                  ),
+              ])
+                ListTile(
+                  title: Text(title),
+                  selected:
+                      (ref.watch(appLocaleProvider).value?.languageCode ??
+                          'system') ==
+                      code,
+                  trailing:
+                      (ref.watch(appLocaleProvider).value?.languageCode ??
+                              'system') ==
+                          code
+                      ? const Icon(Icons.check)
+                      : null,
+                  onTap: () => save(AppSettingKeys.locale, code),
+                ),
+            ],
+          ),
+          SectionCard(
+            title: context.l10n.appearance_d206f1,
             children: [
               Padding(
                 padding: const EdgeInsets.all(Tokens.s16),
@@ -79,7 +109,10 @@ class AppSettingsPage extends ConsumerWidget {
                     showSelectedIcon: false,
                     segments: [
                       for (final t in AppTheme.values)
-                        ButtonSegment(value: t, label: Text(t.title)),
+                        ButtonSegment(
+                          value: t,
+                          label: Text(context.builtIn(t.title)),
+                        ),
                     ],
                     selected: {theme},
                     onSelectionChanged: (s) =>
@@ -98,7 +131,7 @@ class AppSettingsPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Цвет акцента',
+                      context.l10n.accentColor_ff9b5d,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: Tokens.s8),
@@ -116,11 +149,11 @@ class AppSettingsPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: Tokens.s16),
                     Text(
-                      'Обращения ко мне',
+                      context.l10n.mentionsAndReplies_209ee7,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     Text(
-                      'Цвет сообщений с упоминанием или ответом на ваше',
+                      context.l10n.colorOfMessagesMentioningOrReplying_a39b9c,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -151,17 +184,17 @@ class AppSettingsPage extends ConsumerWidget {
           ),
           if (orientationSupported)
             SectionCard(
-              title: 'Ориентация экрана',
+              title: context.l10n.screenOrientation_87b383,
               children: [
                 for (final o in ScreenOrientation.values)
                   ListTile(
-                    title: Text(o.title),
+                    title: Text(context.builtIn(o.title)),
                     subtitle: switch (o) {
-                      ScreenOrientation.auto => const Text(
-                        'Поворачивается вслед за телефоном',
+                      ScreenOrientation.auto => Text(
+                        context.l10n.rotatesWithThePhone_3acc7b,
                       ),
                       ScreenOrientation.portraitDown when Platform.isIOS =>
-                        const Text('На iPhone с Face ID не поддерживается'),
+                        Text(context.l10n.notSupportedOnIphonesWithFace_7d312d),
                       _ => null,
                     },
                     trailing: o == orientation
@@ -176,13 +209,12 @@ class AppSettingsPage extends ConsumerWidget {
             ),
           if (DesktopTray.supported)
             SectionCard(
-              title: 'Окно',
+              title: context.l10n.window_f5988f,
               children: [
                 SwitchListTile(
-                  title: const Text('Сворачивать в трей при закрытии'),
-                  subtitle: const Text(
-                    'Связь с нодой и уведомления продолжают работать. '
-                    'Выключено — крестик закрывает приложение.',
+                  title: Text(context.l10n.minimizeToTrayOnClose_720ae8),
+                  subtitle: Text(
+                    context.l10n.theNodeConnectionAndNotificationsKeep_155e05,
                   ),
                   value: ref.watch(closeToTrayProvider).value ?? true,
                   onChanged: (v) => save(AppSettingKeys.closeToTray, '$v'),
@@ -190,62 +222,60 @@ class AppSettingsPage extends ConsumerWidget {
               ],
             ),
           SectionCard(
-            title: 'Уведомления',
-            footer:
-                'Приходят, пока приложение запущено (в том числе в фоне). '
-                'Звук и баннеры — в системных настройках уведомлений.',
+            title: context.l10n.notifications_ee3c35,
+            footer: context.l10n.deliveredWhileTheApplicationIsRunning_ef1ca3,
             children: [
               alert(
-                'Личные сообщения',
+                context.l10n.directMessages_6955f3,
                 null,
                 AppSettingKeys.notifyDirect,
                 alerts.direct,
               ),
               alert(
-                'Ответы на мои сообщения',
+                context.l10n.repliesToMyMessages_2fca62,
                 null,
                 AppSettingKeys.notifyReply,
                 alerts.reply,
               ),
               alert(
-                'Реакции на мои сообщения',
+                context.l10n.reactionsToMyMessages_3250d9,
                 null,
                 AppSettingKeys.notifyReaction,
                 alerts.reaction,
               ),
               alert(
-                'Упоминания моей ноды',
+                context.l10n.mentionsOfMyNode_dfdc0f,
                 myShort.isEmpty
-                    ? 'Короткое имя своей ноды в тексте канала'
-                    : '«$myShort» в тексте канала',
+                    ? context.l10n.yourNodeShortNameInChannel_7ab080
+                    : context.l10n.inChannelMessages_74052f(
+                        (myShort).toString(),
+                      ),
                 AppSettingKeys.notifyMention,
                 alerts.mention,
               ),
               alert(
-                'Трассировка маршрута',
-                'Пришёл ответ на трассировку',
+                context.l10n.traceRoute_c2e3ed,
+                context.l10n.tracerouteResponseReceived_2f2fbf,
                 AppSettingKeys.notifyTraceroute,
                 ref.watch(notifyTracerouteProvider).value ?? true,
               ),
             ],
           ),
           SectionCard(
-            title: 'Чат',
+            title: context.l10n.chat_8c77e4,
             children: [
               SwitchListTile(
-                title: const Text('Показывать картинки'),
-                subtitle: const Text(
-                  'Превью ссылок сервиса картинок подключённого сервера '
-                  'прямо в ленте',
+                title: Text(context.l10n.showImages_436fda),
+                subtitle: Text(
+                  context.l10n.showPreviewsOfImageServiceLinks_92d5b2,
                 ),
                 value: images,
                 onChanged: (v) => save(AppSettingKeys.showImages, '$v'),
               ),
               SwitchListTile(
-                title: const Text('Показывать скрытые сообщения'),
-                subtitle: const Text(
-                  'Сообщения игнорируемых нод — свёрнутыми, раскрываются '
-                  'нажатием. Выключено — их не видно совсем',
+                title: Text(context.l10n.showHiddenMessages_4e0ac3),
+                subtitle: Text(
+                  context.l10n.messagesFromIgnoredNodesAreCollapsed_379dd7,
                 ),
                 value: ref.watch(showIgnoredMessagesProvider).value ?? false,
                 onChanged: (v) =>
@@ -254,12 +284,12 @@ class AppSettingsPage extends ConsumerWidget {
             ],
           ),
           SectionCard(
-            title: 'Карта',
+            title: context.l10n.map_5736d0,
             children: [
               SwitchListTile(
-                title: const Text('Вращение карты'),
-                subtitle: const Text(
-                  'Поворот двумя пальцами. Выключено — север всегда сверху.',
+                title: Text(context.l10n.mapRotation_8a6270),
+                subtitle: Text(
+                  context.l10n.rotateWithTwoFingersWhenDisabled_194ca1,
                 ),
                 value: rotate,
                 onChanged: (v) => save(AppSettingKeys.mapRotate, '$v'),
@@ -269,22 +299,19 @@ class AppSettingsPage extends ConsumerWidget {
             ],
           ),
           SectionCard(
-            title: 'Дальние ноды',
+            title: context.l10n.distantNodes_c51034,
             children: [
               SwitchListTile(
-                title: const Text('Скрывать ноды дальше радиуса'),
-                subtitle: const Text(
-                  'В списке и на карте. Ноды без координат и своя нода '
-                  'не скрываются.',
-                ),
+                title: Text(context.l10n.hideNodesBeyondTheRadius_93e947),
+                subtitle: Text(context.l10n.appliesToTheNodeListAnd_f9af88),
                 value: areaOn,
                 onChanged: (v) => save(AppSettingKeys.areaEnabled, '$v'),
               ),
               MeshTile(
-                title: 'Радиус',
+                title: context.l10n.radius_3dfacb,
                 trailing: NumberField(
                   value: km.round(),
-                  suffix: 'км',
+                  suffix: context.l10n.km_3ced3a,
                   width: 120,
                   onSave: (n) {
                     if (n > 0) save(AppSettingKeys.areaRadiusKm, '$n');
@@ -292,9 +319,9 @@ class AppSettingsPage extends ConsumerWidget {
                 ),
               ),
               MeshTile(
-                title: 'Центр',
+                title: context.l10n.center_05b1c1,
                 subtitle: center == null
-                    ? 'не задан — фильтр не работает'
+                    ? context.l10n.notSetTheFilterIsInactive_8aa65f
                     : formatLatLon(center),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.go('/settings/app/area'),
@@ -302,14 +329,12 @@ class AppSettingsPage extends ConsumerWidget {
             ],
           ),
           SectionCard(
-            title: 'Позиция телефона',
+            title: context.l10n.phonePosition_68a6a2,
             children: [
               SwitchListTile(
-                title: const Text('Передавать позицию своей ноде'),
-                subtitle: const Text(
-                  'Для нод без GPS: координаты телефона уходят только своей '
-                  'ноде, в сеть их рассылает прошивка по своим настройкам. '
-                  'Работает, пока приложение открыто и подключено.',
+                title: Text(context.l10n.sharePositionWithMyNode_acf46e),
+                subtitle: Text(
+                  context.l10n.forNodesWithoutGpsPhoneCoordinates_e96e7e,
                 ),
                 value: share,
                 onChanged: (v) => save(AppSettingKeys.positionShare, '$v'),
@@ -324,10 +349,10 @@ class AppSettingsPage extends ConsumerWidget {
                     spacing: Tokens.s8,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Text('Не чаще чем раз в'),
+                      Text(context.l10n.noMoreOftenThanEvery_3389cd),
                       for (final m in positionIntervalOptions)
                         ChoiceChip(
-                          label: Text('$m мин'),
+                          label: Text(context.l10n.min_c284de((m).toString())),
                           selected: interval == m,
                           onSelected: (_) =>
                               save(AppSettingKeys.positionIntervalMin, '$m'),
@@ -352,17 +377,25 @@ class _ShareStatus extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(positionServiceProvider);
     final text = s == null
-        ? 'Ждём подключения к ноде'
+        ? context.l10n.waitingForANodeConnection_617dba
         : switch (s.status) {
-            PositionShareStatus.waiting => 'Ждём координаты',
-            PositionShareStatus.active =>
-              'Передано ${s.lastSentAt == null ? '' : lastHeardText(s.lastSentAt!)}',
+            PositionShareStatus.waiting =>
+              context.l10n.waitingForCoordinates_8cafb9,
+            PositionShareStatus.active => context.l10n.sent_c9f056(
+              (s.lastSentAt == null
+                      ? ''
+                      : context.builtIn(lastHeardText(s.lastSentAt!)))
+                  .toString(),
+            ),
             PositionShareStatus.noPermission =>
-              'Нет доступа к геолокации — разрешите в настройках системы',
-            PositionShareStatus.serviceOff => 'Геолокация выключена в системе',
-            PositionShareStatus.error => 'Ошибка: ${s.error}',
+              context.l10n.locationAccessDeniedAllowItIn_fa90c3,
+            PositionShareStatus.serviceOff =>
+              context.l10n.locationServicesAreDisabled_34928e,
+            PositionShareStatus.error => context.l10n.error_8f7267(
+              (s.error).toString(),
+            ),
           };
-    return MeshTile(title: 'Состояние', subtitle: text);
+    return MeshTile(title: context.l10n.status_81e4bb, subtitle: text);
   }
 }
 
@@ -378,7 +411,9 @@ class _AccentDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final a = accent;
     final scheme = Theme.of(context).colorScheme;
-    final title = a?.title ?? 'Без подсветки';
+    final title =
+        (a == null ? null : context.builtIn(a.title)) ??
+        context.l10n.noHighlight_14736b;
     return Tooltip(
       message: title,
       child: Semantics(
@@ -454,14 +489,14 @@ class _TileCacheTileState extends ConsumerState<_TileCacheTile> {
 
   @override
   Widget build(BuildContext context) => MeshTile(
-    title: 'Кэш карты',
-    subtitle:
-        'Просмотренные тайлы, работают без сети. '
-        'Занято ${_size == null ? '…' : formatBytes(_size!)} '
-        'из ${formatBytes(tileCacheLimitBytes)}.',
+    title: context.l10n.mapCache_fc6703,
+    subtitle: context.l10n.viewedTilesAreAvailableOfflineUsing_f4b74a(
+      (_size == null ? '…' : context.builtIn(formatBytes(_size!))).toString(),
+      (context.builtIn(formatBytes(tileCacheLimitBytes))).toString(),
+    ),
     trailing: TextButton(
       onPressed: (_size ?? 0) == 0 ? null : _clear,
-      child: const Text('Очистить'),
+      child: Text(context.l10n.clear_98b207),
     ),
   );
 }

@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_vector_tiles/flutter_map_vector_tiles.dart' as vt;
@@ -30,10 +31,10 @@ class OfflineBasemap extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Не удалось открыть скачанную карту.'),
+                Text(context.l10n.couldNotOpenTheDownloadedMap_be745e),
                 TextButton(
                   onPressed: () => ref.invalidate(localVectorProvider),
-                  child: const Text('Повторить'),
+                  child: Text(context.l10n.retry_9e506a),
                 ),
               ],
             ),
@@ -60,7 +61,7 @@ class OfflineMapAttribution extends StatelessWidget {
           child: Text(
             compact
                 ? '© OpenStreetMap'
-                : 'Офлайн · © OpenStreetMap contributors',
+                : context.l10n.offlineOpenstreetmapContributors_76e794,
             style: TextStyle(fontSize: compact ? 10 : 11),
           ),
         ),
@@ -81,12 +82,14 @@ class OfflineCoverageNotice extends StatelessWidget {
         center.longitude >= 28.49 &&
         center.longitude <= 32.14;
     if (inside) return const SizedBox.shrink();
-    return const Align(
+    return Align(
       alignment: Alignment.topCenter,
       child: Card(
         child: Padding(
           padding: EdgeInsets.all(8),
-          child: Text('За пределами скачанной карты Петербурга'),
+          child: Text(
+            context.l10n.outsideTheDownloadedSaintPetersburgMap_24a118,
+          ),
         ),
       ),
     );
@@ -101,12 +104,12 @@ class OfflineMapSettings extends ConsumerWidget {
     final enabled = ref.watch(offlineMapEnabledProvider).value ?? false;
     final controller = ref.read(offlineMapDownloadProvider.notifier);
     return download.when(
-      loading: () => const ListTile(
-        title: Text('Офлайн-карта'),
+      loading: () => ListTile(
+        title: Text(context.l10n.offlineMap_c6b2c6),
         trailing: CircularProgressIndicator(),
       ),
       error: (_, _) => ListTile(
-        title: const Text('Не удалось проверить офлайн-карту'),
+        title: Text(context.l10n.couldNotVerifyTheOfflineMap_f0dd0f),
         trailing: IconButton(
           icon: const Icon(Icons.refresh),
           onPressed: () => ref.invalidate(offlineMapDownloadProvider),
@@ -115,28 +118,32 @@ class OfflineMapSettings extends ConsumerWidget {
       data: (status) => Column(
         children: [
           ListTile(
-            title: const Text('Петербург и окрестности'),
+            title: Text(context.l10n.saintPetersburgAndSurroundings_6bc6a9),
             subtitle: Text(
               status.busy
-                  ? 'Скачано ${(status.received / 1000000).toStringAsFixed(1)} из 194 МБ'
-                  : status.error ??
-                        'Офлайн-карта · около 100 км · 194 МБ\nДанные от 29.10.2026',
+                  ? context.l10n.downloadedOfMb_945586(
+                      ((status.received / 1000000).toStringAsFixed(
+                        1,
+                      )).toString(),
+                    )
+                  : context.builtInOrNull(status.error) ??
+                        context.l10n.offlineMapAboutKmMbData_433acc,
             ),
             isThreeLine: !status.busy && status.error == null,
             trailing: status.busy
                 ? IconButton(
-                    tooltip: 'Отменить загрузку',
+                    tooltip: context.l10n.cancelDownload_136bdc,
                     icon: const Icon(Icons.close),
                     onPressed: controller.cancel,
                   )
                 : status.ready
                 ? IconButton(
-                    tooltip: 'Удалить карту',
+                    tooltip: context.l10n.deleteMap_077c0a,
                     icon: const Icon(Icons.delete_outline),
                     onPressed: controller.remove,
                   )
                 : IconButton(
-                    tooltip: 'Скачать карту',
+                    tooltip: context.l10n.downloadMap_df5ad3,
                     icon: const Icon(Icons.download),
                     onPressed: controller.download,
                   ),
@@ -149,10 +156,8 @@ class OfflineMapSettings extends ConsumerWidget {
             ),
           if (status.ready)
             SwitchListTile(
-              title: const Text('Использовать скачанную карту'),
-              subtitle: const Text(
-                'Работает без сети. Онлайн-подложка отключена.',
-              ),
+              title: Text(context.l10n.useDownloadedMap_9e8629),
+              subtitle: Text(context.l10n.worksOfflineTheOnlineMapLayer_6371a8),
               value: enabled,
               onChanged: (value) => ref
                   .read(databaseProvider)

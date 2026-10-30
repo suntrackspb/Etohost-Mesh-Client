@@ -14,6 +14,7 @@ KeepAliveStatus? keepAliveStatus(
   RadioState state,
   String? target, {
   String? mqtt,
+  String Function(String)? translate,
 }) {
   final text = switch (state) {
     RadioState.idle => null,
@@ -25,7 +26,9 @@ KeepAliveStatus? keepAliveStatus(
   final name = target == null || target.isEmpty ? '' : ': $target';
   return (
     title: 'Meshex$name',
-    text: mqtt == null ? text : '$text · MQTT: $mqtt',
+    text: mqtt == null
+        ? (translate?.call(text) ?? text)
+        : '${translate?.call(text) ?? text} · MQTT: ${translate?.call(mqtt) ?? mqtt}',
   );
 }
 

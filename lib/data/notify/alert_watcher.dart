@@ -26,10 +26,14 @@ class AlertWatcher {
     required this.isChatVisible,
     required this.onAlert,
     this.isFiltered,
+    this.replyTitle,
+    this.reactionBody,
     DateTime Function()? now,
   }) : _now = now ?? DateTime.now;
 
   final AppDatabase db;
+  final String Function(String)? replyTitle;
+  final String Function(String, String)? reactionBody;
 
   /// Номер своей ноды; null — не подключались, уведомлять не о чем.
   final int? Function() me;
@@ -141,6 +145,8 @@ class AlertWatcher {
     final c = MessageAlerts.content(
       kind,
       m,
+      replyTitle: replyTitle,
+      reactionBody: reactionBody,
       sender: name,
       channel: direct
           ? ''

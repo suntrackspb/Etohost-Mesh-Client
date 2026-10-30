@@ -6,6 +6,8 @@ import '../core/radio/journal.dart';
 import '../data/database.dart';
 import 'providers.dart';
 import 'router.dart';
+import 'locale_provider.dart';
+import '../l10n/l10n.dart';
 
 /// Сворачивать в трей при закрытии (по умолчанию — да).
 final closeToTrayProvider = StreamProvider<bool>(
@@ -23,6 +25,11 @@ final desktopTrayProvider = Provider<DesktopTray?>((ref) {
     onError: (e) => journal.add(JournalKind.error, 'Трей недоступен: $e'),
     onFirstClose: () => _askOnce(ref),
   );
+  ref.listen(appStringsProvider, (_, s) {
+    tray
+        .setLabels(s.trayShow, s.trayQuit)
+        .catchError((Object e) => journal.add(JournalKind.error, '$e'));
+  }, fireImmediately: true);
   ref.listen(
     closeToTrayProvider,
     (_, v) => tray.setCloseToTray(v.value ?? true),
@@ -46,20 +53,22 @@ Future<bool?> _askOnce(Ref ref) async {
   final toTray = await showDialog<bool>(
     context: ctx,
     builder: (c) => AlertDialog(
-      title: const Text('Свернуть в трей?'),
-      content: const Text(
-        'Приложение продолжит работать в фоне: принимать сообщения и '
-        'держать связь с нодой. Вернуть окно — значок в трее, выйти — '
-        '«Выход» в его меню. Изменить это можно в настройках приложения.',
+      title: Text(c.builtIn('Свернуть в трей?')),
+      content: Text(
+        c.builtIn(
+          'Приложение продолжит работать в фоне: принимать сообщения и '
+          'держать связь с нодой. Вернуть окно — значок в трее, выйти — '
+          '«Выход» в его меню. Изменить это можно в настройках приложения.',
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(c, false),
-          child: const Text('Выйти'),
+          child: Text(c.builtIn('Выйти')),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(c, true),
-          child: const Text('Свернуть в трей'),
+          child: Text(c.builtIn('Свернуть в трей')),
         ),
       ],
     ),

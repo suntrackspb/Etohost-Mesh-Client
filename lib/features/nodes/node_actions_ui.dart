@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +24,7 @@ Future<void> runNodeAction(
   Future<Object?> Function() action,
   String ok,
 ) async {
+  final strings = context.l10n;
   String text;
   try {
     final r = await action();
@@ -32,7 +34,7 @@ Future<void> runNodeAction(
       (int _, DeliveryResult d) => d.status == DeliveryStatus.acked,
       _ => true,
     };
-    text = success ? ok : 'Нода не подтвердила команду';
+    text = success ? ok : strings.theNodeDidNotAcknowledgeThe_e56f57;
   } catch (e) {
     text = e is StateError ? e.message : '$e';
   }
@@ -128,33 +130,36 @@ class NodeActionsCard extends ConsumerWidget {
     VoidCallback? run(Future<Object?> Function() f, String ok) =>
         connected ? () => runNodeAction(context, f, ok) : null;
     return SectionCard(
-      title: 'Действия',
+      title: context.l10n.actions_9978ac,
       children: [
         _ActionRow([
           if (onWrite != null || quick)
-            _Action(Icons.chat_outlined, 'Написать', onWrite),
+            _Action(Icons.chat_outlined, context.l10n.message_bda589, onWrite),
           _Action(
             Icons.route,
-            'Трассировка маршрута',
+            context.l10n.traceRoute_c2e3ed,
             a.blocked(n.num, NodeAction.traceroute)
                 ? null
                 : run(
                     () => a.traceroute(n.num),
-                    'Трассировка отправлена — ждём ответ',
+                    context.l10n.tracerouteSentWaitingForAResponse_9a18a6,
                   ),
           ),
           _Action(
             Icons.badge_outlined,
-            'Обменяться NodeInfo',
-            run(() => a.exchangeNodeInfo(n.num), 'NodeInfo отправлена'),
+            context.l10n.exchangeNodeinfo_e2f5f6,
+            run(
+              () => a.exchangeNodeInfo(n.num),
+              context.l10n.nodeinfoSent_16d722,
+            ),
           ),
           _Action(
             Icons.share_location,
-            'Обменяться местоположением',
+            context.l10n.exchangePosition_b039f2,
             own != null && hasPosition(own)
                 ? run(
                     () => a.exchangePosition(n.num),
-                    'Позиция отправлена — ждём ответную',
+                    context.l10n.positionSentWaitingForAResponse_640d17,
                   )
                 : null,
           ),
@@ -162,7 +167,7 @@ class NodeActionsCard extends ConsumerWidget {
         if (!quick && nodePosition(n, correction: false) != null)
           MeshTile(
             leading: const Icon(Icons.map_outlined),
-            title: 'Перейти к ноде',
+            title: context.l10n.navigateToNode_3ebc01,
             onTap: () {
               ref.read(mapFocusProvider.notifier).state = n.num;
               context.go('/map');
@@ -171,12 +176,12 @@ class NodeActionsCard extends ConsumerWidget {
         if (!quick && url != null)
           MeshTile(
             leading: const Icon(Icons.qr_code_2),
-            title: 'Поделиться QR контакта',
+            title: context.l10n.shareContactQr_3fcfa5,
             onTap: () => showContactQr(context, n, url),
           ),
         SwitchListTile(
           secondary: const Icon(Icons.notifications_off_outlined),
-          title: const Text('Отключить уведомления'),
+          title: Text(context.l10n.muteNotifications_6f777b),
           value: muted,
           onChanged: (v) => ref
               .read(databaseProvider)
@@ -186,13 +191,15 @@ class NodeActionsCard extends ConsumerWidget {
           secondary: a.blocked(n.num, NodeAction.favorite)
               ? const _ActionProgress()
               : const Icon(Icons.star_border),
-          title: const Text('Избранное'),
+          title: Text(context.l10n.favorite_b880e6),
           value: n.isFavorite,
           onChanged: canSend && !a.blocked(n.num, NodeAction.favorite)
               ? (v) => runNodeAction(
                   context,
                   () => a.setFavorite(n.num, v),
-                  v ? 'Добавлено в избранное' : 'Убрано из избранного',
+                  v
+                      ? context.l10n.addedToFavorites_d0d718
+                      : context.l10n.removedFromFavorites_f3503a,
                 )
               : null,
         ),
@@ -200,14 +207,16 @@ class NodeActionsCard extends ConsumerWidget {
           secondary: a.blocked(n.num, NodeAction.ignored)
               ? const _ActionProgress()
               : const Icon(Icons.block),
-          title: const Text('Игнорировать'),
+          title: Text(context.l10n.ignore_00e05b),
           value: n.isIgnored,
           onChanged: a.blocked(n.num, NodeAction.ignored)
               ? null
               : (v) => runNodeAction(
                   context,
                   () => a.setIgnored(n.num, v, radio: canSend),
-                  v ? 'Нода игнорируется' : 'Нода больше не игнорируется',
+                  v
+                      ? context.l10n.nodeIgnored_cdfc8a
+                      : context.l10n.nodeNoLongerIgnored_c2b973,
                 ),
         ),
       ],
@@ -287,9 +296,9 @@ class _NodeQuickActions extends ConsumerWidget {
               ),
             if (keyLoad?.isLoading == true &&
                 directBlock(n) == DirectBlock.noKey)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.all(Tokens.s8),
-                child: Text('Получение публичного ключа из зеркала…'),
+                child: Text(context.l10n.retrievingPublicKeyFromMirror_c82d52),
               ),
           ],
         ),
@@ -303,13 +312,13 @@ class _ActionProgress extends StatelessWidget {
   const _ActionProgress();
 
   @override
-  Widget build(BuildContext context) => const SizedBox.square(
+  Widget build(BuildContext context) => SizedBox.square(
     dimension: 24,
     child: Padding(
       padding: EdgeInsets.all(2),
       child: CircularProgressIndicator(
         strokeWidth: 2,
-        semanticsLabel: 'Подождите, действие временно недоступно',
+        semanticsLabel: context.l10n.pleaseWaitThisActionIsTemporarily_4a28f0,
       ),
     ),
   );
@@ -334,8 +343,8 @@ Future<void> showContactQr(BuildContext context, Node n, String url) =>
                 ),
               ),
               const SizedBox(height: Tokens.s8),
-              const Text(
-                'Отсканируйте в Meshtastic, чтобы добавить контакт',
+              Text(
+                context.l10n.scanInMeshtasticToAddThis_e46939,
                 textAlign: TextAlign.center,
               ),
             ],
@@ -345,13 +354,13 @@ Future<void> showContactQr(BuildContext context, Node n, String url) =>
           TextButton(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: url));
-              toasts.show('Ссылка скопирована');
+              toasts.show(context.l10n.linkCopied_49261e);
             },
-            child: const Text('Скопировать ссылку'),
+            child: Text(context.l10n.copyLink_a44800),
           ),
           TextButton(
             onPressed: () => Navigator.pop(c),
-            child: const Text('Закрыть'),
+            child: Text(context.l10n.close_4ae50d),
           ),
         ],
       ),
@@ -374,27 +383,27 @@ class OwnNodeActionsCard extends ConsumerWidget {
       radioUser: ref.read(radioProvider).ownUser,
     );
     return SectionCard(
-      title: 'Действия',
+      title: context.l10n.actions_9978ac,
       children: [
         if (canSend)
           _ActionRow([
             _Action(
               Icons.badge_outlined,
-              'Отправить Nodeinfo',
+              context.l10n.sendNodeinfo_79376f,
               () => runNodeAction(
                 context,
                 a.broadcastNodeInfo,
-                'NodeInfo отправлена в сеть',
+                context.l10n.nodeinfoBroadcast_f42668,
               ),
             ),
             _Action(
               Icons.my_location,
-              'Отправить позицию',
+              context.l10n.sendPosition_1a3631,
               hasPosition(n)
                   ? () => runNodeAction(
                       context,
                       a.broadcastPosition,
-                      'Позиция отправлена в сеть',
+                      context.l10n.positionBroadcast_9b9f9c,
                     )
                   : null,
             ),
@@ -402,13 +411,13 @@ class OwnNodeActionsCard extends ConsumerWidget {
         if (url != null)
           MeshTile(
             leading: const Icon(Icons.qr_code_2),
-            title: 'Поделиться QR контакта',
+            title: context.l10n.shareContactQr_3fcfa5,
             onTap: () => showContactQr(context, n, url),
           ),
         // Как в официальных клиентах — из карточки ноды; в настройках тоже.
         MeshTile(
           leading: const Icon(Icons.admin_panel_settings_outlined),
-          title: 'Администрирование',
+          title: context.l10n.administration_d838aa,
           onTap: () => Navigator.of(context).push(
             SwipeablePageRoute<void>(
               builder: (_) => const AdministrationPage(),
@@ -443,27 +452,25 @@ class DeleteNodeButton extends ConsumerWidget {
           side: BorderSide(color: error),
         ),
         icon: const Icon(Icons.delete_outline),
-        label: const Text('Удалить'),
+        label: Text(context.l10n.delete_86ea33),
         onPressed: () async {
           final yes = await showDialog<bool>(
             context: context,
             builder: (c) => AlertDialog(
-              title: const Text('Удалить ноду?'),
+              title: Text(context.l10n.deleteNode_d5a0b2),
               content: Text(
                 radio
-                    ? 'Нода будет удалена из базы своей ноды. '
-                          'Она снова появится, когда её услышат.'
-                    : 'Нода будет удалена из приложения. '
-                          'Она снова появится, когда её услышат.',
+                    ? context.l10n.theNodeWillBeRemovedFrom_e0fd0d
+                    : context.l10n.theNodeWillBeRemovedFrom_0c5eb5,
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(c, false),
-                  child: const Text('Отмена'),
+                  child: Text(context.l10n.cancel_0ec753),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(c, true),
-                  child: const Text('Удалить'),
+                  child: Text(context.l10n.delete_86ea33),
                 ),
               ],
             ),
@@ -478,7 +485,7 @@ class DeleteNodeButton extends ConsumerWidget {
                       await a.forget(n.num);
                       return true;
                     },
-              'Нода удалена',
+              context.l10n.nodeDeleted_bd0760,
             );
           }
         },

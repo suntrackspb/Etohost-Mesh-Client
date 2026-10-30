@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -55,7 +56,7 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
     // Без MAC ноду до перезагрузки не чиним: сброс стёр бы список нод.
     final canFix = bug is! IdBugPending || soft;
     return Scaffold(
-      appBar: AppBar(title: const Text('Исправить ID ноды')),
+      appBar: AppBar(title: Text(context.l10n.repairNodeId_47d759)),
       body: ListView(
         padding: pagePadding(context),
         children: [
@@ -64,17 +65,17 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(Tokens.s16),
-                  child: Text(_okText()),
+                  child: Text(context.builtIn(_okText())),
                 ),
               ],
             )
           else ...[
             SectionCard(
-              footer: bug is IdBugChanged ? _rebootNote : null,
+              footer: bug is IdBugChanged ? context.builtIn(_rebootNote) : null,
               children: [
                 Padding(
                   padding: const EdgeInsets.all(Tokens.s16),
-                  child: Text(idBugText(bug)),
+                  child: Text(context.builtIn(idBugText(bug))),
                 ),
               ],
             ),
@@ -86,7 +87,11 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
                     backgroundColor: Theme.of(context).colorScheme.error,
                   ),
                   icon: const Icon(Icons.healing),
-                  label: Text(soft ? 'Исправить' : 'Исправить и перезагрузить'),
+                  label: Text(
+                    soft
+                        ? context.l10n.repair_9b1c9a
+                        : context.l10n.repairAndRestart_0ef1ee,
+                  ),
                   onPressed: _busy ? null : () => _fix(bug),
                 ),
               ),
@@ -100,12 +105,19 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
   String _okText() {
     final radio = ref.read(radioProvider);
     final me = radio.myNodeNum;
-    if (me == null) return 'Подключитесь к своей ноде.';
-    return 'ID ноды: ${nodeIdOf(me)}.\n\n'
-        '${idOkReason(me: me, radio: radio.ownUser, firmware: radio.metadata?.firmwareVersion)}';
+    if (me == null) return context.l10n.connectToYourOwnNode_cefdf1;
+    return context.l10n.nodeId_12da33(
+      (nodeIdOf(me)).toString(),
+      (idOkReason(
+        me: me,
+        radio: radio.ownUser,
+        firmware: radio.metadata?.firmwareVersion,
+      )).toString(),
+    );
   }
 
   Future<void> _fix(IdBug bug) async {
+    final strings = context.l10n;
     final actions = ref.read(nodeActionsProvider);
     if (bug case IdBugPending(:final mac?, :final idFromKey)) {
       setState(() => _busy = true);
@@ -114,11 +126,14 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
         // Нода пришлёт свою запись заново — проверка пересчитается.
         ref.read(radioProvider).refreshNodes();
         toasts.show(
-          'Исправлено: ноде отправлен её MAC',
+          strings.repairedTheNodeMacWasSent_4c3760,
           kind: ToastKind.success,
         );
       } catch (e) {
-        toasts.show('Не удалось: $e', kind: ToastKind.error);
+        toasts.show(
+          strings.failed_317897((e).toString()),
+          kind: ToastKind.error,
+        );
       }
       if (mounted) setState(() => _busy = false);
       return;
@@ -126,19 +141,16 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
     final yes = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Исправить ID ноды?'),
-        content: const Text(
-          'Нода сбросит сохранённое состояние и перезагрузится. '
-          'Ключ шифрования и настройки останутся.',
-        ),
+        title: Text(strings.repairNodeId_16de55),
+        content: Text(strings.theNodeWillClearItsSaved_7eed33),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Исправить'),
+            child: Text(strings.repair_9b1c9a),
           ),
         ],
       ),
@@ -149,12 +161,12 @@ class _IdBugPageState extends ConsumerState<IdBugPage> {
       final ok = await actions.fixIdBugByReset(bug as IdBugChanged);
       toasts.show(
         ok
-            ? 'Нода перезагружается. После подключения имя вернётся само.'
-            : 'Нода не подтвердила команду',
+            ? strings.theNodeIsRestartingItsName_f432c3
+            : strings.theNodeDidNotAcknowledgeThe_e56f57,
         kind: ok ? ToastKind.success : ToastKind.error,
       );
     } catch (e) {
-      toasts.show('Не удалось: $e', kind: ToastKind.error);
+      toasts.show(strings.failed_317897((e).toString()), kind: ToastKind.error);
     }
     if (mounted) setState(() => _busy = false);
   }

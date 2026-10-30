@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
@@ -131,9 +132,9 @@ class MeshNodeMarker extends StatelessWidget {
     return Tooltip(
       message: [
         p.title,
-        if (p.mirrorOnly) '(зеркало)',
-        if (p.corrected) '· скорректировано',
-        if (p.spoofed) '· вероятно, подменённая точка',
+        if (p.mirrorOnly) context.l10n.mirror_14fdf3,
+        if (p.corrected) context.l10n.corrected_a0b938,
+        if (p.spoofed) context.l10n.possiblySpoofedPosition_5ca05b,
       ].join(' '),
       child: GestureDetector(
         onTap: onTap,

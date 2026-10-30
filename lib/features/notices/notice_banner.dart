@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -59,7 +60,7 @@ class _NoticeCard extends ConsumerWidget {
                   child: Text(n.text, style: TextStyle(color: fg)),
                 ),
                 IconButton(
-                  tooltip: 'Закрыть',
+                  tooltip: context.l10n.close_4ae50d,
                   icon: Icon(Icons.close, color: fg),
                   onPressed: () =>
                       ref.read(noticesProvider.notifier).dismiss(n),
@@ -73,7 +74,7 @@ class _NoticeCard extends ConsumerWidget {
                   style: TextButton.styleFrom(foregroundColor: fg),
                   onPressed: () =>
                       launchUrl(url, mode: LaunchMode.externalApplication),
-                  child: Text(n.linkLabel ?? 'Подробнее'),
+                  child: Text(n.linkLabel ?? context.l10n.details_7e4277),
                 ),
               )
             else

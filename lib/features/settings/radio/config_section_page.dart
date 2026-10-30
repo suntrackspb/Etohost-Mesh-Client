@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -119,11 +120,13 @@ class _ConfigSectionPageState<C> extends ConsumerState<ConfigSectionPage<C>> {
 
     Widget body;
     final problem = me == null
-        ? 'Подключитесь к своей ноде'
+        ? context.l10n.connectToYourOwnNode_d2f276
         : cfgAsync.hasError
-        ? 'Ошибка чтения конфигурации: ${cfgAsync.error}'
+        ? context.l10n.couldNotReadConfiguration_7e6b38(
+            (cfgAsync.error).toString(),
+          )
         : cfg == null && !cfgAsync.isLoading
-        ? 'Нода ещё не прислала эти настройки'
+        ? context.l10n.theNodeHasNotSentThese_0e8dcb
         : null;
     if (problem != null) {
       body = EmptyState(icon: Icons.link_off, text: problem);
@@ -186,7 +189,10 @@ class _ConfigSectionPageState<C> extends ConsumerState<ConfigSectionPage<C>> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(spec.title), actions: const [LinkBadge()]),
+      appBar: AppBar(
+        title: Text(context.builtIn(spec.title)),
+        actions: const [LinkBadge()],
+      ),
       body: body,
     );
   }

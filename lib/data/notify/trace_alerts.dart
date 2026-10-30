@@ -25,10 +25,14 @@ class TraceAlertWatcher {
     required this.me,
     required this.enabled,
     required this.onAlert,
+    this.formatTitle,
+    this.formatBody,
     DateTime Function()? now,
   }) : _now = now ?? DateTime.now;
 
   final AppDatabase db;
+  final String Function(String)? formatTitle;
+  final String Function(String)? formatBody;
   final int? Function() me;
   final bool Function() enabled;
   final void Function(TraceAlert a) onAlert;
@@ -80,8 +84,9 @@ class TraceAlertWatcher {
     final t = TracerouteResult.parse(r, me);
     return (
       id: r.id,
-      title: 'Трассировка маршрута: $name',
-      body: traceSummary(t, _now()),
+      title: formatTitle?.call(name) ?? 'Трассировка маршрута: $name',
+      body:
+          formatBody?.call(traceSummary(t, _now())) ?? traceSummary(t, _now()),
     );
   }
 

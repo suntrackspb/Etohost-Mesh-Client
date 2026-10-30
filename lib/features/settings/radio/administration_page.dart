@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,32 +41,36 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Администрирование'),
+        title: Text(context.l10n.administration_d838aa),
         actions: const [LinkBadge()],
       ),
       body: ListView(
         padding: pagePadding(context),
         children: [
-          if (me == null) const WarningNote('Подключитесь к своей ноде'),
+          if (me == null) WarningNote(context.l10n.connectToYourOwnNode_d2f276),
           SectionCard(
             children: [
-              tile('Перезагрузка', Icons.restart_alt, _reboot),
-              tile('Выключение', Icons.power_settings_new, () {
+              tile(context.l10n.reboot_a40813, Icons.restart_alt, _reboot),
+              tile(context.l10n.shutdown_468972, Icons.power_settings_new, () {
                 if (!canShutdown) {
-                  _snack('Выключение не поддерживается на этом устройстве');
+                  _snack(context.l10n.shutdownNotSupportedOnThisDevice_04502f);
                   return;
                 }
                 _shutdown();
               }),
-              tile('Сброс NodeDB', Icons.storage, () => _nodeDb(role)),
-              tile('Сброс настроек', Icons.restore, _factory),
+              tile(
+                context.l10n.resetNodedb_58a887,
+                Icons.storage,
+                () => _nodeDb(role),
+              ),
+              tile(context.l10n.factoryReset_5dbd37, Icons.restore, _factory),
             ],
           ),
           const SizedBox(height: Tokens.s16),
           SectionCard(
             children: [
               MeshTile(
-                title: 'Исправить ID ноды',
+                title: context.l10n.repairNodeId_47d759,
                 leading: Icon(Icons.healing, color: danger),
                 onTap: me == null ? null : () => context.go('/settings/id-fix'),
               ),
@@ -80,6 +85,7 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
   void _snack(String text) => toasts.show(text);
 
   Future<void> _run(DeviceAction a, {bool preserveFavorites = true}) async {
+    final strings = context.l10n;
     final me = ref.read(radioProvider).myNodeNum;
     if (me == null) return;
     setState(() => _busy = true);
@@ -93,7 +99,9 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
     );
     if (!mounted) return;
     setState(() => _busy = false);
-    _snack(ok ? 'Команда отправлена' : 'Нода не подтвердила');
+    _snack(
+      ok ? strings.commandSent_d331b9 : strings.notAcknowledgedByTheNode_90929d,
+    );
   }
 
   Future<bool> _ask(String title, String? text, String action) async =>
@@ -105,7 +113,7 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(c, false),
-              child: const Text('Отмена'),
+              child: Text(context.l10n.cancel_0ec753),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
@@ -120,57 +128,57 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
       true;
 
   Future<void> _reboot() async {
-    if (await _ask('Вы уверены?', null, 'Перезагрузка')) {
+    final strings = context.l10n;
+    if (await _ask(strings.areYouSure_b0069b, null, strings.reboot_a40813)) {
       await _run(DeviceAction.reboot);
     }
   }
 
   Future<void> _shutdown() async {
+    final strings = context.l10n;
     if (await _ask(
-      'Выключить ноду?',
-      '⚠️ Эта нода будет ВЫКЛЮЧЕНА. Для её включения потребуется '
-          'физическое взаимодействие.',
-      'Выключение',
+      strings.shutDownNode_6cff20,
+      strings.thisWillShutdownTheNodePhysical_dda266,
+      strings.shutdown_468972,
     )) {
       await _run(DeviceAction.shutdown);
     }
   }
 
   Future<void> _nodeDb(int role) async {
+    final strings = context.l10n;
     final forced = DeviceActions.keepsFavorites(role);
     var keep = true;
     final yes = await showDialog<bool>(
       context: context,
       builder: (c) => StatefulBuilder(
         builder: (c, set) => AlertDialog(
-          title: const Text('Вы уверены?'),
+          title: Text(strings.areYouSure_b0069b),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Сохранить избранное?'),
+                title: Text(strings.preserveFavorites_8bd086),
                 value: forced || keep,
                 onChanged: forced ? null : (v) => set(() => keep = v ?? true),
               ),
               if (forced)
-                const Text(
-                  'При этой роли прошивка всегда сохраняет избранное.',
-                ),
+                Text(strings.theFirmwareAlwaysPreservesFavoritesIn_0ef245),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(c, false),
-              child: const Text('Отмена'),
+              child: Text(strings.cancel_0ec753),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(c).colorScheme.error,
               ),
               onPressed: () => Navigator.pop(c, true),
-              child: const Text('Сброс NodeDB'),
+              child: Text(strings.resetNodedb_58a887),
             ),
           ],
         ),
@@ -182,26 +190,25 @@ class _AdministrationPageState extends ConsumerState<AdministrationPage> {
   }
 
   Future<void> _factory() async {
+    final strings = context.l10n;
     final a = await showDialog<DeviceAction>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Сброс настроек'),
-        content: const Text(
-          'Сброс к заводским настройкам удалит данные устройства и приложения.',
-        ),
+        title: Text(strings.factoryReset_5dbd37),
+        content: Text(strings.factoryResetWillDeleteDeviceAnd_cd2c63),
         actionsOverflowDirection: VerticalDirection.down,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, DeviceAction.factoryResetConfig),
-            child: const Text('Удалить все настройки?'),
+            child: Text(strings.deleteAllConfig_8a83a4),
           ),
           TextButton(
             onPressed: () => Navigator.pop(c, DeviceAction.factoryResetDevice),
-            child: const Text('Удалить все настройки, ключи и BLE-соединения?'),
+            child: Text(strings.deleteAllConfigKeysAndBle_cca1f1),
           ),
           TextButton(
             onPressed: () => Navigator.pop(c),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
         ],
       ),

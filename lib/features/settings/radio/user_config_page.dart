@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,13 +42,17 @@ class _UserConfigPageState extends ConsumerState<UserConfigPage> {
 
     Widget body;
     final problem = me == null
-        ? 'Подключитесь к своей ноде'
+        ? context.l10n.connectToYourOwnNode_d2f276
         : nodeAsync.hasError
-        ? 'Ошибка чтения своей ноды: ${nodeAsync.error}'
+        ? context.l10n.couldNotReadOwnNode_d29415((nodeAsync.error).toString())
         : deviceAsync.hasError
-        ? 'Ошибка чтения данных прошивки: ${deviceAsync.error}'
+        ? context.l10n.couldNotReadFirmwareDetails_b21e3e(
+            (deviceAsync.error).toString(),
+          )
         : node == null && !nodeAsync.isLoading
-        ? 'Своя нода ${nodeIdString(me)} ещё не загружена'
+        ? context.l10n.ownNodeHasNotLoadedYet_0d7292(
+            (nodeIdString(me)).toString(),
+          )
         : null;
     if (problem != null) {
       body = EmptyState(icon: Icons.link_off, text: problem);
@@ -80,9 +85,12 @@ class _UserConfigPageState extends ConsumerState<UserConfigPage> {
         children: [
           SectionCard(
             children: [
-              MeshTile(title: 'ID ноды', subtitle: nodeIdString(node.num)),
               MeshTile(
-                title: 'Модель оборудования',
+                title: context.l10n.nodeId_021568,
+                subtitle: nodeIdString(node.num),
+              ),
+              MeshTile(
+                title: context.l10n.hardwareModel_feb4d1,
                 subtitle:
                     HardwareModel.valueOf(node.hwModel)?.name ??
                     '${node.hwModel}',
@@ -95,10 +103,14 @@ class _UserConfigPageState extends ConsumerState<UserConfigPage> {
           ),
           SaveBar(
             form: form,
-            confirm: UserSection.saveConfirm.replaceFirst(
-              '%s',
-              node.longName.isEmpty ? nodeIdString(node.num) : node.longName,
-            ),
+            confirm: context
+                .builtIn(UserSection.saveConfirm)
+                .replaceFirst(
+                  '%s',
+                  node.longName.isEmpty
+                      ? nodeIdString(node.num)
+                      : node.longName,
+                ),
             note: UserSection.rebootNote,
             onSave: () async {
               final admin = ref.read(adminSettingsProvider);
@@ -114,7 +126,7 @@ class _UserConfigPageState extends ConsumerState<UserConfigPage> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: const Text(UserSection.title),
+        title: Text(context.builtIn(UserSection.title)),
         actions: const [LinkBadge()],
       ),
       body: body,

@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -35,7 +36,7 @@ class _MessageFilterPageState extends ConsumerState<MessageFilterPage> {
     final w = _input.text.trim();
     if (w.isEmpty) return;
     if (compileFilterWord(w) == null) {
-      toasts.error('Неверное регулярное выражение');
+      toasts.error(context.l10n.invalidRegularExpression_d0b364);
       return;
     }
     _saveWords(addFilterWord(words, w));
@@ -50,7 +51,7 @@ class _MessageFilterPageState extends ConsumerState<MessageFilterPage> {
     );
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Фильтр сообщений'),
+        title: Text(context.l10n.messageFilter_cf2a46),
         actions: const [LinkBadge()],
       ),
       body: ListView(
@@ -59,10 +60,9 @@ class _MessageFilterPageState extends ConsumerState<MessageFilterPage> {
           SectionCard(
             children: [
               SwitchListTile(
-                title: const Text('Фильтровать все диалоги'),
-                subtitle: const Text(
-                  'Скрывать сообщения, содержащие фильтры, в каждом канале '
-                  'и ЛС. Выключить для одного разговора — в его меню.',
+                title: Text(context.l10n.filterAllConversations_0c4f61),
+                subtitle: Text(
+                  context.l10n.hideMessagesMatchingFiltersInEvery_5d3016,
                 ),
                 value: f.enabled,
                 onChanged: (v) =>
@@ -71,7 +71,7 @@ class _MessageFilterPageState extends ConsumerState<MessageFilterPage> {
             ],
           ),
           SectionCard(
-            title: 'Фильтруемые слова',
+            title: context.l10n.filterWords_42f560,
             children: [
               Padding(
                 padding: const EdgeInsets.all(Tokens.s16),
@@ -79,18 +79,16 @@ class _MessageFilterPageState extends ConsumerState<MessageFilterPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Сообщения, содержащие эти слова, будут скрыты. '
-                      'Слово ищется целиком, без учёта регистра; '
-                      'regex:шаблон — регулярное выражение.',
+                      context.l10n.messagesContainingTheseWordsWillBe_3bfbda,
                       style: muted,
                     ),
                     const SizedBox(height: Tokens.s12),
                     TextField(
                       controller: _input,
                       decoration: InputDecoration(
-                        hintText: 'Слово или regex:шаблон',
+                        hintText: context.l10n.wordOrRegexPattern_d88d91,
                         suffixIcon: IconButton(
-                          tooltip: 'Добавить',
+                          tooltip: context.l10n.add_559a87,
                           icon: const Icon(Icons.add),
                           onPressed: () => _add(f.words),
                         ),
@@ -99,7 +97,10 @@ class _MessageFilterPageState extends ConsumerState<MessageFilterPage> {
                     ),
                     const SizedBox(height: Tokens.s12),
                     if (f.words.isEmpty)
-                      Text('Фильтр слов не настроен', style: muted)
+                      Text(
+                        context.l10n.noFilterWordsConfigured_f30bc1,
+                        style: muted,
+                      )
                     else
                       Wrap(
                         spacing: Tokens.s8,

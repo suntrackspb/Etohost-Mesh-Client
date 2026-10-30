@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,10 +53,10 @@ class _JournalPageState extends ConsumerState<JournalPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Журнал'),
+        title: Text(context.l10n.journal_67ade7),
         actions: [
           IconButton(
-            tooltip: 'Копировать',
+            tooltip: context.l10n.copy_4a05d8,
             icon: const Icon(Icons.copy),
             onPressed: () {
               Clipboard.setData(
@@ -63,17 +64,17 @@ class _JournalPageState extends ConsumerState<JournalPage> {
                   text: all.map((l) => '${_ts(l.time)} ${l.text}').join('\n'),
                 ),
               );
-              toasts.success('Журнал скопирован');
+              toasts.success(context.l10n.journalCopied_1ee14a);
             },
           ),
           if (ref.watch(reportUploaderProvider) != null)
             IconButton(
-              tooltip: 'Отправить отчёт',
+              tooltip: context.l10n.sendReport_63b6fb,
               icon: const Icon(Icons.bug_report_outlined),
               onPressed: () => context.go('/settings/report'),
             ),
           IconButton(
-            tooltip: 'Очистить',
+            tooltip: context.l10n.clear_98b207,
             icon: const Icon(Icons.delete_outline),
             onPressed: journal.clear,
           ),
@@ -124,12 +125,12 @@ class _JournalPageState extends ConsumerState<JournalPage> {
                 spacing: Tokens.s8,
                 children: [
                   FilterChip(
-                    label: const Text('Только лог ноды'),
+                    label: Text(context.l10n.nodeLogOnly_3a7130),
                     selected: _onlyNode,
                     onSelected: (v) => setState(() => _onlyNode = v),
                   ),
                   FilterChip(
-                    label: const Text('Следить'),
+                    label: Text(context.l10n.monitor_a0b8fc),
                     selected: _follow,
                     onSelected: (v) => setState(() => _follow = v),
                   ),

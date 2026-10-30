@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/settings/fields.dart';
@@ -27,7 +28,7 @@ class SettingsFormView extends StatelessWidget {
       children: [
         for (final (group, fields) in form.groups) ...[
           SectionCard(
-            title: group ?? title,
+            title: context.builtInOrNull(group ?? title),
             children: [
               for (final f in fields)
                 IgnorePointer(
@@ -48,7 +49,7 @@ class SettingsFormView extends StatelessWidget {
   Widget _help(BuildContext context, String? text) => text == null
       ? const SizedBox.shrink()
       : Text(
-          text,
+          context.builtIn(text),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Theme.of(context).colorScheme.outline,
           ),
@@ -65,7 +66,7 @@ class SettingsFormView extends StatelessWidget {
         children: [
           _TextInput(
             key: ValueKey(f.key),
-            label: f.label,
+            label: context.builtIn(f.label),
             value: form.value<String>(f.key),
             error: form.error(f.key),
             secure: f.secure,
@@ -77,20 +78,22 @@ class SettingsFormView extends StatelessWidget {
       ),
     ),
     BoolFieldSpec() => SwitchListTile(
-      title: Text(f.label),
-      subtitle: f.help == null ? null : Text(f.help!),
+      title: Text(context.builtIn(f.label)),
+      subtitle: context.builtInOrNull(f.help) == null
+          ? null
+          : Text(context.builtIn(f.help!)),
       value: form.value<bool>(f.key),
       onChanged: form.saving ? null : (v) => form.set(f.key, v),
     ),
     IntFieldSpec(:final min, :final max, :final unit) => MeshTile(
-      title: f.label,
-      subtitle: f.help,
+      title: context.builtIn(f.label),
+      subtitle: context.builtInOrNull(f.help),
       trailing: SizedBox(
         width: 120,
         child: _TextInput(
           key: ValueKey(f.key),
           value: '${form.value<int>(f.key)}',
-          suffix: unit,
+          suffix: context.builtInOrNull(unit),
           number: true,
           onChanged: (v) {
             final n = int.tryParse(v);
@@ -101,14 +104,14 @@ class SettingsFormView extends StatelessWidget {
     ),
     DoubleFieldSpec(:final min, :final max, :final unit, :final decimals) =>
       MeshTile(
-        title: f.label,
-        subtitle: f.help,
+        title: context.builtIn(f.label),
+        subtitle: context.builtInOrNull(f.help),
         trailing: SizedBox(
           width: 140,
           child: _TextInput(
             key: ValueKey(f.key),
             value: _num(form.value<double>(f.key), decimals),
-            suffix: unit,
+            suffix: context.builtInOrNull(unit),
             number: true,
             decimal: true,
             onChanged: (v) {
@@ -119,7 +122,7 @@ class SettingsFormView extends StatelessWidget {
         ),
       ),
     ChoiceFieldSpec(:final helpFor, :final confirmFor) => _ChoiceTile(
-      label: f.label,
+      label: context.builtIn(f.label),
       help: [
         ?f.help,
         ?helpFor?.call(form.value<int>(f.key)),
@@ -152,16 +155,16 @@ Future<bool> _confirm(BuildContext context, String text) async =>
     await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Вы уверены?'),
-        content: Text(text),
+        title: Text(context.l10n.areYouSure_b0069b),
+        content: Text(context.builtIn(text)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Отмена'),
+            child: Text(context.l10n.cancel_0ec753),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Подтверждение'),
+            child: Text(context.l10n.confirm_846aff),
           ),
         ],
       ),
@@ -206,7 +209,9 @@ class _ChoiceTile extends StatelessWidget {
           // Управляемый список: значение всегда из формы (откат после
           // отказа в подтверждении виден сразу).
           InputDecorator(
-            decoration: InputDecoration(labelText: label),
+            decoration: InputDecoration(
+              labelText: context.builtInOrNull(label),
+            ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<int>(
                 value: value,
@@ -216,7 +221,10 @@ class _ChoiceTile extends StatelessWidget {
                   for (final o in options)
                     DropdownMenuItem(
                       value: o.value,
-                      child: Text(o.label, overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        context.builtIn(o.label),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                 ],
                 onChanged: onChanged,
@@ -226,7 +234,7 @@ class _ChoiceTile extends StatelessWidget {
           if (help != null) ...[
             const SizedBox(height: Tokens.s4),
             Text(
-              help!,
+              context.builtIn(help!),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.outline,
               ),
@@ -304,12 +312,14 @@ class _TextInputState extends State<_TextInput> {
     obscureText: widget.secure && !_shown,
     enableSuggestions: !widget.secure,
     decoration: InputDecoration(
-      labelText: widget.label,
-      errorText: widget.error,
-      suffixText: widget.suffix,
+      labelText: context.builtInOrNull(widget.label),
+      errorText: context.builtInOrNull(widget.error),
+      suffixText: context.builtInOrNull(widget.suffix),
       suffixIcon: widget.secure
           ? IconButton(
-              tooltip: _shown ? 'Скрыть' : 'Показать',
+              tooltip: _shown
+                  ? context.l10n.hide_107291
+                  : context.l10n.show_7788a1,
               icon: Icon(_shown ? Icons.visibility_off : Icons.visibility),
               onPressed: () => setState(() => _shown = !_shown),
             )
@@ -352,7 +362,7 @@ class SaveBar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(Tokens.s8),
             child: Text(
-              form.saveError!,
+              context.builtIn(form.saveError!),
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
@@ -366,23 +376,25 @@ class SaveBar extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.save_alt),
-              label: const Text('Сохранить'),
+              label: Text(context.l10n.save_486405),
               onPressed: !form.canSave
                   ? null
                   : () async {
                       final yes = await showDialog<bool>(
                         context: context,
                         builder: (c) => AlertDialog(
-                          title: const Text('Вы уверены?'),
-                          content: Text([confirm, ?note].join('\n\n')),
+                          title: Text(context.l10n.areYouSure_b0069b),
+                          content: Text(
+                            context.builtIn([confirm, ?note].join('\n\n')),
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(c, false),
-                              child: const Text('Отмена'),
+                              child: Text(context.l10n.cancel_0ec753),
                             ),
                             FilledButton(
                               onPressed: () => Navigator.pop(c, true),
-                              child: const Text('Сохранить'),
+                              child: Text(context.l10n.save_486405),
                             ),
                           ],
                         ),
@@ -423,7 +435,10 @@ class _PinList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(spec.label, style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            context.builtIn(spec.label),
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           for (var i = 0; i < items.length; i++)
             Padding(
               // Ключ по позиции и длине: после удаления поля ввода берут
@@ -435,7 +450,7 @@ class _PinList extends StatelessWidget {
                   SizedBox(
                     width: 90,
                     child: _TextInput(
-                      label: 'Контакт GPIO',
+                      label: context.l10n.gpioPin_68149e,
                       value: '${items[i].gpio}',
                       number: true,
                       onChanged: (v) {
@@ -453,7 +468,7 @@ class _PinList extends StatelessWidget {
                   const SizedBox(width: Tokens.s8),
                   Expanded(
                     child: _TextInput(
-                      label: 'Имя',
+                      label: context.l10n.name_aee78f,
                       value: items[i].name,
                       onChanged: (v) => _edit(i, (
                         gpio: items[i].gpio,
@@ -467,7 +482,10 @@ class _PinList extends StatelessWidget {
                     value: items[i].type,
                     items: [
                       for (final t in spec.types)
-                        DropdownMenuItem(value: t.value, child: Text(t.label)),
+                        DropdownMenuItem(
+                          value: t.value,
+                          child: Text(context.builtIn(t.label)),
+                        ),
                     ],
                     onChanged: onChanged == null
                         ? null
@@ -478,7 +496,7 @@ class _PinList extends StatelessWidget {
                           )),
                   ),
                   IconButton(
-                    tooltip: 'Удалить',
+                    tooltip: context.l10n.delete_86ea33,
                     icon: const Icon(Icons.delete_outline),
                     onPressed: onChanged == null
                         ? null
@@ -494,7 +512,7 @@ class _PinList extends StatelessWidget {
                 : () => onChanged!(
                     RemotePins([...items, (gpio: 0, name: '', type: 0)]),
                   ),
-            child: const Text('Добавить'),
+            child: Text(context.l10n.add_559a87),
           ),
         ],
       ),

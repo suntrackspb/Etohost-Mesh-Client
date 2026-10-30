@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -35,7 +36,7 @@ class UpdateBanner extends ConsumerWidget {
                 const SizedBox(width: Tokens.s8),
                 Expanded(
                   child: Text(
-                    'Вышла версия ${r.version}',
+                    context.l10n.versionReleased_3afe40((r.version).toString()),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -53,13 +54,13 @@ class UpdateBanner extends ConsumerWidget {
                 if (!notes.isEmpty)
                   TextButton(
                     onPressed: () => showReleaseNotes(context, r, notes),
-                    child: const Text('Подробнее'),
+                    child: Text(context.l10n.details_7e4277),
                   ),
                 TextButton(
                   onPressed: () => ref
                       .read(databaseProvider)
                       .setSetting(AppSettingKeys.updateDismissed, r.version),
-                  child: const Text('Не напоминать'),
+                  child: Text(context.l10n.doNotRemindMe_7319fc),
                 ),
               ],
             ),
@@ -95,7 +96,10 @@ Future<void> showReleaseNotes(
           Tokens.s24,
         ),
         children: [
-          Text('Версия ${r.version}', style: text.titleLarge),
+          Text(
+            context.l10n.version_450a87((r.version).toString()),
+            style: text.titleLarge,
+          ),
           for (final b in notes.blocks)
             switch (b) {
               NotesHeading() => Padding(
@@ -145,12 +149,13 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
   bool _checking = false;
 
   Future<void> _check() async {
+    final strings = context.l10n;
     setState(() => _checking = true);
     try {
       final r = await checkForUpdate(await ref.read(appVersionProvider.future));
       if (!mounted) return;
       if (r == null) {
-        toasts.show('Установлена последняя версия');
+        toasts.show(strings.youHaveTheLatestVersion_6ae127);
       } else {
         // Ручная проверка снимает «не напоминать» и показывает плашку.
         await ref
@@ -158,12 +163,12 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
             .setSetting(AppSettingKeys.updateDismissed, '');
         ref.invalidate(latestReleaseProvider);
         toasts.show(
-          'Доступна версия ${r.version} — нажмите, чтобы скачать',
+          strings.versionAvailableTapToDownload_af3a75((r.version).toString()),
           onTap: openDownloads,
         );
       }
     } catch (e) {
-      toasts.error('Не удалось проверить: $e');
+      toasts.error(strings.couldNotCheck_d7d26b((e).toString()));
     } finally {
       if (mounted) setState(() => _checking = false);
     }
@@ -174,15 +179,15 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
     final version = ref.watch(appVersionProvider).value ?? '…';
     final auto = ref.watch(updateAutoCheckProvider).value ?? true;
     return SectionCard(
-      title: 'О приложении',
+      title: context.l10n.about_b9c9ff,
       children: [
         MeshTile(
-          title: 'Версия',
+          title: context.l10n.version_97c248,
           leading: const Icon(Icons.info_outline),
           trailing: Text(version),
         ),
         MeshTile(
-          title: 'Политика конфиденциальности',
+          title: context.l10n.privacyPolicy_4041aa,
           leading: const Icon(Icons.privacy_tip_outlined),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
@@ -191,7 +196,7 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
           ),
         ),
         MeshTile(
-          title: 'Поддержка',
+          title: context.l10n.support_6ae569,
           leading: const Icon(Icons.help_outline),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
@@ -200,7 +205,7 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
           ),
         ),
         MeshTile(
-          title: 'Лицензии',
+          title: context.l10n.licenses_488dd1,
           leading: const Icon(Icons.description_outlined),
           onTap: () => showLicensePage(
             context: context,
@@ -210,7 +215,7 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
         ),
         if (!storeBuild) ...[
           MeshTile(
-            title: 'Проверить обновления',
+            title: context.l10n.checkForUpdates_fa7bfc,
             leading: const Icon(Icons.system_update),
             trailing: _checking
                 ? const SizedBox(
@@ -223,7 +228,7 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
           ),
           SwitchListTile(
             secondary: const Icon(Icons.update),
-            title: const Text('Проверять при запуске'),
+            title: Text(context.l10n.checkOnStartup_6a3174),
             value: auto,
             onChanged: (v) => ref
                 .read(databaseProvider)
@@ -247,14 +252,14 @@ class _DownloadButtons extends StatelessWidget {
       Expanded(
         child: OutlinedButton(
           onPressed: () => openRelease(r),
-          child: const Text('С GitHub'),
+          child: Text(context.l10n.fromGithub_c134e1),
         ),
       ),
       const SizedBox(width: Tokens.s8),
       Expanded(
         child: FilledButton(
           onPressed: openDownloads,
-          child: const Text('С сайта'),
+          child: Text(context.l10n.fromWebsite_225fd2),
         ),
       ),
     ],

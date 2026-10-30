@@ -1,3 +1,4 @@
+import 'package:meshex/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
@@ -35,6 +36,7 @@ class _FixedPositionTileState extends ConsumerState<FixedPositionTile> {
   bool _pending = false;
 
   Future<void> _toggle(bool on) async {
+    final strings = context.l10n;
     if (on) {
       setState(() => _pending = true);
       return;
@@ -46,16 +48,16 @@ class _FixedPositionTileState extends ConsumerState<FixedPositionTile> {
     final yes = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text(PositionSection.removeFixedTitle),
-        content: const Text(PositionSection.removeFixedText),
+        title: Text(context.builtIn(PositionSection.removeFixedTitle)),
+        content: Text(context.builtIn(PositionSection.removeFixedText)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Отмена'),
+            child: Text(strings.cancel_0ec753),
           ),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Удалить'),
+            child: Text(strings.delete_86ea33),
           ),
         ],
       ),
@@ -87,6 +89,7 @@ class _FixedPositionTileState extends ConsumerState<FixedPositionTile> {
 
   /// Отправить позицию (null — снять фиксированную).
   Future<void> _send(Future<Position?> Function() position) async {
+    final strings = context.l10n;
     setState(() => _busy = true);
     String? error;
     try {
@@ -99,7 +102,7 @@ class _FixedPositionTileState extends ConsumerState<FixedPositionTile> {
       if (ok) {
         _pending = false;
       } else {
-        error = 'Нода не подтвердила команду';
+        error = strings.theNodeDidNotAcknowledgeThe_e56f57;
       }
     } catch (e) {
       error = '$e';
@@ -118,14 +121,14 @@ class _FixedPositionTileState extends ConsumerState<FixedPositionTile> {
     final on = fixed || _pending;
     final enabled = !_busy && canSend;
     return SectionCard(
-      title: PositionSection.fixedLabel,
+      title: context.builtIn(PositionSection.fixedLabel),
       children: [
         SwitchListTile(
-          title: const Text(PositionSection.fixedLabel),
+          title: Text(context.builtIn(PositionSection.fixedLabel)),
           subtitle: Text(
             _pending && !fixed
-                ? 'Позиция ещё не задана — выберите, откуда её взять'
-                : PositionSection.fixedHelp,
+                ? context.l10n.positionNotSetYetChooseIts_607bea
+                : context.builtIn(PositionSection.fixedHelp),
           ),
           secondary: _busy
               ? const SizedBox.square(
@@ -153,13 +156,13 @@ class _FixedPositionTileState extends ConsumerState<FixedPositionTile> {
                     FilledButton.tonalIcon(
                       onPressed: enabled ? _fromPhone : null,
                       icon: const Icon(Icons.my_location),
-                      label: const Text('Установить с телефона'),
+                      label: Text(context.l10n.usePhonePosition_026914),
                     ),
                     const SizedBox(height: Tokens.s8),
                     FilledButton.tonalIcon(
                       onPressed: enabled ? _manual : null,
                       icon: const Icon(Icons.edit_location_alt_outlined),
-                      label: const Text('Установить вручную'),
+                      label: Text(context.l10n.setManually_8f0d8a),
                     ),
                   ],
                 ),
