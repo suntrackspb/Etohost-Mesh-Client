@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/diagnostics_providers.dart';
 import '../../app/providers.dart';
 import '../../ui/kit/kit.dart';
+import '../../ui/meshex_wordmark.dart';
 import 'about_section.dart';
 import 'hardware_ids_dialog.dart';
 import 'settings_index.dart';
@@ -59,6 +60,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           if (query.isNotEmpty)
             SettingsSearchResults(query)
           else ...[
+            const Padding(
+              padding: EdgeInsets.only(top: Tokens.s8, bottom: Tokens.s24),
+              child: Center(child: MeshexWordmark()),
+            ),
             const UpdateBanner(),
             SectionCard(
               children: [

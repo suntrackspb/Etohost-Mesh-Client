@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 /// Дизайн-токены. Новый дизайн начинается здесь, а не в экранах.
 abstract final class Tokens {
-  static const yellow = Color(0xFFFFDA43);
-  static const green = Color(0xFF43CD78);
-  static const blue = Color(0xFF3386FF);
-  static const seed = yellow;
+  static const blue = Color(0xFF227DF3);
+  static const purple = Color(0xFF8848DB);
+  static const pink = Color(0xFFCF3E83);
+  static const seed = blue;
 
   // Отступы
   static const s4 = 4.0;

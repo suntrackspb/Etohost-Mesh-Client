@@ -27,7 +27,7 @@ class Accent {
 }
 
 const accents = [
-  Accent('meshex', 'Meshex', Tokens.yellow),
+  Accent('meshex', 'Meshex', Tokens.seed),
   Accent('teal', 'Бирюзовый', Color(0xFF2E9E8F)),
   Accent('green', 'Зелёный', Color(0xFF22C55E)),
   Accent('blue', 'Синий', Color(0xFF3B82F6)),

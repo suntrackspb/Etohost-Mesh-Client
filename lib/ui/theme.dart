@@ -11,29 +11,29 @@ Color mentionBubble(Color color, Brightness brightness) =>
 
 ColorScheme _accentScheme(Color seed, Brightness brightness) {
   final scheme = ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
-  if (seed != Tokens.yellow) return scheme;
+  if (seed != Tokens.seed) return scheme;
   final dark = brightness == Brightness.dark;
   return scheme.copyWith(
-    primary: dark ? Tokens.yellow : const Color(0xFF735B00),
-    onPrimary: dark ? const Color(0xFF262000) : Colors.white,
-    primaryContainer: dark ? const Color(0xFF3C341A) : const Color(0xFFFFEDAD),
+    primary: dark ? const Color(0xFF91BDFF) : const Color(0xFF195FB9),
+    onPrimary: dark ? const Color(0xFF082D60) : Colors.white,
+    primaryContainer: dark ? const Color(0xFF203754) : const Color(0xFFDCE9FF),
     onPrimaryContainer: dark
-        ? const Color(0xFFFFE992)
-        : const Color(0xFF292100),
-    secondary: dark ? Tokens.green : const Color(0xFF176C39),
-    onSecondary: dark ? const Color(0xFF003919) : Colors.white,
+        ? const Color(0xFFD5E5FF)
+        : const Color(0xFF12345D),
+    secondary: dark ? const Color(0xFFCDAAFF) : const Color(0xFF7337BB),
+    onSecondary: dark ? const Color(0xFF381366) : Colors.white,
     secondaryContainer: dark
-        ? const Color(0xFF173D29)
-        : const Color(0xFFD6F3DF),
+        ? const Color(0xFF39254F)
+        : const Color(0xFFEDDEFF),
     onSecondaryContainer: dark
-        ? const Color(0xFFB4F2C9)
-        : const Color(0xFF103C23),
-    tertiary: dark ? const Color(0xFF91BAFF) : const Color(0xFF1D5EB8),
-    onTertiary: dark ? const Color(0xFF002E69) : Colors.white,
-    tertiaryContainer: dark ? const Color(0xFF203755) : const Color(0xFFDCE9FF),
+        ? const Color(0xFFF0DEFF)
+        : const Color(0xFF3D175F),
+    tertiary: dark ? const Color(0xFFFFA6CF) : const Color(0xFFA82A66),
+    onTertiary: dark ? const Color(0xFF5B0D35) : Colors.white,
+    tertiaryContainer: dark ? const Color(0xFF4C263A) : const Color(0xFFFFDDEA),
     onTertiaryContainer: dark
-        ? const Color(0xFFD4E4FF)
-        : const Color(0xFF12365E),
+        ? const Color(0xFFFFDAEB)
+        : const Color(0xFF561431),
   );
 }
 
@@ -46,7 +46,7 @@ ThemeData buildTheme(
   bool black = false,
 }) {
   final dark = brightness == Brightness.dark;
-  final branded = seed == Tokens.yellow;
+  final branded = seed == Tokens.seed;
   var scheme = _accentScheme(seed, brightness).copyWith(
     surface: dark ? const Color(0xFF111318) : const Color(0xFFF7F8FA),
     onSurface: dark ? const Color(0xFFF2F3F5) : const Color(0xFF191D24),
@@ -123,15 +123,15 @@ ThemeData buildTheme(
     filledButtonTheme: branded
         ? FilledButtonThemeData(
             style: FilledButton.styleFrom(
-              backgroundColor: Tokens.yellow,
-              foregroundColor: const Color(0xFF262000),
+              backgroundColor: const Color(0xFF1764CF),
+              foregroundColor: Colors.white,
             ),
           )
         : null,
     floatingActionButtonTheme: branded
         ? const FloatingActionButtonThemeData(
-            backgroundColor: Tokens.yellow,
-            foregroundColor: Color(0xFF262000),
+            backgroundColor: Color(0xFF1764CF),
+            foregroundColor: Colors.white,
           )
         : null,
     // «Назад» свайпом с любого места экрана, как в системных приложениях iOS;
