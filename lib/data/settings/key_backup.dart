@@ -153,7 +153,7 @@ class KeyBackupStore {
 /// Файл резервной копии ключей (JSON, свой формат: у официальных клиентов
 /// выгрузки ключей в файл нет). Один файл может нести несколько копий.
 abstract final class KeyBackupFile {
-  static const format = 'etohost-mesh-keys';
+  static const format = 'meshex-keys';
   static const version = 1;
   static const extension = 'json';
 

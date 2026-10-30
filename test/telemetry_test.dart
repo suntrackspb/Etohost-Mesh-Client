@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/telemetry.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/telemetry.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

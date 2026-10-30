@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:etohost_mesh/mirror/avatar_frames.dart';
-import 'package:etohost_mesh/mirror/mirror_models.dart';
+import 'package:meshex/mirror/avatar_frames.dart';
+import 'package:meshex/mirror/mirror_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

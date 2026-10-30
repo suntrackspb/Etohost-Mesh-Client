@@ -215,7 +215,7 @@ class NodeDbStore {
     } on FormatException {
       rethrow;
     } catch (_) {
-      throw const FormatException('Это не база Etohost Mesh');
+      throw const FormatException('Это не база Meshex');
     } finally {
       await db.close();
     }
@@ -285,7 +285,7 @@ class NodeDbStore {
         settings = await src.select(src.appSettings).get();
         recent = await src.select(src.recentConnections).get();
       } catch (_) {
-        throw const FormatException('Это не база Etohost Mesh');
+        throw const FormatException('Это не база Meshex');
       }
       final own = settings
           .where((s) => s.key != AppSettingKeys.nodeDbs)

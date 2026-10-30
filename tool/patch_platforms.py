@@ -8,12 +8,13 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-APP_NAME = "Etohost Mesh"
+APP_NAME = "Meshex"
 # Идентификатор приложения на всех платформах. После публикации в сторах не менять:
 # с другим id приложение считается новым, обновление поверх старого не встанет.
-APP_ID = "ru.etohost.mesh"
+APP_ID = "ru.meshex.app"
 # Имя проекта Flutter (`--project-name` в CI), оно же имя exe/бинарника.
-PROJECT = "etohost_mesh"
+PROJECT = "meshex"
+ORG = "ru.meshex"
 BT_TEXT = "Bluetooth нужен для подключения к ноде Meshtastic."
 NET_TEXT = "Локальная сеть нужна для подключения к ноде Meshtastic по Wi-Fi."
 CAM_TEXT = "Камера нужна, чтобы сканировать QR-код каналов Meshtastic."
@@ -94,15 +95,36 @@ def plist_set(f: pathlib.Path, key: str, value: str):
 
 
 def patch_name():
-    """Отображаемое имя «Etohost Mesh» на всех платформах."""
-    replace_in(ROOT / "android/app/src/main/AndroidManifest.xml",
-               [(f'android:label="{PROJECT}"', f'android:label="{APP_NAME}"')])
+    """Отображаемое имя «Meshex» на всех платформах."""
+    manifest = ROOT / "android/app/src/main/AndroidManifest.xml"
+    if manifest.exists():
+        text = manifest.read_text()
+        manifest.write_text(re.sub(r'android:label="[^"]*"',
+                                  f'android:label="{APP_NAME}"', text))
     for plist in ("ios/Runner/Info.plist", "macos/Runner/Info.plist"):
         plist_set(ROOT / plist, "CFBundleDisplayName", APP_NAME)
     plist_set(ROOT / "ios/Runner/Info.plist", "CFBundleName", APP_NAME)
     # macOS: имя .app и пункта меню берётся из PRODUCT_NAME.
-    replace_in(ROOT / "macos/Runner/Configs/AppInfo.xcconfig",
-               [(f"PRODUCT_NAME = {PROJECT}", f"PRODUCT_NAME = {APP_NAME}")])
+    appinfo = ROOT / "macos/Runner/Configs/AppInfo.xcconfig"
+    if appinfo.exists():
+        text = appinfo.read_text()
+        text = re.sub(r"(?m)^PRODUCT_NAME = .*", f"PRODUCT_NAME = {APP_NAME}", text)
+        text = re.sub(r"(?m)^PRODUCT_COPYRIGHT = .*", "PRODUCT_COPYRIGHT = Copyright © 2026 Meshex. All rights reserved.", text)
+        appinfo.write_text(text)
+    # Обновляем ссылки Xcode на продукт, в том числе в локальных проектах.
+    for relative in ("macos/Runner.xcodeproj/project.pbxproj",
+                     "macos/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme"):
+        f = ROOT / relative
+        if f.exists():
+            text = re.sub(r"[A-Za-z_][A-Za-z_0-9]*\.app\b", f"{APP_NAME}.app", f.read_text())
+            text = re.sub(r'(TEST_HOST = "[^"\n]*/\$\(BUNDLE_EXECUTABLE_FOLDER_PATH\)/)[^"\n]+',
+                          rf"\g<1>{APP_NAME}", text)
+            f.write_text(text)
+    for platform in ("linux", "windows"):
+        f = ROOT / platform / "CMakeLists.txt"
+        if f.exists():
+            f.write_text(re.sub(r'set\(BINARY_NAME "[^" ]+"\)',
+                                f'set(BINARY_NAME "{PROJECT}")', f.read_text()))
     # Windows: заголовок окна и описание в свойствах exe.
     replace_in(ROOT / "windows/runner/main.cpp", [(f'L"{PROJECT}"', f'L"{APP_NAME}"')])
     replace_in(ROOT / "windows/runner/Runner.rc", [
@@ -117,28 +139,31 @@ def patch_name():
 
 def patch_app_id():
     """Bundle id / applicationId → APP_ID. `flutter create` строит их из --org и имени
-    проекта (ru.etohost.etohostMesh, ru.etohost.etohost_mesh) — заменяем оба варианта.
+    проекта — заменяем полученные значения на APP_ID.
     Android namespace (пакет MainActivity) не трогаем: applicationId от него не зависит."""
-    camel = re.sub(r"_(.)", lambda m: m.group(1).upper(), PROJECT)
-    generated = [f"ru.etohost.{camel}", f"ru.etohost.{PROJECT}"]
-
-    def sub_ids(f: pathlib.Path, pattern: str):
-        if not f.exists():
-            return
-        s = f.read_text(encoding="utf-8")
-        new = s
-        for old in generated:
-            # ...RunnerTests и прочие суффиксы сохраняются: ru.etohost.mesh.RunnerTests
-            new = re.sub(pattern.format(re.escape(old)), lambda m: m.group(0).replace(old, APP_ID), new)
-        if new != s:
-            f.write_text(new, encoding="utf-8")
-
-    for pbx in ("ios/Runner.xcodeproj/project.pbxproj", "macos/Runner.xcodeproj/project.pbxproj"):
-        sub_ids(ROOT / pbx, r"PRODUCT_BUNDLE_IDENTIFIER = {}\b")
-    sub_ids(ROOT / "macos/Runner/Configs/AppInfo.xcconfig", r"PRODUCT_BUNDLE_IDENTIFIER = {}\b")
-    for gradle in ("android/app/build.gradle.kts", "android/app/build.gradle"):
-        sub_ids(ROOT / gradle, r'applicationId\s*=?\s*"{}"')
-    sub_ids(ROOT / "linux/CMakeLists.txt", r'set\(APPLICATION_ID "{}"\)')
+    for relative in ("ios/Runner.xcodeproj/project.pbxproj",
+                     "macos/Runner.xcodeproj/project.pbxproj",
+                     "macos/Runner/Configs/AppInfo.xcconfig"):
+        f = ROOT / relative
+        if f.exists():
+            text = f.read_text()
+            text = re.sub(r"PRODUCT_BUNDLE_IDENTIFIER = [\w.]+(;) ?",
+                          lambda m: f"PRODUCT_BUNDLE_IDENTIFIER = {APP_ID}" +
+                          (".RunnerTests" if "RunnerTests" in m.group(0) else "") + ";", text)
+            text = re.sub(r"(?m)^PRODUCT_BUNDLE_IDENTIFIER = [\w.]+$",
+                          f"PRODUCT_BUNDLE_IDENTIFIER = {APP_ID}", text)
+            f.write_text(text)
+    for relative in ("android/app/build.gradle.kts", "android/app/build.gradle"):
+        f = ROOT / relative
+        if f.exists():
+            text = re.sub(r'applicationId\s*=?\s*"[^" ]+"',
+                          f'applicationId = "{APP_ID}"' if relative.endswith('.kts')
+                          else f'applicationId "{APP_ID}"', f.read_text())
+            f.write_text(text)
+    f = ROOT / "linux/CMakeLists.txt"
+    if f.exists():
+        f.write_text(re.sub(r'set\(APPLICATION_ID "[^"]+"\)',
+                            f'set(APPLICATION_ID "{APP_ID}")', f.read_text()))
     print("app id: ok")
 
 

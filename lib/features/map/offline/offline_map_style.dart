@@ -19,7 +19,7 @@ Map<String, dynamic> offlineMapStyle(bool dark) {
   final background = dark ? '#20262d' : '#f3f0e8';
   return {
     'version': 8,
-    'name': dark ? 'etohost-offline-dark-v2' : 'etohost-offline-light-v1',
+    'name': dark ? 'meshex-offline-dark-v2' : 'meshex-offline-light-v1',
     'sources': {
       'basemap': {'type': 'vector'},
     },

@@ -22,7 +22,7 @@ class ReleaseNotes {
 
   final List<NotesBlock> blocks;
 
-  /// Разбор. Заголовок «Etohost Mesh x.y.z» отбрасывается — версия и так
+  /// Разбор. Заголовок «Meshex x.y.z» отбрасывается — версия и так
   /// в шапке плашки. Строки абзаца и пункта склеиваются.
   factory ReleaseNotes.parse(String md) {
     final out = <NotesBlock>[];
@@ -44,7 +44,7 @@ class ReleaseNotes {
       if (h != null) {
         flush();
         final t = inline(h.group(1)!);
-        if (!RegExp(r'^Etohost Mesh\b', caseSensitive: false).hasMatch(t)) {
+        if (!RegExp(r'^Meshex\b', caseSensitive: false).hasMatch(t)) {
           out.add(NotesHeading(t));
         }
         continue;

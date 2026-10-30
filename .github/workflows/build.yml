@@ -92,7 +92,7 @@ jobs:
         shell: bash
         run: |
           flutter create . --platforms=${{ matrix.platform }} \
-            --project-name etohost_mesh --org ru.etohost
+            --project-name meshex --org ru.meshex
           rm -f test/widget_test.dart
           python3 tool/patch_platforms.py || python tool/patch_platforms.py
           if [ -f flutter_launcher_icons.yaml ]; then dart run flutter_launcher_icons; fi
@@ -114,6 +114,7 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           defines=(
+            --dart-define=RELEASES_REPO="$GITHUB_REPOSITORY"
             --dart-define=CARTO_KEY="$CARTO_KEY"
           )
           ${{ matrix.cmd }} $VERSION_ARGS "${defines[@]}"
@@ -121,7 +122,7 @@ jobs:
           # (эмуляторы, хромбуки). Сборки пишут в один файл — универсальный убираем.
           if [ "${{ matrix.platform }}" = android ]; then
             mkdir -p dist
-            cp ${{ matrix.out }} dist/etohost-mesh-android-universal.apk
+            cp ${{ matrix.out }} dist/meshex-android-universal.apk
             ${{ matrix.cmd }} --target-platform android-arm64 $VERSION_ARGS "${defines[@]}"
           fi
 
@@ -129,7 +130,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          name=etohost-mesh-${{ matrix.platform }}
+          name=meshex-${{ matrix.platform }}
           case "${{ matrix.platform }}" in
             android) cp ${{ matrix.out }} dist/$name.apk ;;
             ios)
@@ -143,7 +144,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: etohost-mesh-${{ matrix.platform }}
+          name: meshex-${{ matrix.platform }}
           path: dist/*
 
   release:
@@ -161,6 +162,6 @@ jobs:
         with:
           draft: true
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('prototype-{0}', github.run_number) }}
-          name: Etohost Mesh ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('#{0}', github.run_number) }}
+          name: Meshex ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('#{0}', github.run_number) }}
           target_commitish: ${{ github.sha }}
           files: dist/*

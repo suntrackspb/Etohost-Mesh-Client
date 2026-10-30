@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/settings/device_section.dart';
-import 'package:etohost_mesh/data/settings/fields.dart';
-import 'package:etohost_mesh/data/settings/intervals.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/settings/device_section.dart';
+import 'package:meshex/data/settings/fields.dart';
+import 'package:meshex/data/settings/intervals.dart';
 
 void main() {
   test(

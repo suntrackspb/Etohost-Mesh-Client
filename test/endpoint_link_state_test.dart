@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/core/radio/endpoint.dart';
-import 'package:etohost_mesh/core/radio/radio_session.dart';
+import 'package:meshex/core/radio/endpoint.dart';
+import 'package:meshex/core/radio/radio_session.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

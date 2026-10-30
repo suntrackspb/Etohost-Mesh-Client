@@ -204,7 +204,7 @@ class _AboutSectionState extends ConsumerState<AboutSection> {
           leading: const Icon(Icons.description_outlined),
           onTap: () => showLicensePage(
             context: context,
-            applicationName: 'Etohost Mesh',
+            applicationName: 'Meshex',
             applicationVersion: version,
           ),
         ),

@@ -603,7 +603,7 @@ String _withState(String subtitle, RadioState? s) =>
 
 String _pct(double? v) => v == null ? '—' : '${v.toStringAsFixed(1)}%';
 
-/// Плитки сводки, как в iOS-клиенте Etohost.
+/// Плитки сводки, как в исходном iOS-клиенте.
 class _StatsGrid extends StatelessWidget {
   const _StatsGrid(this.s);
 

@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/core/glyph_zip.dart';
-import 'package:etohost_mesh/data/message_split.dart';
+import 'package:meshex/core/glyph_zip.dart';
+import 'package:meshex/data/message_split.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

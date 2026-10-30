@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/settings/mqtt_section.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/settings/mqtt_section.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -49,7 +49,7 @@ void main() {
 
   test('свой сервер: TLS и данные как ввели', () {
     final v = MqttSection.read(ModuleConfig_MQTTConfig())
-      ..['address'] = 'mqtt.etohost.ru'
+      ..['address'] = 'mqtt.example.org'
       ..['username'] = 'u'
       ..['password'] = 'p'
       ..['tlsEnabled'] = true;

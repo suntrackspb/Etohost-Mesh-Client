@@ -1,23 +1,23 @@
-import 'package:etohost_mesh/core/links.dart';
+import 'package:meshex/core/links.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const hosts = {'i.jab.su', 'img.etohost.ru'};
+  const hosts = {'i.jab.su', 'img.example.org'};
 
   test('превью только с хостов сервиса картинок', () {
     expect(
       imagePreviews(
-        'смотри https://i.jab.su/V1LVzGN и https://img.etohost.ru/ggw1abc.jpg.',
+        'смотри https://i.jab.su/V1LVzGN и https://img.example.org/ggw1abc.jpg.',
         hosts,
       ).map((u) => u.toString()),
-      ['https://i.jab.su/V1LVzGN', 'https://img.etohost.ru/ggw1abc.jpg'],
+      ['https://i.jab.su/V1LVzGN', 'https://img.example.org/ggw1abc.jpg'],
     );
   });
 
   test('без подключённого зеркала превью нет', () {
     expect(imagePreviews('https://i.jab.su/V1LVzGN', const {}), isEmpty);
     expect(
-      imagePreviews('https://i.jab.su/V1LVzGN', {'img.etohost.ru'}),
+      imagePreviews('https://i.jab.su/V1LVzGN', {'img.example.org'}),
       isEmpty,
     );
   });
@@ -28,7 +28,7 @@ void main() {
       'https://i.jab.su/api/v1/health',
       'https://i.jab.su/V1LVzGN?x=1',
       'ftp://i.jab.su/V1LVzGN',
-      'https://img.etohost.ru/8315uyb.mp4',
+      'https://img.example.org/8315uyb.mp4',
       'https://evil.example/a.png',
       'https://i.jab.su.evil.example/V1LVzGN',
     ]) {
@@ -37,8 +37,8 @@ void main() {
   });
 
   test('http грузится по https', () {
-    expect(imagePreviews('http://img.etohost.ru/ggw1abc.jpg', hosts), [
-      Uri.parse('https://img.etohost.ru/ggw1abc.jpg'),
+    expect(imagePreviews('http://img.example.org/ggw1abc.jpg', hosts), [
+      Uri.parse('https://img.example.org/ggw1abc.jpg'),
     ]);
   });
 
@@ -62,7 +62,7 @@ void main() {
     );
     expect(
       serviceImageId(
-        Uri.parse('https://img.etohost.ru/ggw1abc.jpg'),
+        Uri.parse('https://img.example.org/ggw1abc.jpg'),
         'i.jab.su',
       ),
       isNull,

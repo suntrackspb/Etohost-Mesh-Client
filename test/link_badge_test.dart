@@ -1,6 +1,6 @@
-import 'package:etohost_mesh/app/link_badge.dart';
-import 'package:etohost_mesh/core/radio/radio_session.dart';
-import 'package:etohost_mesh/mirror/mirror_realtime.dart';
+import 'package:meshex/app/link_badge.dart';
+import 'package:meshex/core/radio/radio_session.dart';
+import 'package:meshex/mirror/mirror_realtime.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

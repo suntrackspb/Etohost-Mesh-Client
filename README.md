@@ -1,4 +1,4 @@
-# Etohost Mesh
+# Meshex
 
 Кроссплатформенный клиент для нод [Meshtastic](https://meshtastic.org) на Flutter:
 iOS, Android, macOS, Windows, Linux. Подключение к ноде по BLE, TCP или USB
@@ -7,18 +7,23 @@ iOS, Android, macOS, Windows, Linux. Подключение к ноде по BLE
 
 ## Возможности
 
-- Интеграция с зеркалом эфира [Etohost](https://mirror.etohost.ru)
+- Подключение к независимым зеркалам эфира с обнаружением их сервисов.
 - Сообщения: каналы и личные чаты; длинный текст уходит несколькими частями `[1/N]`.
 - Ноды: список с фильтрами, карточка ноды, избранное, игнор, traceroute.
-- Карта с метками нод.
+- Карта с метками нод и векторные офлайн-карты.
 - Настройки радио и модулей; обмен каналами через QR-код и ссылку.
 - Администрирование: перезагрузка, выключение, сброс NodeDB и настроек.
 - Резервная копия закрытого ключа: в связке ключей или в файл.
-- Светлая и тёмная темы.
+- Фирменная палитра Meshex, светлая, тёмная и OLED-темы.
 
 ## Скачать
 
-### [Latest Releases: Android, iOS, MacOS, Linux, Windows](https://github.com/suntrackspb/Etohost-Mesh-Client/releases)
+Meshex проходит закрытое тестирование. Публичные ссылки на приложение появятся
+на [meshex.ru](https://meshex.ru).
+
+Для Android и iOS планируется установка через Google Play и App Store.
+Сборки для macOS, Windows и Linux будут доступны для прямого скачивания.
+Архивы опубликованных версий — в [релизах этого репозитория](../../releases).
 
 ## Сборка
 
@@ -27,7 +32,7 @@ iOS, Android, macOS, Windows, Linux. Подключение к ноде по BLE
 файлы) дописывает `tool/patch_platforms.py`:
 
 ```sh
-flutter create . --platforms=ios --project-name etohost_mesh --org ru.etohost
+flutter create . --platforms=ios --project-name meshex --org ru.meshex
 python3 tool/patch_platforms.py
 flutter pub get
 flutter run
@@ -51,3 +56,30 @@ flutter test
 
 [GPL-3.0](LICENSE). Meshtastic® — зарегистрированная торговая марка Meshtastic LLC;
 проект с ней не связан.
+
+## Идентификаторы и сервисы Meshex
+
+Meshex — отдельное приложение с ID `ru.meshex.app`; данные старого приложения
+автоматически не переносятся. Flutter-пакет и исполняемые файлы — `meshex`.
+CI создаёт архивы `meshex-android.apk`, `meshex-android-universal.apk`,
+`meshex-ios.ipa`, `meshex-macos.zip`, `meshex-windows.zip`, `meshex-linux.tar.gz`.
+
+Публичный сайт и карта по умолчанию используют `https://meshex.ru`.
+Перед тестированием загрузок на новом домене разместить там страницу downloads
+и файл `/maps/spb-20261029.pmtiles`. Для промежуточных сборок доступны
+`OFFLINE_MAP_URL` и `TILE_PROXY_URL` в `--dart-define-from-file`.
+Без `TILE_PROXY_URL` растровые карты обращаются напрямую к своему провайдеру.
+
+`RELEASES_REPO` задаёт источник обновлений и Issues; CI автоматически передаёт
+`GITHUB_REPOSITORY`, поэтому переименование репозитория не требует правки workflow.
+
+При выкладке сайта установить `tools/fetch_release.py` отдельно как
+`/usr/local/bin/meshex-fetch-release` с `RELEASES_ROOT` для сайта Meshex и
+ограниченным SSH-ключом, вызывающим именно этот скрипт. В Actions используется
+новый секрет `MESHEX_DEPLOY_SSH_KEY`, чтобы не выкладывать Meshex через ключ
+старого приложения. Сервер и DNS эти изменения исходников не настраивают.
+
+Новые заголовки версии клиента: `X-Meshex-Version` и `X-Meshex-Platform`;
+операторам зеркал нужно учитывать их в проверке версии клиента.
+Строка HKDF в авторизации картинок остаётся идентификатором действующего
+протокола зеркал: её переименование без изменения сервера ломает подписи.

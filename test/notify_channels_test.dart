@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/core/notify/notify_channels.dart';
-import 'package:etohost_mesh/data/notify/message_alerts.dart';
+import 'package:meshex/core/notify/notify_channels.dart';
+import 'package:meshex/data/notify/message_alerts.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

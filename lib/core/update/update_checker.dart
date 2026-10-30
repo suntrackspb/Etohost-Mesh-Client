@@ -4,10 +4,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 /// Репозиторий с релизами приложения.
-const releasesRepo = 'suntrackspb/Etohost-Mesh-Client';
+const releasesRepo = String.fromEnvironment(
+  'RELEASES_REPO',
+  defaultValue: 'suntrackspb/Etohost-Mesh-Client',
+);
 
 /// Страница загрузок на официальном сайте (файлы выкладывает CI).
-final downloadsPage = Uri.parse('https://etohost.ru/downloads');
+final downloadsPage = Uri.parse('https://meshex.ru/downloads');
 
 /// Вышедший релиз на GitHub.
 class AppRelease {

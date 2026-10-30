@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/settings/lora_section.dart';
-import 'package:etohost_mesh/data/settings/settings_form.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/settings/lora_section.dart';
+import 'package:meshex/data/settings/settings_form.dart';
 
 void main() {
   Set<int> values(List<({int value, String label})> l) => {

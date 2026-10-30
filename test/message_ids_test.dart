@@ -1,6 +1,6 @@
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/message_meta.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/message_meta.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Message m(int packetId, {int? mirrorId}) => Message(

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/radio_stats.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/radio_stats.dart';
 
 void main() {
   test('сводка: эфир, онлайн, каналы, своя нода', () {

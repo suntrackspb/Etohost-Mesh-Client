@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/data/map_points.dart';
+import 'package:meshex/data/map_points.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 

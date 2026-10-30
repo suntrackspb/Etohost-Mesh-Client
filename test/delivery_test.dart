@@ -1,6 +1,6 @@
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/delivery.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/delivery.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Message m(AckState s, [MeshPacket_AckProofStatus? proof]) => Message(

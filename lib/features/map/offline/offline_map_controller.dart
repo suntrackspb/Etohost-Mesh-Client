@@ -9,7 +9,10 @@ import 'package:path_provider/path_provider.dart';
 import '../../../app/providers.dart';
 import 'local_archive_client.dart';
 
-const offlineMapUrl = 'https://etohost.ru/maps/spb-20261029.pmtiles';
+const offlineMapUrl = String.fromEnvironment(
+  'OFFLINE_MAP_URL',
+  defaultValue: 'https://meshex.ru/maps/spb-20261029.pmtiles',
+);
 const offlineMapBytes = 194118834;
 const offlineMapSha256 =
     '95ddcce9bc26b46e6dc72acc55e8f79742af53ed433ef067a6e9d873c364c955';

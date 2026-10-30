@@ -1,10 +1,11 @@
+import '../../core/update/update_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/toasts.dart';
 import '../../ui/kit/kit.dart';
 
-const _supportUrl = 'https://github.com/suntrackspb/Etohost-Mesh-Client/issues';
+const _supportUrl = 'https://github.com/$releasesRepo/issues';
 
 Future<void> _openSupport() async {
   try {
@@ -38,7 +39,7 @@ class AppInformationPage extends StatelessWidget {
         if (privacy) ...[
           const _InformationSection(
             'Данные на устройстве',
-            'Etohost Mesh — клиент для радионод Meshtastic. Приложение хранит '
+            'Meshex — клиент для радионод Meshtastic. Приложение хранит '
                 'на устройстве сообщения, сведения о нодах и их позициях, '
                 'настройки, конфигурацию подключённых нод и диагностический '
                 'журнал. Очистка данных в настройках приложения действует '
@@ -88,9 +89,9 @@ class AppInformationPage extends StatelessWidget {
           const _InformationSection(
             'Карты и проверка обновлений',
             'При загрузке карты сервер тайлов получает IP-адрес и запросы '
-                'участков карты. Используются tiles.etohost.ru и, в зависимости '
-                'от подложки и доступности, OpenStreetMap, OpenTopoMap или '
-                'CARTO. В сборках с собственной проверкой обновлений '
+                'участков карты. В зависимости '
+                'от подложки используются OpenStreetMap, OpenTopoMap или '
+                'CARTO либо настроенный прокси. Офлайн-карта скачивается с сайта Meshex. В сборках с собственной проверкой обновлений '
                 'приложение обращается к API GitHub; автоматическую проверку '
                 'можно выключить в разделе «О приложении».',
           ),
@@ -120,7 +121,7 @@ class AppInformationPage extends StatelessWidget {
           const _InformationSection(
             'Связаться с разработчиком',
             'Вопросы, сообщения об ошибках и обращения о конфиденциальности '
-                'можно оставить в Issues репозитория Etohost-Mesh-Client. '
+                'можно оставить в Issues проекта Meshex. '
                 'Для создания обращения нужен аккаунт GitHub. Обращения '
                 'могут быть публичными: не публикуйте приватные ключи, '
                 'пароли, точные координаты и другие личные сведения. '

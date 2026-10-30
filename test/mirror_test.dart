@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:etohost_mesh/core/proto/channel_names.dart';
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/mirror_ingest.dart';
-import 'package:etohost_mesh/data/packet_router.dart';
-import 'package:etohost_mesh/mirror/mirror_config.dart';
-import 'package:etohost_mesh/mirror/mirror_models.dart';
+import 'package:meshex/core/proto/channel_names.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/mirror_ingest.dart';
+import 'package:meshex/data/packet_router.dart';
+import 'package:meshex/mirror/mirror_config.dart';
+import 'package:meshex/mirror/mirror_models.dart';
 
 void main() {
   group('адрес зеркала', () {

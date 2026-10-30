@@ -1,7 +1,6 @@
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/id_bug.dart';
-import 'package:etohost_mesh/mirror/mirror_api.dart'
-    show parseMac, parsePublicKey;
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/id_bug.dart';
+import 'package:meshex/mirror/mirror_api.dart' show parseMac, parsePublicKey;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

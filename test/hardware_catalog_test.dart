@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:etohost_mesh/data/hardware_catalog.dart';
-import 'package:etohost_mesh/data/hardware_catalog_data.dart';
+import 'package:meshex/data/hardware_catalog.dart';
+import 'package:meshex/data/hardware_catalog_data.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

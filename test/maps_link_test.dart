@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/core/geo/maps_link.dart';
+import 'package:meshex/core/geo/maps_link.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/data/packet_router.dart';
+import 'package:meshex/data/packet_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

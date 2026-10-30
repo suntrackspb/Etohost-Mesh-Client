@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/core/links.dart';
-import 'package:etohost_mesh/ui/kit/kit.dart';
+import 'package:meshex/core/links.dart';
+import 'package:meshex/ui/kit/kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:etohost_mesh/core/update/update_checker.dart';
+import 'package:meshex/core/update/update_checker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -19,7 +19,7 @@ void main() {
     final client = MockClient(
       (_) async => http.Response.bytes(
         utf8.encode(
-          '{"tag_name":"v0.1.2","name":"Etohost Mesh v0.1.2",'
+          '{"tag_name":"v0.1.2","name":"Meshex v0.1.2",'
           '"html_url":"https://github.com/x/y/releases/tag/v0.1.2","body":"Что нового"}',
         ),
         200,

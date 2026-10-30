@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Выкладка релиза на etohost.ru/downloads: сервер сам качает файлы с GitHub.
+"""Выкладка релиза на meshex.ru/downloads: сервер сам качает файлы с GitHub.
 
-На g4 лежит в /usr/local/bin/etohost-fetch-release (владелец root); ключ пользователя releases
+На g4 лежит в /usr/local/bin/meshex-fetch-release (владелец root); ключ пользователя releases
 в authorized_keys привязан к нему (command=...), тег приходит в
 SSH_ORIGINAL_COMMAND. Вызов из .github/workflows/publish.yml:
     ssh releases@192.168.1.10 v0.1.12
 Вручную на сервере:
-    sudo -u releases /usr/local/bin/etohost-fetch-release v0.1.12
+    sudo -u releases /usr/local/bin/meshex-fetch-release v0.1.12
 
 Порядок: файлы во временную папку → проверка размера и sha256 → папка
 версии → постоянные имена жёсткими ссылками → release.json последним.
@@ -24,20 +24,20 @@ import sys
 import urllib.request
 from pathlib import Path
 
-REPO = "suntrackspb/Etohost-Mesh-Client"
-ROOT = Path(os.environ.get("RELEASES_ROOT", "/var/www/etohost.ru/etohostmesh"))
+REPO = os.environ.get("RELEASES_REPO", "suntrackspb/Etohost-Mesh-Client")
+ROOT = Path(os.environ.get("RELEASES_ROOT", "/var/www/meshex.ru/downloads"))
 KEEP = 3
 TAG_RE = re.compile(r"^v(\d+\.\d+\.\d+)$")
 VER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
 # Ключ в release.json = data-os строки на странице загрузок.
 KEYS = {
-    "etohost-mesh-android.apk": "android",
-    "etohost-mesh-android-universal.apk": "android-universal",
-    "etohost-mesh-ios.ipa": "ios",
-    "etohost-mesh-windows.zip": "windows",
-    "etohost-mesh-macos.zip": "macos",
-    "etohost-mesh-linux.tar.gz": "linux",
+    "meshex-android.apk": "android",
+    "meshex-android-universal.apk": "android-universal",
+    "meshex-ios.ipa": "ios",
+    "meshex-windows.zip": "windows",
+    "meshex-macos.zip": "macos",
+    "meshex-linux.tar.gz": "linux",
 }
 
 
@@ -47,7 +47,7 @@ def log(msg: str) -> None:
 
 def get_json(url: str) -> dict:
     req = urllib.request.Request(
-        url, headers={"Accept": "application/vnd.github+json", "User-Agent": "etohost-releases"}
+        url, headers={"Accept": "application/vnd.github+json", "User-Agent": "meshex-releases"}
     )
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.load(r)
@@ -56,7 +56,7 @@ def get_json(url: str) -> dict:
 def download(url: str, dest: Path) -> str:
     """Скачать в dest; вернуть sha256."""
     h = hashlib.sha256()
-    req = urllib.request.Request(url, headers={"User-Agent": "etohost-releases"})
+    req = urllib.request.Request(url, headers={"User-Agent": "meshex-releases"})
     with urllib.request.urlopen(req, timeout=60) as r, open(dest, "wb") as f:
         while chunk := r.read(1 << 20):
             h.update(chunk)
@@ -95,8 +95,8 @@ def publish(tag: str) -> int:
         log("Черновик или пре-релиз — не выкладываю")
         return 1
     assets = {a["name"]: a for a in rel.get("assets", []) if a.get("name") in KEYS}
-    if "etohost-mesh-android.apk" not in assets:
-        log("В релизе нет etohost-mesh-android.apk")
+    if "meshex-android.apk" not in assets:
+        log("В релизе нет meshex-android.apk")
         return 1
 
     staging = ROOT / f".incoming-{version}"

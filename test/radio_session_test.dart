@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/core/radio/journal.dart';
-import 'package:etohost_mesh/core/radio/radio_session.dart';
-import 'package:etohost_mesh/core/radio/send_queue.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/core/radio/journal.dart';
+import 'package:meshex/core/radio/radio_session.dart';
+import 'package:meshex/core/radio/send_queue.dart';
 
 import 'support/fake_transport.dart';
 

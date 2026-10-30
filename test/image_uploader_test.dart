@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:etohost_mesh/data/images/image_uploader.dart';
+import 'package:meshex/data/images/image_uploader.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-// Тот же пример, что test_known_vector в Etohost-Mesh-Images/tests/test_app.py.
+// Контрольный вектор протокола авторизации сервиса картинок зеркала.
 final svcPub = base64.decode('j0DFrbaPJWJK5bIU6nZ6bslNgp09e14a0bpvPiE4KF8=');
 final nodePriv = List<int>.generate(32, (i) => i + 32);
 const knownKey =

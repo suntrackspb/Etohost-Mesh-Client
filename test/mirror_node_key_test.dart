@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/mirror_node_key.dart';
-import 'package:etohost_mesh/mirror/mirror_api.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/mirror_node_key.dart';
+import 'package:meshex/mirror/mirror_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/core/transport/transport.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/core/transport/transport.dart';
 
 /// Транспорт-заглушка: всё отправленное копится в [sent], ответы ноды — через [reply].
 class FakeTransport implements Transport {

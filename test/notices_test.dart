@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:etohost_mesh/core/notices/notices.dart';
+import 'package:meshex/core/notices/notices.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -14,7 +14,7 @@ void main() {
         'id': 'a',
         'level': 'critical',
         'text': ' Срочно ',
-        'link': {'url': 'https://etohost.ru', 'label': 'Сайт'},
+        'link': {'url': 'https://example.org', 'label': 'Сайт'},
       },
       {
         'id': 'b',
@@ -29,7 +29,7 @@ void main() {
     expect(list.map((n) => n.id), ['a', 'b']);
     expect(list[0].level, NoticeLevel.critical);
     expect(list[0].text, 'Срочно');
-    expect(list[0].linkUrl.toString(), 'https://etohost.ru');
+    expect(list[0].linkUrl.toString(), 'https://example.org');
     expect(list[1].level, NoticeLevel.info);
     expect(list[1].linkUrl, isNull);
   });

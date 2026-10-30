@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/data/appearance.dart';
-import 'package:etohost_mesh/ui/theme.dart';
+import 'package:meshex/data/appearance.dart';
+import 'package:meshex/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -11,9 +11,9 @@ void main() {
     expect(AppTheme.parse('мусор'), AppTheme.system);
   });
 
-  test('accent parses, unknown is teal', () {
+  test('accent parses, unknown is Meshex', () {
     expect(parseAccent('green').color, const Color(0xFF22C55E));
-    expect(parseAccent(null).id, 'teal');
+    expect(parseAccent(null).id, 'meshex');
     expect(accents.map((a) => a.id).toSet(), hasLength(accents.length));
   });
 
@@ -32,6 +32,29 @@ void main() {
     final a = buildTheme(Brightness.light, seed: parseAccent('teal').color);
     final b = buildTheme(Brightness.light, seed: parseAccent('pink').color);
     expect(a.colorScheme.primary, isNot(b.colorScheme.primary));
+  });
+
+  test('Meshex text and container colours remain readable in both themes', () {
+    double contrast(Color a, Color b) {
+      final x = a.computeLuminance();
+      final y = b.computeLuminance();
+      return ((x > y ? x : y) + 0.05) / ((x > y ? y : x) + 0.05);
+    }
+
+    for (final brightness in Brightness.values) {
+      final s = buildTheme(brightness).colorScheme;
+      for (final pair in [
+        (s.primary, s.surface),
+        (s.secondary, s.surface),
+        (s.tertiary, s.surface),
+        (s.onSurfaceVariant, s.surface),
+        (s.onPrimaryContainer, s.primaryContainer),
+        (s.onSecondaryContainer, s.secondaryContainer),
+        (s.onTertiaryContainer, s.tertiaryContainer),
+      ]) {
+        expect(contrast(pair.$1, pair.$2), greaterThanOrEqualTo(4.5));
+      }
+    }
   });
 
   test('mention colour: green by default, off, any accent', () {

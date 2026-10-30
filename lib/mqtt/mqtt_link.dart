@@ -150,6 +150,6 @@ class MqttClientLink implements MqttLink {
       (_) => r.nextInt(16).toRadixString(16),
     ).join();
     final node = myNodeNum?.toRadixString(16).padLeft(8, '0') ?? 'unknown';
-    return 'EtohostMeshMqttProxy-$node-$tail';
+    return 'MeshexMqttProxy-$node-$tail';
   }
 }

@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:drift/drift.dart' hide isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/jammer_zones.dart';
-import 'package:etohost_mesh/data/packet_router.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/jammer_zones.dart';
+import 'package:meshex/data/packet_router.dart';
 
 void main() {
   late AppDatabase db;

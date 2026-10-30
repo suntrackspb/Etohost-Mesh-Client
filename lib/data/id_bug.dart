@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../core/proto/mesh.dart';
 import 'settings/user_section.dart' show firmwareAtLeast;
 
-/// Ошибка Etohost Mesh 0.1.7–0.1.10: «Отправить NodeInfo» рассылала свою
+/// Ошибка Meshex 0.1.7–0.1.10: «Отправить NodeInfo» рассылала свою
 /// NodeInfo с нулевым MAC. Прошивка 2.7 записывает её в свою же запись, а
 /// после перезагрузки считает номер из MAC занятым «чужим» MAC и берёт
 /// случайный (NodeDB::pickNewNodeNum).

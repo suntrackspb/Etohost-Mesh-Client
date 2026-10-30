@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/mqtt/mqtt_link.dart';
-import 'package:etohost_mesh/mqtt/mqtt_proxy.dart';
-import 'package:etohost_mesh/mqtt/mqtt_proxy_config.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/mqtt/mqtt_link.dart';
+import 'package:meshex/mqtt/mqtt_proxy.dart';
+import 'package:meshex/mqtt/mqtt_proxy_config.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 

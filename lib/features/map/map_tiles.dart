@@ -15,11 +15,9 @@ import '../../data/tile_cache.dart';
 /// Центр карты, пока нет ни одной точки.
 const defaultMapCenter = LatLng(59.94, 30.31);
 
-/// Кэширующий прокси тайлов на нашем сервере (OSM и OpenTopoMap): быстрее
-/// и работает там, где источник напрямую недоступен. Если он лежит —
-/// тайлы идут напрямую (fallbackUrl). CARTO по их правилам проксировать
-/// нельзя — он всегда напрямую.
-const tileProxy = 'https://tiles.etohost.ru';
+/// Необязательный кэширующий прокси OSM и OpenTopoMap. Без настройки
+/// или при ошибке прокси тайлы идут напрямую. CARTO всегда напрямую.
+const tileProxy = String.fromEnvironment('TILE_PROXY_URL');
 
 /// Каталог просмотренных тайлов (системный кэш приложения).
 final tileCacheDirProvider = FutureProvider<Directory>(
@@ -86,23 +84,27 @@ class OsmTiles extends ConsumerWidget {
             '?key=$cartoKey',
         subdomains: const ['a', 'b', 'c', 'd'],
         maxZoom: 19,
-        userAgentPackageName: 'ru.etohost.mesh',
+        userAgentPackageName: 'ru.meshex.app',
         tileProvider: carto,
       ),
       // Тайлы есть до 17-го масштаба, дальше — растянутые.
       TileSource.topo => TileLayer(
         key: const ValueKey('topo'),
-        urlTemplate: '$tileProxy/topo/{z}/{x}/{y}.png',
+        urlTemplate: tileProxy.isEmpty
+            ? 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png'
+            : '$tileProxy/topo/{z}/{x}/{y}.png',
         fallbackUrl: 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
         maxNativeZoom: 17,
-        userAgentPackageName: 'ru.etohost.mesh',
+        userAgentPackageName: 'ru.meshex.app',
         tileProvider: cached,
       ),
       TileSource.osm => TileLayer(
         key: const ValueKey('osm'),
-        urlTemplate: '$tileProxy/osm/{z}/{x}/{y}.png',
+        urlTemplate: tileProxy.isEmpty
+            ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            : '$tileProxy/osm/{z}/{x}/{y}.png',
         fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        userAgentPackageName: 'ru.etohost.mesh',
+        userAgentPackageName: 'ru.meshex.app',
         tileProvider: cached,
       ),
     };

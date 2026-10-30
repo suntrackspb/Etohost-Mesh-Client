@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/data/text_clean.dart';
+import 'package:meshex/data/text_clean.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Строка из кодов символов: невидимые символы в литералах не видны в

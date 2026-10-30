@@ -84,7 +84,7 @@ abstract final class AppSettingKeys {
   /// Спросили при первом закрытии окна: в трей или выйти.
   static const trayAsked = 'app.trayAsked';
 
-  /// Показывать картинки i.jab.su и img.etohost.ru в ленте ('true'/'false',
+  /// Показывать картинки разрешённых сервисов зеркала в ленте ('true'/'false',
   /// по умолчанию — да).
   static const showImages = 'chat.showImages';
 

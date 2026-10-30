@@ -389,8 +389,8 @@ class _AccentDot extends StatelessWidget {
           customBorder: const CircleBorder(),
           onTap: onTap,
           child: Container(
-            width: 36,
-            height: 36,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: a?.color,
               shape: BoxShape.circle,
@@ -404,7 +404,15 @@ class _AccentDot extends StatelessWidget {
             child: a == null
                 ? Icon(Icons.block, color: scheme.onSurfaceVariant, size: 20)
                 : selected
-                ? const Icon(Icons.check, color: Colors.white, size: 20)
+                ? Icon(
+                    Icons.check,
+                    color:
+                        ThemeData.estimateBrightnessForColor(a.color) ==
+                            Brightness.light
+                        ? const Color(0xFF191D24)
+                        : Colors.white,
+                    size: 20,
+                  )
                 : null,
           ),
         ),

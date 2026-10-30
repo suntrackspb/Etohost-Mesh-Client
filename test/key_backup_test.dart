@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:etohost_mesh/data/settings/key_backup.dart';
-import 'package:etohost_mesh/data/settings/security_section.dart';
+import 'package:meshex/data/settings/key_backup.dart';
+import 'package:meshex/data/settings/security_section.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _Mem implements SecretStore {
@@ -37,7 +37,9 @@ void main() {
   test('file round trip', () async {
     final b = (await KeyBackup.make(0xa1b2c3d4, priv, longName: 'Node'))!;
     expect(KeyBackupFile.fileName(b.nodeNum), 'meshtastic-key-a1b2c3d4.json');
-    final back = KeyBackupFile.decode(KeyBackupFile.encode([b]));
+    final encoded = KeyBackupFile.encode([b]);
+    expect(jsonDecode(utf8.decode(encoded))['format'], 'meshex-keys');
+    final back = KeyBackupFile.decode(encoded);
     expect(back.single.privateKey, priv);
     expect(back.single.longName, 'Node');
     expect(back.single.nodeNum, 0xa1b2c3d4);

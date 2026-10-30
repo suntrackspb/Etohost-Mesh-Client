@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/features/chat/swipe_to_reply.dart';
+import 'package:meshex/features/chat/swipe_to_reply.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

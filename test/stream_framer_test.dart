@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:etohost_mesh/core/transport/transport.dart';
+import 'package:meshex/core/transport/transport.dart';
 
 void main() {
   late List<Uint8List> frames;

@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/data/node_actions.dart';
-import 'package:etohost_mesh/data/traceroute_view.dart';
+import 'package:meshex/data/node_actions.dart';
+import 'package:meshex/data/traceroute_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 List<Hop> path(List<int> nums) => [for (final n in nums) (num: n, snr: null)];

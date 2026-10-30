@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/data/db_location.dart';
+import 'package:meshex/data/db_location.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

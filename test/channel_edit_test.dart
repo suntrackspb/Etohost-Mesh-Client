@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/settings/channel_edit.dart';
-import 'package:etohost_mesh/data/settings/settings_form.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/settings/channel_edit.dart';
+import 'package:meshex/data/settings/settings_form.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

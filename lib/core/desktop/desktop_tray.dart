@@ -41,7 +41,7 @@ class DesktopTray with WindowListener, TrayListener {
           Platform.isWindows ? 'assets/tray/icon.ico' : 'assets/tray/icon.png',
         );
         // На Linux (AppIndicator) подсказки нет — вызов бросает исключение.
-        if (Platform.isWindows) await trayManager.setToolTip('Etohost Mesh');
+        if (Platform.isWindows) await trayManager.setToolTip('Meshex');
         await trayManager.setContextMenu(
           Menu(
             items: [

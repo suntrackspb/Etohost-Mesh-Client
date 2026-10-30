@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/data/recent_reactions.dart';
+import 'package:meshex/data/recent_reactions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

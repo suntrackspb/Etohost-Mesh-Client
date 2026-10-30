@@ -144,8 +144,8 @@ class NodeDbActions {
 
 final nodeDbActionsProvider = Provider<NodeDbActions>(NodeDbActions.new);
 
-/// Имя файла экспорта: etohost-mesh-!a1b2c3d4-2026-10-22.sqlite;
-/// [num] null — база приложения (etohost-mesh-app-…).
+/// Имя файла экспорта: meshex-!a1b2c3d4-2026-10-22.sqlite;
+/// [num] null — база приложения (meshex-app-…).
 String nodeDbExportName(int? num, DateTime now) {
   String two(int v) => v.toString().padLeft(2, '0');
   final id = switch (num) {
@@ -153,7 +153,7 @@ String nodeDbExportName(int? num, DateTime now) {
     noNodeDb => 'mirror',
     _ => nodeIdString(num),
   };
-  return 'etohost-mesh-$id-${now.year}-${two(now.month)}-${two(now.day)}.sqlite';
+  return 'meshex-$id-${now.year}-${two(now.month)}-${two(now.day)}.sqlite';
 }
 
 Future<String> _nodeDbPath(int num) async =>

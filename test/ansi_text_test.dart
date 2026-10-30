@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:etohost_mesh/core/transport/ansi_text.dart';
+import 'package:meshex/core/transport/ansi_text.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

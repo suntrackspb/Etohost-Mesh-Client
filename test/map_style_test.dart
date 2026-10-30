@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/data/map_style.dart';
+import 'package:meshex/data/map_style.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,7 +1,7 @@
-import 'package:etohost_mesh/core/update/release_notes.dart';
+import 'package:meshex/core/update/release_notes.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const md = '''## Etohost Mesh 0.1.8
+const md = '''## Meshex 0.1.8
 
 Исправления после 0.1.7.
 

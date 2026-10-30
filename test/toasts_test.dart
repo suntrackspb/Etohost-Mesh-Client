@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/app/toasts.dart';
+import 'package:meshex/app/toasts.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

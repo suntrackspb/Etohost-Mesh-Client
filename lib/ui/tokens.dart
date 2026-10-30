@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 /// Дизайн-токены. Новый дизайн начинается здесь, а не в экранах.
 abstract final class Tokens {
-  static const seed = Color(0xFF2E9E8F); // бирюзовый, близкий к Meshtastic
+  static const yellow = Color(0xFFFFDA43);
+  static const green = Color(0xFF43CD78);
+  static const blue = Color(0xFF3386FF);
+  static const seed = yellow;
 
   // Отступы
   static const s4 = 4.0;

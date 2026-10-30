@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:etohost_mesh/core/diagnostics/journal_file.dart';
-import 'package:etohost_mesh/core/diagnostics/report_uploader.dart';
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/core/radio/journal.dart';
-import 'package:etohost_mesh/data/diagnostics/report.dart';
+import 'package:meshex/core/diagnostics/journal_file.dart';
+import 'package:meshex/core/diagnostics/report_uploader.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/core/radio/journal.dart';
+import 'package:meshex/data/diagnostics/report.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';

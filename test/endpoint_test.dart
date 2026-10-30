@@ -1,7 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:etohost_mesh/core/radio/endpoint.dart';
-import 'package:etohost_mesh/data/database.dart';
+import 'package:meshex/core/radio/endpoint.dart';
+import 'package:meshex/data/database.dart';
 
 void main() {
   test('splitHostPort', () {

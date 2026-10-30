@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:etohost_mesh/core/desktop/single_instance.dart';
+import 'package:meshex/core/desktop/single_instance.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

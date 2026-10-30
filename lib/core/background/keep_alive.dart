@@ -24,7 +24,7 @@ KeepAliveStatus? keepAliveStatus(
   if (text == null) return null;
   final name = target == null || target.isEmpty ? '' : ': $target';
   return (
-    title: 'Etohost Mesh$name',
+    title: 'Meshex$name',
     text: mqtt == null ? text : '$text · MQTT: $mqtt',
   );
 }

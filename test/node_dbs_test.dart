@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/node_db_store.dart';
-import 'package:etohost_mesh/data/node_dbs.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/node_db_store.dart';
+import 'package:meshex/data/node_dbs.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

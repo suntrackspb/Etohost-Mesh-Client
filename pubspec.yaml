@@ -1,5 +1,5 @@
-name: etohost_mesh
-description: Etohost Mesh — кроссплатформенный клиент для нод Meshtastic (BLE / TCP / USB) с опциональным зеркалом.
+name: meshex
+description: Meshex — кроссплатформенный клиент для нод Meshtastic (BLE / TCP / USB) с опциональным зеркалом.
 publish_to: none
 version: 0.1.1+1
 

@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart' show Value;
-import 'package:etohost_mesh/data/map_points.dart';
-import 'package:etohost_mesh/data/node_position.dart';
-import 'package:etohost_mesh/mirror/mirror_models.dart';
+import 'package:meshex/data/map_points.dart';
+import 'package:meshex/data/node_position.dart';
+import 'package:meshex/mirror/mirror_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'node_filter_test.dart' show n;

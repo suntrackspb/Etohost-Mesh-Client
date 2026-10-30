@@ -80,8 +80,8 @@ class LocalNotifier {
         macOS: darwin,
         linux: LinuxInitializationSettings(defaultActionName: 'Открыть'),
         windows: WindowsInitializationSettings(
-          appName: 'Etohost Mesh',
-          appUserModelId: 'ru.etohost.mesh',
+          appName: 'Meshex',
+          appUserModelId: 'ru.meshex.app',
           guid: '6c1c2f4e-3b8a-4f0e-9a51-2d7e5b8c4a10',
         ),
       ),

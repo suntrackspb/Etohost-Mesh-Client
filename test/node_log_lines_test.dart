@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/core/radio/node_log_lines.dart';
+import 'package:meshex/core/radio/node_log_lines.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

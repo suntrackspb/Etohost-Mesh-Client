@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/core/geo/geo.dart';
+import 'package:meshex/core/geo/geo.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

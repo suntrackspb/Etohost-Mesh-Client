@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/settings/channel_url.dart';
-import 'package:etohost_mesh/data/settings/device_profile.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/settings/channel_url.dart';
+import 'package:meshex/data/settings/device_profile.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/reaction_groups.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/reaction_groups.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Message r(

@@ -1,12 +1,12 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/core/radio/send_queue.dart';
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/settings/admin_settings.dart';
-import 'package:etohost_mesh/data/settings/fields.dart';
-import 'package:etohost_mesh/data/settings/settings_form.dart';
-import 'package:etohost_mesh/data/settings/user_section.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/core/radio/send_queue.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/settings/admin_settings.dart';
+import 'package:meshex/data/settings/fields.dart';
+import 'package:meshex/data/settings/settings_form.dart';
+import 'package:meshex/data/settings/user_section.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,13 +1,13 @@
 name: publish
 
-# Выкладка опубликованного релиза на https://etohost.ru/downloads.
+# Выкладка опубликованного релиза на https://meshex.ru/downloads.
 # Срабатывает, когда черновик релиза публикуют на GitHub, — сайт не обгоняет
 # страницу релиза. Вручную: Actions → publish → Run workflow, указать тег.
 #
-# Файлы качает сам сервер (tools/fetch_release.py, на g4 — /usr/local/bin/etohost-fetch-release): с GitHub это в
+# Файлы качает сам сервер (tools/fetch_release.py, на g4 — /usr/local/bin/meshex-fetch-release): с GitHub это в
 # разы быстрее, чем заливать их отсюда через туннель. Здесь только вызов:
 # туннель WireGuard (секрет WG_CONFIG, пир GitHubReleases — роутер пускает
-# его только на SSH g4) и ключ DEPLOY_SSH_KEY пользователя releases, который
+# его только на SSH g4) и ключ MESHEX_DEPLOY_SSH_KEY пользователя releases, который
 # может лишь запустить этот скрипт с тегом.
 on:
   release:
@@ -49,10 +49,14 @@ jobs:
 
       - name: SSH
         env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          MESHEX_DEPLOY_SSH_KEY: ${{ secrets.MESHEX_DEPLOY_SSH_KEY }}
         run: |
+          if [ -z "$MESHEX_DEPLOY_SSH_KEY" ]; then
+            echo "::error::Configure MESHEX_DEPLOY_SSH_KEY for meshex-fetch-release before publishing Meshex"
+            exit 1
+          fi
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$MESHEX_DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           echo "$HOST_KEY" > ~/.ssh/known_hosts
 

@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/data/database.dart';
-import 'package:etohost_mesh/data/node_row_info.dart';
+import 'package:meshex/data/database.dart';
+import 'package:meshex/data/node_row_info.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -48,7 +48,7 @@ List<TextPart> splitLinks(String text) {
 }
 
 final _jabId = RegExp(r'^/[A-Za-z0-9]{7}$');
-final _etohostFile = RegExp(
+final _hostedImageFile = RegExp(
   r'^/[A-Za-z0-9_-]+\.(png|jpe?g|webp|gif)$',
   caseSensitive: false,
 );
@@ -65,7 +65,7 @@ Uri? imagePreview(Uri link, Set<String> hosts) {
     return null;
   }
   // id сервиса (7 символов) или файл с расширением картинки.
-  if (!_jabId.hasMatch(link.path) && !_etohostFile.hasMatch(link.path)) {
+  if (!_jabId.hasMatch(link.path) && !_hostedImageFile.hasMatch(link.path)) {
     return null;
   }
   return link.replace(scheme: 'https');

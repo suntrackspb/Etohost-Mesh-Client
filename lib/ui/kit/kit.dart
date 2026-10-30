@@ -235,7 +235,7 @@ class SplitView extends StatelessWidget {
   }
 }
 
-/// Цвет ноды: младшие 24 бита node_id (как в iOS-клиенте Etohost).
+/// Цвет ноды: младшие 24 бита node_id (как в исходном iOS-клиенте).
 Color nodeColor(int nodeNum) => Color(0xFF000000 | (nodeNum & 0xFFFFFF));
 
 /// Читаемый цвет текста поверх [bg]: чёрный на светлом, белый на тёмном

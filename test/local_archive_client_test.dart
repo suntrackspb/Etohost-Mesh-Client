@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
-import 'package:etohost_mesh/features/map/offline/offline_map_controller.dart';
+import 'package:meshex/features/map/offline/offline_map_controller.dart';
 
-import 'package:etohost_mesh/features/map/offline/local_archive_client.dart';
-import 'package:etohost_mesh/features/map/offline/offline_map_style.dart';
+import 'package:meshex/features/map/offline/local_archive_client.dart';
+import 'package:meshex/features/map/offline/offline_map_style.dart';
 import 'package:flutter_map_vector_tiles/flutter_map_vector_tiles.dart' as vt;
 import 'package:flutter_test/flutter_test.dart';
 

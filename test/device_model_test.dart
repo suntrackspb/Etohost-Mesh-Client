@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:etohost_mesh/core/diagnostics/device_model.dart';
+import 'package:meshex/core/diagnostics/device_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

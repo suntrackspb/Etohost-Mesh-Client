@@ -13,8 +13,8 @@ String clientVersion = '';
 Map<String, String> clientHeaders() => clientVersion.isEmpty
     ? const {}
     : {
-        'X-Etohost-Version': clientVersion,
-        'X-Etohost-Platform': Platform.operatingSystem,
+        'X-Meshex-Version': clientVersion,
+        'X-Meshex-Platform': Platform.operatingSystem,
       };
 
 /// Сервер отказал этой версии (HTTP 426): текст для плашки «обновите
@@ -22,7 +22,7 @@ Map<String, String> clientHeaders() => clientVersion.isEmpty
 final outdatedMessage = ValueNotifier<String?>(null);
 
 const defaultOutdatedText =
-    'Эта версия Etohost Mesh устарела и больше не работает с зеркалом и '
+    'Эта версия Meshex устарела и больше не работает с зеркалом и '
     'картинками. Обновите приложение.';
 
 /// Текст отказа из тела ответа: JSON {"message": …}, иначе сам текст;

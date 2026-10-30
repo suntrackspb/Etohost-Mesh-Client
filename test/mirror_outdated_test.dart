@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:etohost_mesh/mirror/mirror_realtime.dart';
+import 'package:meshex/mirror/mirror_realtime.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Локальный WS-сервер: принимает подключение и сразу закрывает с [code].

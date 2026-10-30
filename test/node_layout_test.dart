@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/data/node_layout.dart';
+import 'package:meshex/data/node_layout.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

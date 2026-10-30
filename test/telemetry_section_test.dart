@@ -1,7 +1,7 @@
-import 'package:etohost_mesh/core/proto/mesh.dart';
-import 'package:etohost_mesh/data/settings/intervals.dart';
-import 'package:etohost_mesh/data/settings/telemetry_section.dart';
-import 'package:etohost_mesh/data/settings/user_section.dart';
+import 'package:meshex/core/proto/mesh.dart';
+import 'package:meshex/data/settings/intervals.dart';
+import 'package:meshex/data/settings/telemetry_section.dart';
+import 'package:meshex/data/settings/user_section.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

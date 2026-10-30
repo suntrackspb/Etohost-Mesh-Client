@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:etohost_mesh/core/transport/net_discovery.dart';
+import 'package:meshex/core/transport/net_discovery.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Uint8List _b(String s) => Uint8List.fromList(utf8.encode(s));

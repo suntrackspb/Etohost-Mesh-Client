@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/data/screen_orientation.dart';
+import 'package:meshex/data/screen_orientation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 

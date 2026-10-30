@@ -1,7 +1,7 @@
 import 'dart:io';
 
 /// Совпадает с APPLICATION_ID в linux/CMakeLists.txt (tool/patch_platforms.py).
-const linuxAppId = 'ru.etohost.mesh';
+const linuxAppId = 'ru.meshex.app';
 
 /// Текст .desktop-файла: по нему панель (особенно на Wayland) находит
 /// иконку окна — gtk_window_set_icon там не работает.
@@ -9,7 +9,7 @@ String linuxDesktopEntry({required String exe, required String icon}) =>
     '''
 [Desktop Entry]
 Type=Application
-Name=Etohost Mesh
+Name=Meshex
 Comment=Meshtastic client
 Exec="$exe"
 Icon=$icon

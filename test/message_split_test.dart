@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/data/message_sender.dart';
-import 'package:etohost_mesh/data/message_split.dart';
+import 'package:meshex/data/message_sender.dart';
+import 'package:meshex/data/message_split.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

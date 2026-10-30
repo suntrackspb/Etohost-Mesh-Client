@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/core/client_version.dart';
+import 'package:meshex/core/client_version.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -14,11 +14,11 @@ void main() {
     );
     clientVersion = '';
     await c.get(Uri.parse('https://x/a'));
-    expect(seen!.containsKey('X-Etohost-Version'), isFalse);
+    expect(seen!.containsKey('X-Meshex-Version'), isFalse);
     clientVersion = '0.1.13';
     await c.get(Uri.parse('https://x/a'));
-    expect(seen!['X-Etohost-Version'], '0.1.13');
-    expect(seen!['X-Etohost-Platform'], isNotEmpty);
+    expect(seen!['X-Meshex-Version'], '0.1.13');
+    expect(seen!['X-Meshex-Platform'], isNotEmpty);
     clientVersion = '';
   });
 

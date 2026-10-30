@@ -1,5 +1,5 @@
-import 'package:etohost_mesh/data/settings_search.dart';
-import 'package:etohost_mesh/features/settings/settings_index.dart';
+import 'package:meshex/data/settings_search.dart';
+import 'package:meshex/features/settings/settings_index.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

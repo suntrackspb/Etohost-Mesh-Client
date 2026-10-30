@@ -1,5 +1,7 @@
 import 'dart:ui' show Color;
 
+import '../ui/tokens.dart';
+
 /// Тема приложения. [black] — тёмная с чистым чёрным фоном (OLED).
 enum AppTheme {
   system('Система'),
@@ -25,8 +27,9 @@ class Accent {
 }
 
 const accents = [
+  Accent('meshex', 'Meshex', Tokens.yellow),
   Accent('teal', 'Бирюзовый', Color(0xFF2E9E8F)),
-  Accent('green', 'Зелёный', Color(0xFF22C55E)), // как на etohost.ru
+  Accent('green', 'Зелёный', Color(0xFF22C55E)),
   Accent('blue', 'Синий', Color(0xFF3B82F6)),
   Accent('indigo', 'Индиго', Color(0xFF5C6BC0)),
   Accent('purple', 'Фиолетовый', Color(0xFF8E5CC4)),
@@ -44,6 +47,6 @@ Accent? parseMentionColor(String? id) => id == mentionOff
     : accents.where((a) => a.id == id).firstOrNull ??
           accents.firstWhere((a) => a.id == 'green');
 
-/// Неизвестный id — первый (бирюзовый).
+/// По умолчанию — фирменная палитра Meshex.
 Accent parseAccent(String? id) =>
     accents.where((a) => a.id == id).firstOrNull ?? accents.first;

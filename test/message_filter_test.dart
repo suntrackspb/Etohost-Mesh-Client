@@ -1,4 +1,4 @@
-import 'package:etohost_mesh/data/message_filter.dart';
+import 'package:meshex/data/message_filter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

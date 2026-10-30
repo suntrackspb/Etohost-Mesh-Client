@@ -132,7 +132,7 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     final accent = ref.watch(accentProvider).value ?? accents.first;
     return toastsHost(
       MaterialApp.router(
-        title: 'Etohost Mesh',
+        title: 'Meshex',
         theme: buildTheme(Brightness.light, seed: accent.color),
         darkTheme: buildTheme(
           Brightness.dark,

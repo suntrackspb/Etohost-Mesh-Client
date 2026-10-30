@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:etohost_mesh/core/transport/ble_pairing_hint.dart';
+import 'package:meshex/core/transport/ble_pairing_hint.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
