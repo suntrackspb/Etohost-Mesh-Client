@@ -15,6 +15,7 @@ import '../../ui/kit/kit.dart';
 import '../nodes/open_node.dart';
 import '../nodes/node_filter_sheet.dart';
 import 'map_tiles.dart';
+import 'phone_location.dart';
 import 'offline/offline_map_controller.dart';
 import 'offline/offline_map_widgets.dart';
 import 'mesh_map.dart';
@@ -37,6 +38,8 @@ class _MapPageState extends ConsumerState<MapPage> {
     final cam = _map.camera;
     _map.move(cam.center, (cam.zoom + delta).clamp(2, 19));
   }
+
+  LatLng? _phonePosition;
 
   bool _ready = false;
   bool _fitted = false;
@@ -236,6 +239,8 @@ class _MapPageState extends ConsumerState<MapPage> {
                 zoom: _ready ? _map.camera.zoom : 9,
                 onNodeTap: (p) => _tap(points, p),
               ),
+              if (_phonePosition case final position?)
+                PhoneLocationLayer(position: position),
             ],
           ),
           // Запасной способ масштаба: одной рукой, с мыши, в симуляторе.
@@ -245,6 +250,16 @@ class _MapPageState extends ConsumerState<MapPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                PhoneLocationButton(
+                  onLocated: (position) {
+                    setState(() {
+                      _phonePosition = position;
+                      _fitted = true;
+                    });
+                    if (_ready) _map.move(position, _focusZoom);
+                  },
+                ),
+                const SizedBox(height: Tokens.s8),
                 if (me != null) ...[
                   FloatingActionButton.small(
                     heroTag: 'myNode',
