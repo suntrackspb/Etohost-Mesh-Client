@@ -116,7 +116,11 @@ def patch_name():
                      "macos/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme"):
         f = ROOT / relative
         if f.exists():
-            text = re.sub(r"[A-Za-z_][A-Za-z_0-9]*\.app\b", f"{APP_NAME}.app", f.read_text())
+            # Исправляем результат старого патча и сохраняем shell-переменные:
+            # $PRODUCT_NAME.app используется Flutter для .app_filename.
+            text = f.read_text().replace(f"${APP_NAME}.app", "$PRODUCT_NAME.app")
+            text = re.sub(r"(?<![A-Za-z_0-9$])[A-Za-z_][A-Za-z_0-9]*\.app\b",
+                          f"{APP_NAME}.app", text)
             text = re.sub(r'(TEST_HOST = "[^"\n]*/\$\(BUNDLE_EXECUTABLE_FOLDER_PATH\)/)[^"\n]+',
                           rf"\g<1>{APP_NAME}", text)
             f.write_text(text)
