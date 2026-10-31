@@ -6,6 +6,7 @@ import os
 import pathlib
 import re
 import sys
+import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APP_NAME = "Meshex"
@@ -421,6 +422,8 @@ if __name__ == "__main__":
     patch_android()
     patch_apple()
     patch_notifications()
+    if sys.platform == "darwin" and (ROOT / "ios/Runner.xcodeproj/project.pbxproj").exists():
+        subprocess.run(["ruby", str(ROOT / "tool/install_ios_widgets.rb")], check=True)
     patch_android_signing()
     patch_linux_icon()
     patch_linux_warnings()

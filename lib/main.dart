@@ -1,3 +1,4 @@
+import 'features/home_widgets/home_widgets_provider.dart';
 import 'dart:io';
 import 'dart:ui';
 
@@ -130,6 +131,7 @@ class _MeshAppState extends ConsumerState<MeshApp> {
     ref.listen(desktopTrayProvider, (_, _) {});
     ref.listen(orientationApplierProvider, (_, _) {});
     ref.listen(nodeFilterPersistProvider, (_, _) {});
+    ref.listen(homeWidgetsProvider, (_, _) {});
     final theme = ref.watch(appThemeProvider).value ?? AppTheme.system;
     final accent = ref.watch(accentProvider).value ?? accents.first;
     return toastsHost(

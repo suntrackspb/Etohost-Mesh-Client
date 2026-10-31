@@ -7,6 +7,8 @@ environment:
   sdk: ^3.9.0
 
 dependencies:
+  meshex_widgets:
+    path: packages/meshex_widgets
   cryptography: ^2.9.0
   cupertino_icons: ^2.0.0
   dio: ^5.11.1
