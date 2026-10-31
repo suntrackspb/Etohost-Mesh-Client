@@ -229,6 +229,7 @@ def patch_apple():
             ios_plist.write_text(s)
     plist_add(ROOT / "macos/Runner/Info.plist", {
         "NSBluetoothAlwaysUsageDescription": BT_TEXT,
+        "NSLocalNetworkUsageDescription": NET_TEXT,
         "NSLocationUsageDescription": LOC_TEXT,
         "NSCameraUsageDescription": CAM_TEXT,
     })
