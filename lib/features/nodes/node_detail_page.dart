@@ -155,9 +155,27 @@ class _Header extends StatelessWidget {
                 n.longName.isEmpty ? nodeIdString(n.num) : n.longName,
                 style: t.titleLarge,
               ),
-              SelectableText(
-                '${n.shortName}  ${nodeIdString(n.num)}',
-                style: t.bodyMedium,
+              Row(
+                children: [
+                  Flexible(
+                    child: SelectableText(
+                      nodeIdString(n.num),
+                      style: t.bodyMedium,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: context.l10n.copy_ed4950,
+                    icon: const Icon(Icons.copy, size: 18),
+                    onPressed: () async {
+                      await Clipboard.setData(
+                        ClipboardData(text: nodeIdString(n.num)),
+                      );
+                      if (context.mounted) {
+                        toasts.show(context.l10n.copied_892254);
+                      }
+                    },
+                  ),
+                ],
               ),
               if (heard.isNotEmpty) Text(heard, style: t.bodySmall),
             ],

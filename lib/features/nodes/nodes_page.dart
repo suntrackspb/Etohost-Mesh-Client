@@ -245,7 +245,6 @@ class NodeTile extends ConsumerWidget {
     ];
 
     final line2 = [
-      if (on(NodeRowField.id)) nodeIdString(node.num),
       if (on(NodeRowField.role)) roleName(node.role),
       if (on(NodeRowField.preset) && preset != null) preset,
       if (on(NodeRowField.hardware) && node.hwModel != 0)
@@ -256,23 +255,30 @@ class NodeTile extends ConsumerWidget {
 
     return MeshTile(
       title: name,
-      titleExtra: !on(NodeRowField.publicKey)
-          ? null
-          : node.newPublicKey != null
-          ? Tooltip(
-              message: context.l10n.publicKeyMismatch_a6a194,
-              child: Icon(Icons.key_off, size: 14, color: Colors.red),
-            )
-          : Tooltip(
-              message: hasKey
-                  ? context.l10n.hasPublicKey_dd027c
-                  : context.l10n.noPublicKey_fc72da,
-              child: Icon(
-                Icons.key,
-                size: 14,
-                color: hasKey ? Colors.green : Colors.red,
-              ),
-            ),
+      titleExtra: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (on(NodeRowField.id)) Text(nodeIdString(node.num), style: style),
+          if (on(NodeRowField.id) && on(NodeRowField.publicKey))
+            const SizedBox(width: 4),
+          if (on(NodeRowField.publicKey))
+            node.newPublicKey != null
+                ? Tooltip(
+                    message: context.l10n.publicKeyMismatch_a6a194,
+                    child: Icon(Icons.key_off, size: 14, color: Colors.red),
+                  )
+                : Tooltip(
+                    message: hasKey
+                        ? context.l10n.hasPublicKey_dd027c
+                        : context.l10n.noPublicKey_fc72da,
+                    child: Icon(
+                      Icons.key,
+                      size: 14,
+                      color: hasKey ? Colors.green : Colors.red,
+                    ),
+                  ),
+        ],
+      ),
       subtitleWidget: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
