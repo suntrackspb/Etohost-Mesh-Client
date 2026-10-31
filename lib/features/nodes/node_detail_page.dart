@@ -166,6 +166,14 @@ class _Header extends StatelessWidget {
                   IconButton(
                     tooltip: context.l10n.copy_ed4950,
                     icon: const Icon(Icons.copy, size: 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    constraints: const BoxConstraints.tightFor(
+                      width: 30,
+                      height: 28,
+                    ),
+                    style: IconButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     onPressed: () async {
                       await Clipboard.setData(
                         ClipboardData(text: nodeIdString(n.num)),
