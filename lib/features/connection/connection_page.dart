@@ -482,7 +482,6 @@ class _SerialCardState extends State<_SerialCard> {
   }
 
   Future<void> _refresh() async {
-    final strings = context.l10n;
     try {
       final ports = await listSerialPorts();
       if (mounted) {
@@ -493,7 +492,7 @@ class _SerialCardState extends State<_SerialCard> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _error = strings.ports_1b477b((e).toString()));
+        setState(() => _error = e.toString());
       }
     }
   }
@@ -522,7 +521,7 @@ class _SerialCardState extends State<_SerialCard> {
           Padding(
             padding: const EdgeInsets.all(Tokens.s16),
             child: Text(
-              _error!,
+              context.l10n.ports_1b477b(_error!),
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
